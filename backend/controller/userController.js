@@ -1,0 +1,95 @@
+const User = require('../models/User')
+const bcrypt = require('bcrypt')
+const jwt= require('jsonwebtoken')
+
+const MAX_AGE_MS=3*24*60*60*1000
+
+const cookieOptions={
+    httpOnly: true,
+    maxAge: MAX_AGE_MS,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Strict'
+}
+
+const registerUser= async (req, res)=>{
+    const {name, email, password, role, phone}=req.body;
+    const creatingRole=req.user.role;
+    if(role==='super-admin'){
+        return res.status(403).json({message:'Super Admin accounts are created via database seeding only.'})
+    }
+    if(creatingRole==='admin' && role === 'admin'){
+        return res.status(403).json({message:'Standard Admins cannot create other Admin accounts.'})
+    }
+    try{
+        const existingUser= await User.findOne({email});
+        if(existingUser){
+            return res.status(400).json({message: 'User already exists with this email'})
+        }
+        const newUser = new User({name, email, password, role, phone})
+        await newUser.save()
+
+        res.status(201).json({
+            message: `User ${newUser.name} cretated successfully by admin`,
+            user:{
+                id:newUser._id,
+                name:newUser.name,
+                role:newUser.role,
+            }
+        })
+    }
+    catch(error){
+        console.error('error creating User', error);
+        res.status(500).json({message: 'Internal server error'})
+    }
+}
+
+const loginUser= async(req, res)=>{
+    try{
+        const {email, password}=req.body;
+        const user =await User.findOne({email});
+        if(!user) return res.status(401).json({message: 'Invalid credentials'});
+        const isMatch=await bcrypt.compare(password, user.password);
+        if(!isMatch) return res.status(401).json({message:'Invalid credentials'})
+        const token=user.generateJWT()
+        res.cookie('authToken', token, cookieOptions);
+        let redirectTo='/dashboard'
+        if(user.role==='super-admin'){
+            redirectTo='/super-admin/dashboard';
+        }
+        else if(user.role==='admin'){
+            redirectTo='/admin/dashboard';           
+        }
+        else {
+            redirectTo=`/${user.role.toLowerCase().replace(/\s+/g, '')}/dashboard`
+        }
+       
+        res.status(200).json({
+            message: 'Login success',
+            user:{id:user._id, name:user.name, role: user.role},
+            redirectTo
+        })
+    }
+    catch(error){
+        console.error('Login error', error);
+        res.status(500).json({message: 'server error'})
+    }
+}
+
+const logoutUser=(req, res)=>{
+    res.clearCookie('authToken', cookieOptions);
+    res.status(200).json({message: 'Logout successfully'})
+}
+
+const getProfile = (req,res)=>{
+    res.json({
+        message: 'profile data',
+        user: req.user
+    })
+}
+
+module.exports={
+    loginUser,
+    logoutUser,
+    registerUser,
+    getProfile
+}
