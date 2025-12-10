@@ -42,13 +42,6 @@ app.use('/api/boards', require('./routes/boardRoute'))
 app.use('/api/column', require('./routes/columnRoute'))
 app.use('/api/tasks', require('./routes/taskRoutes'))
 
-app.use('/api/profiles', require('./routes/profileRoute'));
-app.use('/api/contacts',    require('./routes/contactRoute'));
-app.use('/admin', require('./routes/adminRoute'));
-// app.use('/', require('./routes/teacherRoute'));
-app.use('/api/subjects', require('./routes/subjectRoute'));
-app.use('/api/libraries', require('./routes/librariesRoute'));
-app.use ('/api/reviews', require('./routes/reviewRoute'))
 
 // Default route
 app.get('/', (req, res) => {
