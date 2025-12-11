@@ -11,6 +11,7 @@ router.get('/', protect, getBoardsForUser)
 router.get('/:id', getBoardById)
 
 router.use('/:boardId/columns', columnRoutes);
+
 router.patch('/:boardId/add-member', hasAdminPrivileges, addMemberToBoard)
 
 
