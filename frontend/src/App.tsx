@@ -1,6 +1,7 @@
 // App.tsx (CORRECTED STRUCTURE)
 
 import { useCurrentUser } from './components/api/useCurrentUser'
+import { AdminDashboard } from './components/dashboard/admin/AdminDashboard';
 import { IndexPage } from './components/pages/IndexPage'
 // IMPORTANT: Remove { Routes, Route } imports from here!
 // import { Routes, Route } from 'react-router-dom' // <-- DO NOT import/use Routes here
@@ -18,10 +19,8 @@ function App() {
             </div>
         );
     }
-    
-    // 3. Once the session status is known (isFetched is true), render the main router
-    // IndexPage contains the single, complete <Routes> block.
-    return <IndexPage/>
+
+    return <AdminDashboard/>
 }
 
 export default App

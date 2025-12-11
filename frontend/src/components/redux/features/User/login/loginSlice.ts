@@ -5,10 +5,9 @@ import axiosClient from "../../../../api/axiosClient";
 // --- INTERFACES ---
 
 interface UserProfile {
+     id: string;
     name: string;
-    email: string;
-    role: "super-admin" | "admin" | "Designer" | "Developer" | "Quality Testing" | "Bussiness Analyst"; // ✅ Added missing roles
-    lastLogin?: number | null;
+    role: string;
 }
 
 interface LoginSuccessPayload {
@@ -42,19 +41,19 @@ export const loginUsers = createAsyncThunk<
     { email: string; password: string }, // ✅ Argument type
     { rejectValue: string } // ✅ Reject type
 >(
-  "auth/loginUsers",
-  async ({ email, password }, { rejectWithValue }) => {
-    try {
-      const res = await axiosClient.post(
-        "/api/users/login",
-        { email, password },
-        { withCredentials: true } // HttpOnly cookie
-      );
-      return res.data as LoginSuccessPayload;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || err.message);
+    "auth/loginUsers",
+    async ({ email, password }, { rejectWithValue }) => {
+        try {
+            const res = await axiosClient.post(
+                "/api/users/login",
+                { email, password },
+                { withCredentials: true } // HttpOnly cookie
+            );
+            return res.data as LoginSuccessPayload;
+        } catch (err: any) {
+            return rejectWithValue(err.response?.data?.message || err.message);
+        }
     }
-  }
 );
 
 
@@ -65,15 +64,13 @@ const loginSlice = createSlice({
     name: "user",
     initialState,
     reducers: {
-     setAuthState: (state, action: PayloadAction<UserProfile | null>) => {
-    state.user = action.payload;
-    state.isAuthenticated = !!action.payload;
-    state.loading = 'idle';
-    state.error = null;
-    state.redirectTo = null;
-},
-
-
+        setAuthState: (state, action: PayloadAction<UserProfile | null>) => {
+            state.user = action.payload;
+            state.isAuthenticated = !!action.payload;
+            state.loading = 'idle';
+            state.error = null;
+            state.redirectTo = null;
+        },
         logout: (state) => {
             state.user = null;
             state.isAuthenticated = false;
