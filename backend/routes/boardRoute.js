@@ -1,6 +1,6 @@
 const express=require('express')
 const router=express.Router()
-const { createBoard, getBoardsForUser, getBoardById  } =require("../controller/boardController")
+const { createBoard, getBoardsForUser, getBoardById, addMemberToBoard  } =require("../controller/boardController")
 const { protect, hasAdminPrivileges } =require( "../middleware/authMiddleware")
 const columnRoutes=require('../routes/columnRoute')
 
@@ -11,7 +11,7 @@ router.get('/', protect, getBoardsForUser)
 router.get('/:id', getBoardById)
 
 router.use('/:boardId/columns', columnRoutes);
-router.patch('/:boardId/add-member')
+router.patch('/:boardId/add-member', hasAdminPrivileges, addMemberToBoard)
 
 
 module.exports=router;
