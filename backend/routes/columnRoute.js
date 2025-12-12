@@ -7,7 +7,7 @@ const {protect} =require('../middleware/authMiddleware')
 const { createTask } = require('../controller/taskController')
 
 
-router.post('/', protect, createColumn)
+router.post('/create', protect, createColumn)
 
 router.post('/:columnId/tasks', protect, createTask)
 

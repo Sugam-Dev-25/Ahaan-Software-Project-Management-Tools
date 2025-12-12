@@ -4,6 +4,7 @@ import { addMember, fetchBoard } from '../../../redux/features/Board/boardSlice'
 import { Plus } from '@phosphor-icons/react';
 
 import UserSearchInput from '../../common/UserSearchInput';
+import { addColumn } from '../../../redux/features/Column/columnSlice';
 interface User {
     _id: string;
     name: string;
@@ -14,6 +15,8 @@ export const ProjectDetails = () => {
     const [isOpen, setIsOpen] = useState(false)
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [currentBoardId, setCurrentBoardId] = useState<string | null>(null)
+    const [columnName, setColumnName] = useState("")
+    const [showColumnInput, setShowColumnInput] = useState(false)
     const dispatch = useAppDispatch()
     const board = useAppSelector(state => state.board.boards)
     const dropdownRef = useRef<HTMLDivElement | null>(null)
@@ -29,10 +32,7 @@ export const ProjectDetails = () => {
         }
         window.addEventListener('mousedown', handleClickOutside)
         return () => window.removeEventListener('mousedown', handleClickOutside)
-
     }, [])
-
-
     return (
         <div>
             {
@@ -110,16 +110,59 @@ export const ProjectDetails = () => {
                                                 >
                                                     Add Member
                                                 </button>
-
                                             </div>
                                         )}
                                     </div>
                                 </div>
                             </div>
+                            <div className="mt-4">
+                                {!showColumnInput ? (
+                                    <button
+                                        onClick={() => {
+                                            setShowColumnInput(true);
+                                            setCurrentBoardId(b._id);   // IMPORTANT
+                                        }}
+                                        className='px-3 py-2 bg-blue-500 text-white rounded shadow'
+                                    >
+                                        + Add Column
+                                    </button>
+                                ) : (
+                                    <div className="flex space-x-2 items-center">
+                                        <input
+                                            value={columnName}
+                                            onChange={(e) => setColumnName(e.target.value)}
+                                            placeholder="Column name"
+                                            className="px-2 py-1 border rounded"
+                                        />
+
+                                        <button
+                                            onClick={() => {
+                                                dispatch(addColumn({
+                                                    boardId: b._id,    // use board ID directly
+                                                    name: columnName
+                                                }))
+                                                    .then(res => console.log("Column added:", res))
+                                                    .catch(err => console.error("Column add error:", err));
+
+                                                setColumnName("");
+                                                setShowColumnInput(false);
+                                            }}
+                                            className="px-3 py-1 bg-green-500 text-white rounded"
+                                        >
+                                            Save
+                                        </button>
+                                        <button onClick={()=>setShowColumnInput(false)}>
+                                           ❌
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )
                 })
             }
+
+
         </div>
     )
 }

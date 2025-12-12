@@ -2,7 +2,7 @@ const Board=require('../models/Board')
 const Column=require('../models/Column')
 
 const  createColumn= async(req, res)=>{
-    const boardId=req.params.id;
+    const boardId=req.params.boardId;
     const {name}=req.body;
     try{
         const board=await Board.findById(boardId).select('members');
