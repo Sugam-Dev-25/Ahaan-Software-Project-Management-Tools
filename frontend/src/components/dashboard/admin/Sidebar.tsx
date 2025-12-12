@@ -20,13 +20,7 @@ export const Sidebar = () => {
   
     if(role==='admin' || role==='super-admin'){
 
-
     }
-    
-    
-    
-
-
     return (
         <div className="w-40">
             <NavLink

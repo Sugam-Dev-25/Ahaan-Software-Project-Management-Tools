@@ -33,7 +33,10 @@ const admin = (req, res, next)=>{
 
 const superAdmin = (req, res, next) => {
     if (req.user && req.user.role === 'super-admin') {
+         console.log("User in hasAdminPrivileges:", req.user);
         next();
+       
+
     } else {
         res.status(403).json({ message: "Access denied: Super Admin role required" });
     }
@@ -42,6 +45,8 @@ const superAdmin = (req, res, next) => {
 // 2. hasAdminPrivileges: Allows EITHER 'super-admin' OR 'admin'. (For shared routes like board creation)
 const hasAdminPrivileges = (req, res, next) => {
     if (req.user && (req.user.role === 'admin' || req.user.role === 'super-admin')) {
+        console.log("User role:", req.user?.role);
+
         next();
     } else {
         res.status(403).json({ message: "Access denied: Admin privileges required" });

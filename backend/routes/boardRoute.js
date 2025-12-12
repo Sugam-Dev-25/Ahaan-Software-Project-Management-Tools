@@ -12,7 +12,7 @@ router.get('/:id', getBoardById)
 
 router.use('/:boardId/columns', columnRoutes);
 
-router.patch('/:boardId/add-member', hasAdminPrivileges, addMemberToBoard)
+router.patch('/:boardId/add-member', protect, hasAdminPrivileges, addMemberToBoard)
 
 
 module.exports=router;

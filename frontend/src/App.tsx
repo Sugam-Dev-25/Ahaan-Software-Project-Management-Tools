@@ -20,7 +20,7 @@ function App() {
         );
     }
 
-    return <AdminDashboard/>
+    return <IndexPage/>
 }
 
 export default App

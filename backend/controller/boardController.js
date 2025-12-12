@@ -80,28 +80,35 @@ const getBoardById= async (req, res)=>{
     }
 }
 
-const addMemberToBoard= async(req, res)=>{
-    const {boardId}=req.params;
-    const {memberId}=req.body;
+const addMemberToBoard = async (req, res) => {
+    const { boardId } = req.params;
+    const { memberId } = req.body;
 
-    try{
-        const board= await Board.findById(boardId);
-        if(!board) return res.status(404).json({message: "Board not found"})
-        
-        if(board.members.includes(memberId)){
-            return res.status(400).json({message: "user already a member"})
+    try {
+        const board = await Board.findById(boardId);
+        if (!board) return res.status(404).json({ message: "Board not found" });
+
+        if (board.members.includes(memberId)) {
+            return res.status(400).json({ message: "User already a member" });
         }
-        board.members.push(memberId)
-        await board.save()
 
-        await User.findByIdAndUpdate(memberId,{
-            $addToSet: {memberOfBoards:board._id}
-        })
-        await board.populate('members', 'name email role')
+        board.members.push(memberId);
+        await board.save();
+
+        await User.findByIdAndUpdate(memberId, {
+            $addToSet: { memberOfBoards: board._id }
+        });
+
+        await board.populate('members', 'name email role');
+
+        // ✅ MISSING return statement in some previous versions
+        return res.status(200).json(board);
+    } catch (error) {
+        console.error("error adding member", error);
+        res.status(500).json({ message: "Server error: could not add member" });
     }
-    catch(error){
-        console.error("error adding member", error)
-        res.status(500).json({message: "server error: could not add member"})
-    }
-}
+};
+
+
+
 module.exports={createBoard, getBoardsForUser, getBoardById, addMemberToBoard}

@@ -13,7 +13,7 @@ interface SearchUser {
 }
 
 interface UserSearchInputProps {
-    onUserSelect: (userId: string) => void;
+    onUserSelect: (user: SearchUser) => void; // pass full object
     excludeUserIds: string[];
 }
 
@@ -83,11 +83,12 @@ const UserSearchInput: React.FC<UserSearchInputProps> = ({ onUserSelect, exclude
     }, [searchTerm, excludeUserIds]);
 
 
-    const handleSelect = (user: SearchUser) => {
-        onUserSelect(user._id); // Pass the required ID back to the parent form
-        setSearchTerm(''); // Clear the input field
-        setSearchResults([]); // Clear the dropdown results
-    };
+   const handleSelect = (user: SearchUser) => {
+    onUserSelect(user); // Pass full user object
+    setSearchTerm('');
+    setSearchResults([]);
+};
+
 
     return (
         <div className="relative">

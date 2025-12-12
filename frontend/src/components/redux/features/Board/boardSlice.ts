@@ -2,11 +2,17 @@ import { createAsyncThunk, createSlice, } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit"
 import axiosClient from "../../../api/axiosClient";
 
+interface BoardMember{
+    _id: string;
+    name: string;
+    email: string;
+    role:string
+}
 
 interface Board {
     _id: string;
     name: string;
-    members: string[];
+    members: BoardMember[];
     columns: string[]
 }
 interface CreateBoardArgs {
@@ -101,11 +107,12 @@ const boardSlice = createSlice({
                     state.error = action.payload as string
             })
             .addCase(addMember.fulfilled, (state, action: PayloadAction<Board>) => {
-                state.boards = state.boards.map(board =>
-                    board._id === action.payload._id ? action.payload : board
-                );
-                state.error = null;
-            });
+    state.boards = state.boards.map(board =>
+        board._id === action.payload._id ? action.payload : board
+    );
+    state.error = null;
+});
+
     }
 })
 export default boardSlice.reducer

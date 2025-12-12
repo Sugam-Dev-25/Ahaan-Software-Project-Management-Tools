@@ -18,38 +18,38 @@ export const CreateBoardForm = () => {
     const dispatch = useAppDispatch();
     const { loading, error } = useAppSelector(state => state.board);
     const isPending = loading === 'pending';
-    const [currentMembers, setCurrentMembers] = useState<string[]>([]);
+   
     const { register, handleSubmit, formState: { errors }, reset } = useForm<BoardFormInputs>(); // getValues/setValue are no longer needed for member input
-    
-    // --- NEW: Handler to receive user ID from the search component ---
-    const handleAddMemberId = (userId: string) => {
-        // Only add if the ID is not already in the list
-        if (!currentMembers.includes(userId)) {
-            setCurrentMembers(prev => [...prev, userId]);
-        }
-    };
-
-    const handleRemoveMember = (idToRemove: string) => {
-        setCurrentMembers(prev => prev.filter(id => id !== idToRemove));
-    };
-
-    const onSubmit = (data: BoardFormInputs) => {
-        if(currentMembers.length === 0){
-            alert("Please add at least one member.")
-            return
-        }
-        const boardData = {
-            name: data.name,
-            members: currentMembers // Sends the collected IDs
-        }
-        dispatch(createBoard(boardData)).then((result) => {
-            if(createBoard.fulfilled.match(result)){
-                reset();
-                setCurrentMembers([]);
-                alert(`Board "${result.payload.name}" created successfully`);
-            }
-        });
+    const [currentMembers, setCurrentMembers] = useState<{ _id: string; name: string }[]>([]);
+   const handleAddMember = (user: { _id: string; name: string }) => {
+    if (!currentMembers.find(member => member._id === user._id)) {
+        setCurrentMembers(prev => [...prev, user]);
     }
+};
+
+// Remove member handler
+const handleRemoveMember = (idToRemove: string) => {
+    setCurrentMembers(prev => prev.filter(member => member._id !== idToRemove));
+};
+
+// When submitting, send only the IDs
+const onSubmit = (data: BoardFormInputs) => {
+    if (currentMembers.length === 0) {
+        alert("Please add at least one member.");
+        return;
+    }
+    const boardData = {
+        name: data.name,
+        members: currentMembers.map(member => member._id), // only IDs
+    };
+    dispatch(createBoard(boardData)).then((result) => {
+        if (createBoard.fulfilled.match(result)) {
+            reset();
+            setCurrentMembers([]);
+            alert(`Board "${result.payload.name}" created successfully`);
+        }
+    });
+};
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -70,9 +70,9 @@ export const CreateBoardForm = () => {
             <div className="flex flex-col">
                 <label className="font-medium mb-1 text-gray-700">Add Members by Name or Email</label>
                 <UserSearchInput 
-                    onUserSelect={handleAddMemberId}
-                    excludeUserIds={currentMembers}
-                />
+    onUserSelect={handleAddMember} // updated
+    excludeUserIds={currentMembers.map(m => m._id)} // only pass IDs
+/>
             </div>
 
             {/* 3. DISPLAY CURRENT MEMBERS (Now showing placeholder for names) */}
@@ -83,16 +83,18 @@ export const CreateBoardForm = () => {
                         {/* NOTE: If you store the full user object (name, email) instead of just the ID, 
                            you can display the actual name here for better UX. 
                            For now, we display the truncated ID. */}
-                        {currentMembers.map((id, index) => (
-                            <span 
-                                key={index} 
-                                className="inline-flex items-center text-xs font-medium bg-gray-300 text-gray-800 rounded-full pl-3 pr-1 py-1 cursor-pointer hover:bg-red-500 hover:text-white transition"
-                                onClick={() => handleRemoveMember(id)} 
-                            >
-                                {id.substring(0, 4)}...{id.slice(-4)} 
-                                <X size={12} weight="bold" className="ml-1" />
-                            </span>
-                        ))}
+                    {currentMembers.map(member => (
+    <span 
+        key={member._id} 
+        className="inline-flex items-center text-xs font-medium bg-gray-300 text-gray-800 rounded-full pl-3 pr-1 py-1 cursor-pointer hover:bg-red-500 hover:text-white transition"
+        onClick={() => handleRemoveMember(member._id)}
+    >
+        {member.name} 
+        <X size={12} weight="bold" className="ml-1" />
+    </span>
+))}
+
+
                     </div>
                 </div>
             )}

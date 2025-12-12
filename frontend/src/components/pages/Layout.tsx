@@ -11,8 +11,8 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
     return (
         <div className="flex min-h-screen">
-            <Sidebar />
-            <main className="flex-grow p-6 bg-gray-200 text-gray-800">
+            
+            <main className="flex-grow p-6  text-gray-800">
                 {children}
             </main>
         </div>
