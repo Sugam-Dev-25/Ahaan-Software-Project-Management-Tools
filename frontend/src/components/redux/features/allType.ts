@@ -15,7 +15,7 @@ export type Board = {
     _id: string;
     name: string;
     members: User[];
-    columns: string[]
+    columns: Column[]
 }
 
 type Comment = {
@@ -29,13 +29,14 @@ type Activity = {
     action: string
 }
 export type Task = {
+    _id:string,
     title: string,
     description: string,
     priority: "Low" | "medium" | "high" | "critical",
     dueDate: Date,
     startDayte: Date,
     assignedTo: User[],
-    column: Column[],
+    column: string,
     board: Board[],
     subtasks: string[],
     attachment: [],
