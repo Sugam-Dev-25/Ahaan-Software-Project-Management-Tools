@@ -9,7 +9,7 @@ const  createColumn= async(req, res)=>{
         if(!board){
             return res.status(404).json({message: "Board Not found"});
         }
-        const isMember=board.members.some(member=>member.toString()=== req.user._id.toString())
+       const isMember = board.members.some(member => member._id.toString() === req.user._id.toString())
         if(!isMember){
             return res.status(403).json({message: "Access Denied: You must be Member to Modify this board."})
         }
@@ -45,5 +45,6 @@ const fetchColumn= async(req, res)=>{
         res.status(500).json({message: "server error cant fetch columns "})
     }
 }
+
 
 module.exports= {createColumn, fetchColumn}

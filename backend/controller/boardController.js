@@ -40,45 +40,40 @@ const getBoardsForUser= async (req, res)=>{
         res.status(500).json({message: "server error: could not fetch boards"})
     }
 }
-const getBoardById= async (req, res)=>{
-    const boardId= req.params.id;
-    try{
-        const board=await Board.findById(boardId)
-        .populate({
-            path: 'columns',
-            populate:{
-                path: 'task',
-                model: 'Task',
-                populate:{
-                    path: 'assignedTo',
-                    model: 'User',
-                    select: 'name email role profilepicture'
+const getBoardById = async (req, res) => {
+    const boardId = req.params.id;
+    try {
+        const board = await Board.findById(boardId)
+            .populate({
+                path: 'columns',
+                populate: {
+                    path: 'task',
+                    model: 'Task',
+                    populate: {
+                        path: 'assignedTo',
+                        model: 'User',
+                        select: 'name email role profilepicture'
+                    }
                 }
-            }
-        })
-        .populate('owner', 'name email')
-        .populate('members', 'name email role')
-        if(!board){
-            return res.status(404).json({message: 'Board not found'})
-        }
+            })
+            .populate('owner', 'name email')
+            .populate('members', 'name email role');
 
-        const isMember=board.members.some(member=>member._id.toString()===req.user._id.toString())
+        if (!board) return res.status(404).json({ message: 'Board not found' });
 
-        if(!isMember){
-            return res.status(403).json({message: 'Access Denied. You are not a member of Board'})
-        }
+        // ✅ Defensive check to prevent undefined _id
+        const isMember = Array.isArray(board.members) && board.members.some(member => member?._id?.toString() === req.user?._id?.toString());
+
+        if (!isMember) return res.status(403).json({ message: 'Access Denied. You are not a member of Board' });
 
         res.status(200).json(board);
-    }
-    catch(error){
-        console.error(`Error fetching board ${boardId}:`, error)
-
-        if(error.name==='CastError'){
-            return res.status(400).json({message: 'Invalid BoardId format'})
-        }
-        res.status(500).json({message: "server error: Failed to retrive board details"})
+    } catch (error) {
+        console.error(`Error fetching board ${boardId}:`, error);
+        if (error.name === 'CastError') return res.status(400).json({ message: 'Invalid BoardId format' });
+        res.status(500).json({ message: "Server error: Failed to retrieve board details" });
     }
 }
+
 
 const addMemberToBoard = async (req, res) => {
     const { boardId } = req.params;

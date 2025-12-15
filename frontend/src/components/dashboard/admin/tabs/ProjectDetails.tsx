@@ -4,7 +4,7 @@ import { addMember, fetchBoard } from '../../../redux/features/Board/boardSlice'
 import { Plus } from '@phosphor-icons/react';
 
 import UserSearchInput from '../../common/UserSearchInput';
-import { addColumn } from '../../../redux/features/Column/columnSlice';
+import { addColumn, fetchColumn } from '../../../redux/features/Column/columnSlice';
 interface User {
     _id: string;
     name: string;
@@ -17,26 +17,32 @@ export const ProjectDetails = () => {
     const [currentBoardId, setCurrentBoardId] = useState<string | null>(null)
     const [columnName, setColumnName] = useState("")
     const [showColumnInput, setShowColumnInput] = useState(false)
+
     const dispatch = useAppDispatch()
-    const board = useAppSelector(state => state.board.boards)
+    const boards = useAppSelector(state => state.board.boards)
+
     const dropdownRef = useRef<HTMLDivElement | null>(null)
+    const column = useAppSelector(state => state.column.columns)
 
     useEffect(() => {
         dispatch(fetchBoard())
-    }, [])
+    }, [dispatch])
     useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-                setIsOpen(false)
-            }
+        boards.map(b => dispatch(fetchColumn(b._id)))
+    })
+    useEffect(() => {
+        if (boards?.length) {
+            boards.forEach(board => {
+                if (board._id) {
+                    dispatch(fetchColumn(board._id))
+                }
+            })
         }
-        window.addEventListener('mousedown', handleClickOutside)
-        return () => window.removeEventListener('mousedown', handleClickOutside)
-    }, [])
+    }, [boards, dispatch])
     return (
         <div>
             {
-                board?.map((b) => {
+                boards?.map((b) => {
                     return (
                         <div key={b._id} className='max-w-6xl mx-auto'>
                             <div className='flex px-2 py-3 bg-gray-200 justify-between'>
@@ -115,49 +121,53 @@ export const ProjectDetails = () => {
                                     </div>
                                 </div>
                             </div>
-                            {}
-                            <div className="mt-4">
-                                {!showColumnInput ? (
-                                    <button
-                                        onClick={() => {
-                                            setShowColumnInput(true);
-                                            setCurrentBoardId(b._id);   // IMPORTANT
-                                        }}
-                                        className='px-3 py-2 bg-blue-500 text-white rounded shadow'
-                                    >
-                                        + Add Column
-                                    </button>
-                                ) : (
-                                    <div className="flex space-x-2 items-center">
-                                        <input
-                                            value={columnName}
-                                            onChange={(e) => setColumnName(e.target.value)}
-                                            placeholder="Column name"
-                                            className="px-2 py-1 border rounded"
-                                        />
+                            <div className='flex gap-2 mt-2'>
+                                <div className='flex gap-2 h-100 '>
+                                    {(column[b._id] || []).map((c: any) => (
+                                        <div key={c._id}>
+                                            <div className=' text-center font-bold px-2 py-2 border-b bg-gray-100 w-40'>{c.name}</div>
+                                            {c.task && c.task.map((t: string, idx: number) => (
+                                                <div key={idx}>{t}</div>
+                                            ))}
+                                        </div>
+                                    ))}
+                                </div>
 
+                                <div>
+                                    {!showColumnInput ? (
                                         <button
                                             onClick={() => {
-                                                dispatch(addColumn({
-                                                    boardId: b._id,    // use board ID directly
-                                                    name: columnName
-                                                }))
-                                                    .then(res => console.log("Column added:", res))
-                                                    .catch(err => console.error("Column add error:", err));
-
-                                                setColumnName("");
-                                                setShowColumnInput(false);
+                                                setShowColumnInput(true);
+                                                setCurrentBoardId(b._id);
                                             }}
-                                            className="px-3 py-1 bg-green-500 text-white rounded"
+                                            className='px-3 py-2 bg-gray-50 text-white rounded shadow'
                                         >
-                                            Save
+                                            ➕
                                         </button>
-                                        <button onClick={()=>setShowColumnInput(false)}>
-                                           ❌
-                                        </button>
-                                    </div>
-                                )}
+                                    ) : (
+                                        <div className="flex space-x-2 items-center">
+                                            <input
+                                                value={columnName}
+                                                onChange={(e) => setColumnName(e.target.value)}
+                                                placeholder="Column name"
+                                                className="px-2 py-1 border rounded"
+                                            />
+                                            <button
+                                                onClick={() => {
+                                                    dispatch(addColumn({ boardId: b._id, name: columnName }))
+                                                    setColumnName("");
+                                                    setShowColumnInput(false);
+                                                }}
+                                                className="px-3 py-1 bg-green-500 text-white rounded"
+                                            >
+                                                Save
+                                            </button>
+                                            <button onClick={() => setShowColumnInput(false)}>❌</button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
+
                         </div>
                     )
                 })
