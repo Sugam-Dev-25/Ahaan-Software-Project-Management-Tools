@@ -25,7 +25,7 @@ export const Sidebar = () => {
 
     }
     return (
-        <div className="w-40">
+        <div className="w-40 relative">
             <NavLink
                 to={`/${role}/dashboard`}
                 end
@@ -39,9 +39,9 @@ export const Sidebar = () => {
             >
                 Project Board
             </button>
-                <button onClick={() => setCreateBoard(!createBoard)} className="relative"><Plus /></button >
+                <button onClick={() => setCreateBoard(!createBoard)} className="relative inline-block"><Plus /></button >
                 {createBoard && (
-                    <div className="absolute w-40 top-0">
+                    <div className="absolute left-full top-15 ml-2 w-70 p-4 rounded-lg bg-gray-50 shadow-lg z-50">
                         <BoardTab />
                     </div>
                 )}

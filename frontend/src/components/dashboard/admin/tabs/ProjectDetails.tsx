@@ -51,17 +51,13 @@ export const ProjectDetails = () => {
                     dispatch(fetchTasksForColumn({ boardId: currentBoard._id, columnId: col._id }))
                 }
             })
-
         }
-
     }, [boards, column, dispatch]);
     if (!currentBoard) return <div>board not found...</div>
 
     return (
         <div>
-
             <div className='max-w-6xl mx-auto'>
-
                 <DashBoardHeader
                     id={currentBoard._id}
                     members={currentBoard.members}
@@ -74,9 +70,7 @@ export const ProjectDetails = () => {
                     onAddTask={handaleAddTask}
                     task={task}
                 />
-
             </div>
-
         </div>
     )
 }

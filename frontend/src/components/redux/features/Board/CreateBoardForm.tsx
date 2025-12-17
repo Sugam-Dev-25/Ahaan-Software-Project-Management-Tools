@@ -56,11 +56,12 @@ export const CreateBoardForm = () => {
 
             {/* 1. BOARD NAME INPUT (Unchanged) */}
             <div className="flex flex-col">
-                <label htmlFor="name" className="font-medium mb-1 text-gray-700">Project Board Name</label>
+                
                 <input
                     id="name"
                     className="border border-gray-400 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#feb238] transition text-black-400"
                     {...register("name", { required: "Board name is required" })}
+                    placeholder="Enter your Details here.."
                     type="text"
                 />
                 {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
@@ -68,7 +69,6 @@ export const CreateBoardForm = () => {
 
             {/* 2. MEMBER INPUT (REPLACED) */}
             <div className="flex flex-col">
-                <label className="font-medium mb-1 text-gray-700">Add Members by Name or Email</label>
                 <UserSearchInput
                     onUserSelect={handleAddMember} // updated
                     excludeUserIds={currentMembers.map(m => m._id)} // only pass IDs

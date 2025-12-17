@@ -36,16 +36,21 @@ export const DashBoardHeader = ({ id, members, name, onAddMember }: DashBoardHea
             <div className='flex px-2 py-3 bg-gray-200 justify-between'>
                 <h2 className='font-bold text-[25px]'>{name}</h2>
                 <div className='flex space-x-3 justify-center items-center'>
-                    <div className='flex space-x-[-10px]'>
-                        {members.map((m: any) => (
-                            <div
-                                key={m._id}
-                                className='w-8 h-8 rounded-full bg-blue-300 flex items-center justify-center text-sm font-bold'
-                                title={m.name}
-                            >
-                                {m.name[0].toUpperCase()}
-                            </div>
-                        ))}
+                    <div className="flex gap-0">
+                        <div className='flex space-x-[-10px]'>
+                            {members.slice(0, 3).map((m: any) => (
+                                <div
+                                    key={m._id}
+                                    className='w-8 h-8 rounded-full bg-blue-300 flex gap-3 items-center justify-center text-sm font-bold'
+                                    title={m.name}
+                                >
+                                    {m.name[0].toUpperCase()}
+                                </div>
+                            ))}
+                        </div>
+                        {members.length > 3 && (
+                            <div className="text-blue-300 font-bold text-lg">+{members.length - 3} </div>
+                        )}
                     </div>
                     <p
                         className='font-bold cursor-pointer'
