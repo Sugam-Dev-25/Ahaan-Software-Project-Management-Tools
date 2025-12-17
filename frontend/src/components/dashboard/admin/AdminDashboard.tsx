@@ -1,6 +1,6 @@
 
 import { Sidebar } from './Sidebar'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useParams } from 'react-router-dom'
 import {HomeTab} from './tabs/HomeTab'
 import { BoardTab } from './tabs/BoardTab'
 import { MyBoardTab } from './tabs/MyBoardTab'
@@ -14,16 +14,16 @@ export const AdminDashboard = () => {
     const role=user?.role
       const board=useAppSelector(state=>state.board.boards)
     const boardName=board?.map(b=>slugify(b.name))
-    
+    const { boardSlug } = useParams();
   return (
     <div className='flex min-h-screen max-w-7xl mx-auto'>
         <Sidebar/>
         <div className="flex-1 p-6">
         <Routes>
-            <Route path={`/${role}/dashboard`} element={<HomeTab/>}/>
-            <Route path={`/${role}/dashboard/${boardName}`} element={<ProjectDetails/>}/>
-            <Route path={`/${role}/dashboard/board`} element={<BoardTab/>}/>
-            <Route path={`/${role}/dashboard/MyBoard`} element={<MyBoardTab/>}/>
+          <Route index element={<HomeTab/>}/>
+            
+           <Route path=":boardSlug" element={<ProjectDetails />} /> 
+            
 
         </Routes>
         </div>

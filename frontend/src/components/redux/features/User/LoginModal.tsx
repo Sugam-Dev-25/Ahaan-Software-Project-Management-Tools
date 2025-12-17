@@ -21,7 +21,6 @@ export default function LoginModal({ onClose }: LoginModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.6)] min-h-screen">
       <div className="w-full  max-w-4xl lg:max-w-4xl md:max-w-3xl bg-white rounded-none md:rounded-3xl overflow-hidden shadow-lg flex flex-col md:flex-row relative">
-        {/* Close Button */}
         <button
           onClick={onClose}
           className="absolute right-3 top-3 bg-gray-500 rounded-full p-1 text-white hover:bg-gray-800 hover:text-white transition"
@@ -96,9 +95,7 @@ export default function LoginModal({ onClose }: LoginModalProps) {
           </div>
         </div>
 
-        {/* Desktop / Tablet Layout */}
         <div className="hidden md:flex w-full">
-          {/* Left Panel */}
           <div className="w-1/2 bg-blue-600 text-white p-8 flex flex-col items-center justify-center">
             <h2 className="text-2xl font-bold mb-8">Welcome to</h2>
             <img
@@ -111,7 +108,6 @@ export default function LoginModal({ onClose }: LoginModalProps) {
             </p>
           </div>
 
-          {/* Right Panel */}
           <div className="w-1/2 p-6 flex flex-col items-center text-center">
             <h3 className="text-2xl font-semibold mb-5 mt-6">Login or Sign Up</h3>
             <p className="text-gray-600 mb-6 text-1xl">

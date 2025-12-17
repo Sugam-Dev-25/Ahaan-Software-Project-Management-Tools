@@ -12,10 +12,11 @@ type Activity = { _id: string, user: User[], action: string };
 interface TaskDetailsProps {
     task: Task,
     onClose: () => void,
-    onSave: (upDatedTask: Partial<Task>) => void
+    onSave: (upDatedTask: Partial<Task>) => void,
+    status:string|null
 }
 
-export const TaskDetails = ({ task, onClose, onSave }: TaskDetailsProps) => {
+export const TaskDetails = ({ task, onClose, onSave, status }: TaskDetailsProps) => {
     // State to manage edit mode toggle and task data
     const [isEditing, setIsEditing] = useState(false);
     // Use the actual Task type for better type inference on fields
@@ -81,9 +82,9 @@ export const TaskDetails = ({ task, onClose, onSave }: TaskDetailsProps) => {
                         <button
                             onClick={() => setIsEditing(!isEditing)}
                             className="text-gray-500 hover:text-gray-800 transition-colors p-2 rounded-full hover:bg-gray-100"
-                            title={isEditing ? "Cancel Edit" : "Edit Task"}
+                           
                         >
-                            <Pencil size={20} />
+                           {isEditing? <X color="red"/>: <Pencil size={20} color="green"/>} 
                         </button>
                     </div>
                     
@@ -102,6 +103,10 @@ export const TaskDetails = ({ task, onClose, onSave }: TaskDetailsProps) => {
                     
                     {/* Main Details (Description, Subtasks, Comments) - Column 1 & 2 */}
                     <div className="md:col-span-2 space-y-6">
+                        <div>
+                            <p> Status: {status}</p>
+                           
+                        </div>
 
                         {/* Description Section */}
                         <div>

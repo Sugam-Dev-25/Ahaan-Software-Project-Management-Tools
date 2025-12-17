@@ -23,6 +23,10 @@ export const DashBoardBody = ({ column, id, onAddColumn, onAddTask, task }: Dash
   const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
   const [selectedTask, setSelectedTask]=useState<Task | null>(null)
 
+  const taskStatus=(task:Task)=>{
+    return column.find(c=> c._id===task.column)?.name
+  }
+
   return (
     <div>
       <div className='flex gap-2 mt-2'>
@@ -49,6 +53,7 @@ export const DashBoardBody = ({ column, id, onAddColumn, onAddTask, task }: Dash
               {selectedTask &&(
                 <div className="absolute w-40 h-60 shadow-lg bg-gray-50">
                   <TaskDetails 
+                  status={taskStatus(selectedTask)}
                   task={selectedTask} 
                   onClose={()=>setSelectedTask(null)} 
                   onSave={(upDatedTask)=>{

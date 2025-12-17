@@ -8,15 +8,17 @@ import { addColumn, fetchColumn } from '../../../redux/features/Column/columnSli
 import { DashBoardHeader } from './DashBoardHeader';
 import { DashBoardBody } from './DashBoardBody';
 import { addTask, fetchTasksForColumn } from '../../../redux/features/Task/taskSlice';
+import { useParams } from 'react-router-dom';
+import { slugify } from '../../../hooks/slugify';
 
 export const ProjectDetails = () => {
-
+    const { boardSlug } = useParams()
     const dispatch = useAppDispatch()
     const boards = useAppSelector(state => state.board.boards)
 
     const column = useAppSelector(state => state.column.columns)
 
-    const task=useAppSelector(state=>state.task.task)
+    const task = useAppSelector(state => state.task.task)
 
     const handleAddMember = (boardId: string, memberId: string) => {
         dispatch(addMember({ boardId, memberId }))
@@ -24,60 +26,57 @@ export const ProjectDetails = () => {
     const handaleAddColumn = (boardId: string, name: string) => {
         dispatch(addColumn({ boardId, name }))
     }
-    const handaleAddTask=(boardId:string, columnId:string, taskData:Partial<Task>)=>{
-        dispatch(addTask({boardId, columnId, taskData}))
+    const handaleAddTask = (boardId: string, columnId: string, taskData: Partial<Task>) => {
+        dispatch(addTask({ boardId, columnId, taskData }))
     }
-    
+    const currentBoard = boards.find(b => slugify(b.name) === boardSlug)
+
 
     useEffect(() => {
         dispatch(fetchBoard())
     }, [dispatch])
 
     useEffect(() => {
-        if (boards?.length) {
-            boards.forEach(board => {
-                if (board._id) {
-                    dispatch(fetchColumn(board._id))
+
+        if (currentBoard?._id) {
+            dispatch(fetchColumn(currentBoard._id))
+        }
+
+    }, [currentBoard, dispatch])
+    useEffect(() => {
+        if (currentBoard?._id) {
+            const boardColumns = column[currentBoard._id] || [];
+            boardColumns.forEach(col => {
+                if (col._id) {
+                    dispatch(fetchTasksForColumn({ boardId: currentBoard._id, columnId: col._id }))
                 }
             })
+
         }
-    }, [boards, dispatch])
-  useEffect(() => {
-  boards.forEach(board => {
-    const boardColumns = column[board._id] || [];
-    boardColumns.forEach(col => {
-      // Only dispatch if both IDs exist
-      if (board._id && col._id) {
-        dispatch(fetchTasksForColumn({ boardId: board._id, columnId: col._id }));
-      }
-    });
-  });
-}, [boards, column, dispatch]);
+
+    }, [boards, column, dispatch]);
+    if (!currentBoard) return <div>board not found...</div>
 
     return (
         <div>
-            {
-                boards?.map((b) => {
-                    return (
-                        <div key={b._id} className='max-w-6xl mx-auto'>
 
-                            <DashBoardHeader
-                                id={b._id}
-                                members={b.members}
-                                name={b.name}
-                                onAddMember={handleAddMember}
-                            />
-                            <DashBoardBody 
-                            column={column[b._id] || []} id={b._id} 
-                            onAddColumn={handaleAddColumn} 
-                            onAddTask={handaleAddTask}
-                            task={task}
-                            />
+            <div className='max-w-6xl mx-auto'>
 
-                        </div>
-                    )
-                })
-            }
+                <DashBoardHeader
+                    id={currentBoard._id}
+                    members={currentBoard.members}
+                    name={currentBoard.name}
+                    onAddMember={handleAddMember}
+                />
+                <DashBoardBody
+                    column={column[currentBoard._id] || []} id={currentBoard._id}
+                    onAddColumn={handaleAddColumn}
+                    onAddTask={handaleAddTask}
+                    task={task}
+                />
+
+            </div>
+
         </div>
     )
 }
