@@ -3,7 +3,7 @@ import type { Task } from "../../../types/allType";
 import TaskView from "../../../redux/features/Task/taskView";
 import { Plus, X } from "@phosphor-icons/react";
 import { TaskDetails } from "./TaskDetails";
-import { moveTask } from "../../../redux/features/Task/taskSlice";
+import { moveTask, updateTask } from "../../../redux/features/Task/taskSlice";
 import { useAppDispatch } from "../../../redux/app/hook";
 
 interface Column {
@@ -36,6 +36,16 @@ export const DashBoardBody = ({ column, id, onAddColumn, onAddTask, task }: Dash
       newPosition: toPosition
     }));
   };
+
+  const upDatedTask=( updatedFields: Partial<Task>)=>{
+    if(selectedTask?._id){
+      dispatch(updateTask({
+        taskId: selectedTask._id,
+        update: updatedFields
+      }))
+    }
+
+  }
 
 
   return (
@@ -77,19 +87,19 @@ export const DashBoardBody = ({ column, id, onAddColumn, onAddTask, task }: Dash
                         }));
                       }}
                       // Handle dropping directly on another task (reordering)
-                     onDrop={(e) => {
-  e.stopPropagation();
-  const data = JSON.parse(e.dataTransfer.getData("application/json"));
+                      onDrop={(e) => {
+                        e.stopPropagation();
+                        const data = JSON.parse(e.dataTransfer.getData("application/json"));
 
-  let finalPosition = index;
+                        let finalPosition = index;
 
-  // FIX: Adjust index when dragging DOWN within same column
-  if (data.fromColumnId === c._id && data.fromIndex < index) {
-    finalPosition = index - 1;
-  }
+                        // FIX: Adjust index when dragging DOWN within same column
+                        if (data.fromColumnId === c._id && data.fromIndex < index) {
+                          finalPosition = index - 1;
+                        }
 
-  handleTaskMove(data.taskId, c._id, finalPosition);
-}}
+                        handleTaskMove(data.taskId, c._id, finalPosition);
+                      }}
 
                       className="p-2 shadow-sm border rounded mt-2 cursor-pointer bg-white"
                       onClick={() => setSelectedTask(t)}
@@ -106,9 +116,7 @@ export const DashBoardBody = ({ column, id, onAddColumn, onAddTask, task }: Dash
                     status={taskStatus(selectedTask)}
                     task={selectedTask}
                     onClose={() => setSelectedTask(null)}
-                    onSave={(upDatedTask) => {
-                      console.log("Task Updated:", upDatedTask)
-                    }}
+                    onSave={upDatedTask}
                   />
                 </div>
               )}

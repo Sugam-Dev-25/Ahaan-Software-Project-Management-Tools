@@ -129,4 +129,23 @@ const moveTask = async (req, res) => {
   }
 };
 
-module.exports={createTask, getTasksForColumn, moveTask}
+const updateTask= async(req, res)=>{
+  try{
+     const { taskId}=req.params;
+     const updates=req.body;
+     const updatedTask=await Task.findByIdAndUpdate(
+      taskId,
+      {
+          $set: updates
+      },
+      {new: true}
+     ).populate('assignedTo', 'name email')
+     res.status(200).json(updatedTask)
+  }
+  catch(err){
+    res.status(500).json("failed to update task")
+  }
+ 
+}
+
+module.exports={createTask, getTasksForColumn, moveTask, updateTask}

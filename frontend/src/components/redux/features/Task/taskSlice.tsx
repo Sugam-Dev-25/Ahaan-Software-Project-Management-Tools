@@ -49,8 +49,17 @@ export const moveTask = createAsyncThunk<{ taskId: string, newColumnId: string, 
     catch (err: any) {
         return rejectWithValue(err.response?.data?.message || err.message)
     }
-}
-)
+})
+
+export const updateTask=createAsyncThunk<Task, {taskId: string, update:Partial<Task>}, {rejectValue: string}>( "task/updateTask", async({taskId, update},{rejectWithValue})=>{
+    try{
+       const res= await axiosClient.patch(`/api/tasks/${taskId}`,  update, {withCredentials: true})
+        return res.data
+    }
+    catch(error: any){
+        return rejectWithValue(error.response?.data?.message || error.message)
+    }
+})
 
 const taskSlice = createSlice({
     name: "taskSlice",
@@ -93,34 +102,34 @@ const taskSlice = createSlice({
 
             .addCase(moveTask.pending, (state, action) => {
                 const { taskId, newColumnId, newPosition } = action.meta.arg;
-
-                // 1. Find the task
                 const taskToMove = state.task.find(t => t._id === taskId);
                 if (taskToMove) {
-                    // 2. Update its column
                     taskToMove.column = newColumnId;
-                    // 3. Update its position
                     taskToMove.position = newPosition;
 
-                    // 4. Update positions of other tasks in the same column
                     state.task.forEach(t => {
                         if (t.column === newColumnId && t._id !== taskId) {
                             if (t.position >= newPosition) {
-                                t.position += 1; // Shift others down
-                            }
-                             
+                                t.position += 1; 
+                            }  
                         }
                     });
                 }
             })
             .addCase(moveTask.fulfilled, (state) => {
                 state.loading = "fulfilled";
-                // No need to do anything here if handled in pending
             })
             .addCase(moveTask.rejected, (state, action) => {
                 state.loading = "failed";
                 state.error = action.payload as string;
-                // Note: If it fails, you might need to "Rollback" the column ID here
+            })
+
+            .addCase(updateTask.fulfilled, (state, action)=>{
+                const index=state.task.findIndex(t=> t._id===action.payload._id)
+                if(index !==-1){
+                    state.task[index]=action.payload
+                }
+
             })
     }
 })
