@@ -37,8 +37,8 @@ export const DashBoardBody = ({ column, id, onAddColumn, onAddTask, task }: Dash
     }));
   };
 
-  const upDatedTask=( updatedFields: Partial<Task>)=>{
-    if(selectedTask?._id){
+  const upDatedTask = (updatedFields: Partial<Task>) => {
+    if (selectedTask?._id) {
       dispatch(updateTask({
         taskId: selectedTask._id,
         update: updatedFields
@@ -70,8 +70,10 @@ export const DashBoardBody = ({ column, id, onAddColumn, onAddTask, task }: Dash
               }}
 
             >
-              <div className=' font-bold px-2 py-2 border-b border-gray-300  w-[250px]'>{c.name}</div>
-
+              <div className='flex  items-center font-bold text-sm px-2 py-2 border-b border-gray-300  w-[250px]'>
+                <p className=" p-1 bg-green-200 rounded-md shadow-mod">{c.name}</p>
+                <p className="ml-4 text-green-400">{task.filter(t=>t.column===c._id).length}</p>
+              </div>
               {
                 task.filter(t => t.column.toString() === c._id)
                   .sort((a, b) => (a.position || 0) - (b.position || 0))
@@ -105,8 +107,17 @@ export const DashBoardBody = ({ column, id, onAddColumn, onAddTask, task }: Dash
                       onClick={() => setSelectedTask(t)}
                     >
                       <p>{t.title}</p>
-                      <p>📅{new Date(t.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
-                      <p>🚩{t.priority}</p>
+                      <div className="flex justify-between">
+                        <div className="flex-wrap">
+                          <p>📅{new Date(t.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+                          <p>🚩{t.priority}</p>
+                        </div>
+                        {t.assignedTo.map(a => (
+                        
+                          
+                            a.name ?(<div className="w-8 h-8 text-white flex justify-center items-center text-lg font-bold rounded-full bg-[#57136E]"> {a.name[0].toUpperCase()} </div>) : ""
+                          ))}
+                      </div>
                     </div>
                   ))
               }

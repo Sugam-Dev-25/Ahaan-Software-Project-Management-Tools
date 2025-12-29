@@ -102,7 +102,7 @@ export const CreateBoardForm = () => {
 
             {/* 4. FEEDBACK & SUBMIT (Unchanged) */}
             {error && <p className="text-red-500 text-sm bg-red-50 p-2 rounded">{error}</p>}
-            {loading === "succeeded" && <p className="text-green-600 text-sm bg-green-50 p-2 rounded">Project created successfully!</p>}
+            {loading === "succeeded" ?"" : ( <p className="text-green-600 text-sm bg-green-50 p-2 rounded">Project created successfully!</p>)}
 
             <button
                 type="submit"

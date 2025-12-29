@@ -83,43 +83,55 @@ const moveTask = async (req, res) => {
   const taskId = req.params.taskId;
 
   try {
-    // 1. Find the task and update its column/position immediately
     const task = await Task.findById(taskId);
     if (!task) return res.status(404).json({ message: "Task not found" });
 
     const oldColumnId = task.column;
-    
-    // Update the specific task first
+
+    // 1. Update task itself
     task.column = newColumnId;
     task.position = newPosition;
     await task.save();
 
-    // 2. Fetch all other tasks in that NEW column to re-index them
-    const allTasksInCol = await Task.find({ 
-      column: newColumnId, 
-      _id: { $ne: taskId } 
+    // 2. Update columns ONLY if column changed
+    if (String(oldColumnId) !== String(newColumnId)) {
+      await Column.findByIdAndUpdate(oldColumnId, {
+        $pull: { tasks: taskId }
+      });
+
+      await Column.findByIdAndUpdate(newColumnId, {
+        $push: { tasks: taskId }
+      });
+    }
+
+    // 3. Reindex NEW column tasks
+    const allTasksInCol = await Task.find({
+      column: newColumnId,
+      _id: { $ne: taskId }
     }).sort('position');
 
-    // Insert the moved task into the array at the target position
     allTasksInCol.splice(newPosition, 0, task);
 
-    // 3. Prepare bulk update to ensure EVERY task has a sequential position (0, 1, 2...)
-    const updateOps = allTasksInCol.map((t, i) => ({
-      updateOne: {
-        filter: { _id: t._id },
-        update: { $set: { position: i } },
-      }
-    }));
+    await Task.bulkWrite(
+      allTasksInCol.map((t, i) => ({
+        updateOne: {
+          filter: { _id: t._id },
+          update: { $set: { position: i } }
+        }
+      }))
+    );
 
-    await Task.bulkWrite(updateOps);
-
-    // 4. OPTIONAL: If moved from a different column, re-index the OLD column to close the gap
+    // 4. Reindex OLD column if needed
     if (String(oldColumnId) !== String(newColumnId)) {
-       const oldColTasks = await Task.find({ column: oldColumnId }).sort('position');
-       const oldOps = oldColTasks.map((t, i) => ({
-         updateOne: { filter: { _id: t._id }, update: { $set: { position: i } } }
-       }));
-       if (oldOps.length > 0) await Task.bulkWrite(oldOps);
+      const oldColTasks = await Task.find({ column: oldColumnId }).sort('position');
+      await Task.bulkWrite(
+        oldColTasks.map((t, i) => ({
+          updateOne: {
+            filter: { _id: t._id },
+            update: { $set: { position: i } }
+          }
+        }))
+      );
     }
 
     res.status(200).json({ success: true });
@@ -128,7 +140,6 @@ const moveTask = async (req, res) => {
     res.status(500).json({ message: "Database update failed" });
   }
 };
-
 const updateTask= async(req, res)=>{
   try{
      const { taskId}=req.params;
