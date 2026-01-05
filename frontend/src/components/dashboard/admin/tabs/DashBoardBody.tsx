@@ -122,7 +122,6 @@ export const DashBoardBody = ({ column, id, onAddColumn, onAddTask, task }: Dash
                     <p className="text-gray-800 text-sm font-medium mb-3 leading-snug">
                       {t.title}
                     </p>
-
                     {/* Footer Info */}
                     <div className="flex items-center gap-2">
                       {/* Avatar */}

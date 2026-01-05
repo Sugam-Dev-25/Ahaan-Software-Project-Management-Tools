@@ -158,5 +158,16 @@ const updateTask= async(req, res)=>{
   }
  
 }
+const deleteTask=async(req, res)=>{
+  try{
+    const {taskId}=req.body;
+    const deletetask=await Task.findByIdAndDelete(taskId)
+    res.status(200).json("task deleted successful")
+  }
+  catch(error){
+    res.status(500).json("failed to delete task")
+  }
+  
+}
 
-module.exports={createTask, getTasksForColumn, moveTask, updateTask}
+module.exports={createTask, getTasksForColumn, moveTask, updateTask, deleteTask}
