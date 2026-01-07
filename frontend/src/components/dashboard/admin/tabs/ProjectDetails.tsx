@@ -3,7 +3,7 @@ import { useAppDispatch, useAppSelector } from '../../../redux/app/hook'
 import {  fetchColumn,  } from '../../../redux/features/Column/columnSlice';
 import { DashBoardHeader } from './DashBoardHeader';
 import { DashBoardBody } from './DashBoardBody';
-import {  deleteTask, fetchTasksForColumn } from '../../../redux/features/Task/taskSlice';
+import {  fetchTasksForColumn } from '../../../redux/features/Task/taskSlice';
 import { BoardContext } from '../../../context/board/BoardContext';
 
 export const ProjectDetails = () => {
@@ -29,16 +29,13 @@ export const ProjectDetails = () => {
         }
     }, [boards, column, dispatch]);
     
-     const handaleDeleteTask=(taskId:string)=>{
-        dispatch(deleteTask({taskId}))
-    }
+    
   
     return (
         <div>
             <div className='max-w-6xl mx-auto'>
                     <DashBoardHeader />
                     <DashBoardBody
-                        onDeleteTask={handaleDeleteTask}
                         task={task}
                     />
             </div>

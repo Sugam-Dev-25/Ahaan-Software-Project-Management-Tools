@@ -3,49 +3,30 @@ import type { Task } from "../../../types/allType";
 import TaskView from "../../../redux/features/Task/taskView";
 import { CalendarBlank, Flag, Plus, Tag, X } from "@phosphor-icons/react";
 import { TaskDetails } from "./TaskDetails";
-import { moveTask, updateTask } from "../../../redux/features/Task/taskSlice";
-import { useAppDispatch, useAppSelector } from "../../../redux/app/hook";
+
+import {  useAppSelector } from "../../../redux/app/hook";
 import { BoardContext } from "../../../context/board/BoardContext";
 
 
 interface DashBoardBodyProps {
-
-  
-onDeleteTask:(taskId: string)=> void
-
   task: Task[]
 }
 
-export const DashBoardBody = ({  onDeleteTask,  task }: DashBoardBodyProps) => {
+export const DashBoardBody = ({   task }: DashBoardBodyProps) => {
   const [showColumnInput, setShowColumnInput] = useState(false)
   const [columnName, setColumnName] = useState("")
   const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [openMenuColumn,setOpenMenuColumn]=useState<string | null>(null)
   const columns = useAppSelector(state => state.column.columns)
-  const dispatch = useAppDispatch()
+
   const taskStatus = (task: Task) => {
     return column.find(c => c._id === task.column)?.name || null
   }
-  const handleTaskMove = (taskId: string, toColumnId: string, toPosition: number) => {
-    dispatch(moveTask({
-      taskId,
-      newColumnId: toColumnId,
-      newPosition: toPosition
-    }));
-  };
 
-  const upDatedTask = (updatedFields: Partial<Task>) => {
-    if (selectedTask?._id) {
-      dispatch(updateTask({
-        taskId: selectedTask._id,
-        update: updatedFields
-      }))
-    }
-  }
   const boardDetails = useContext(BoardContext)
   if(!boardDetails) return null
-  const {board, addColumn, deleteColumn}=boardDetails
+  const {board, addColumn, deleteColumn, moveTask}=boardDetails
 
   if (!board) return null
   const column = columns[board._id] || []
@@ -63,7 +44,7 @@ export const DashBoardBody = ({  onDeleteTask,  task }: DashBoardBodyProps) => {
                 const data = JSON.parse(e.dataTransfer.getData("application/json"));
                 const tasksInThisColumn = task.filter(t => t.column.toString() === c._id);
                 const bottomPosition = tasksInThisColumn.length;
-                handleTaskMove(data.taskId, c._id, bottomPosition);
+                moveTask(data.taskId, c._id, bottomPosition);
               }}
             >
               <div className="flex items-center justify-between font-bold text-xs ">
@@ -121,7 +102,7 @@ export const DashBoardBody = ({  onDeleteTask,  task }: DashBoardBodyProps) => {
                       if (data.fromColumnId === c._id && data.fromIndex < index) {
                         finalPosition = index - 1;
                       }
-                      handleTaskMove(data.taskId, c._id, finalPosition);
+                      moveTask(data.taskId, c._id, finalPosition);
                     }}
                     className="p-3 shadow-lg  rounded-lg mt-2 cursor-pointer bg-white hover:border-blue-400 transition-colors"
                     onClick={() => setSelectedTask(t)}
@@ -161,9 +142,7 @@ export const DashBoardBody = ({  onDeleteTask,  task }: DashBoardBodyProps) => {
                   <TaskDetails
                     status={taskStatus(selectedTask)}
                     task={selectedTask}
-                    onClose={() => setSelectedTask(null)}
-                    onSave={upDatedTask}
-                    onDeleteTask={onDeleteTask}
+                    onClose={() => setSelectedTask(null)}  
                   />
                 </div>
               )}

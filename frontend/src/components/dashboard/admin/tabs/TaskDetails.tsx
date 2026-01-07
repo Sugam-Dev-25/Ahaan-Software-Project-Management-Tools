@@ -1,19 +1,20 @@
-import { useState, } from "react"
+import { useContext, useState, } from "react"
 import type { Task } from "../../../types/allType"
 import {
-    Pencil, X, Check, Calendar,  Tag, User as UserIcon, ListChecks, Paperclip, ClipboardText, List, UsersIcon, Flag, At, PaperPlaneRight, Folder, Plus, ArrowSquareOut, Star, CornersOut, DotsThree, Sparkle
+    Pencil, X, Check, Calendar, Tag, User as UserIcon, ListChecks, Paperclip, ClipboardText, List, Flag, At, PaperPlaneRight,
 } from "@phosphor-icons/react"
 import UserSearchInput from "../../common/UserSearchInput"
 import { TaskDetailsHeader } from "../Task/TaskDetailsHeader"
+import { BoardContext } from "../../../context/board/BoardContext"
 
 
 
 interface TaskDetailsProps {
     task: Task,
     onClose: () => void,
-    onSave: (upDatedTask: Partial<Task>) => void,
+
     status: string | null,
-    onDeleteTask: (taskId: string)=>void
+
 }
 // MOVE THIS OUTSIDE THE TaskDetails FUNCTION
 const EditableRow = ({
@@ -58,13 +59,16 @@ const EditableRow = ({
     );
 };
 
-export const TaskDetails = ({ task, onClose, onSave, status, onDeleteTask }: TaskDetailsProps) => {
+export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
     // track which field is currently being edited
     const [activeField, setActiveField] = useState<keyof Task | null>(null);
     const [editedTask, setEditedTask] = useState<Partial<Task>>({ ...task });
     const [isdropdown, setIsdropdown] = useState(false);
 
-  
+    const boardDetails = useContext(BoardContext)
+    if (!boardDetails) return null
+    const { updateTask } = boardDetails
+
 
     const handleChange = (field: keyof Task, value: any) => {
         setEditedTask(prev => ({ ...prev, [field]: value }));
@@ -80,7 +84,7 @@ export const TaskDetails = ({ task, onClose, onSave, status, onDeleteTask }: Tas
                 .map(tag => ({ name: tag, color: '#3b82f6' }));
             finalUpdate.labels = labelsArray;
         }
-        onSave(finalUpdate);
+        updateTask(task._id, finalUpdate);
         setActiveField(null);
     };
 
@@ -93,7 +97,7 @@ export const TaskDetails = ({ task, onClose, onSave, status, onDeleteTask }: Tas
         const d = date instanceof Date ? date : new Date(date);
         return isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
     };
-   
+
 
     type Priority = 'Low' | 'Medium' | 'High' | 'Critical';
     const priorityColors: Record<Priority, string> = {
@@ -108,7 +112,7 @@ export const TaskDetails = ({ task, onClose, onSave, status, onDeleteTask }: Tas
     return (
         <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50 p-4 backdrop-blur-sm">
             <div className="bg-white w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col rounded-xl shadow-2xl">
-               <TaskDetailsHeader onClose={onClose} task={task} onDeleteTask={onDeleteTask}/>
+                <TaskDetailsHeader task={task}  onClose={onClose}/>
 
                 <div className="overflow-y-auto grid md:grid-cols-3 ">
                     <div className="md:col-span-2 p-3">

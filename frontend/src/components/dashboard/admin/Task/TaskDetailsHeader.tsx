@@ -8,13 +8,14 @@ import type { Task } from '../../../types/allType'
 interface TaskDetailsHeaderProps {
     onClose: () => void
     task: Task
-    onDeleteTask: (taskId: string) => void
 }
 
-export const TaskDetailsHeader = ({ onClose, task, onDeleteTask }: TaskDetailsHeaderProps) => {
+export const TaskDetailsHeader = ({ task, onClose }: TaskDetailsHeaderProps) => {
     const [openTaskId, setOpenTaskId] = useState<string | null>(null)
-    const boardName = useContext(BoardContext)
-    if (!boardName?.board) return null
+    const boardDetails = useContext(BoardContext)
+    if (!boardDetails) return null
+    const {board, deleteTask, updateTask }=boardDetails
+    if(!board) return null
     return (
         <div>
             <div className="px-4 py-3 border-b border-gray-200 flex justify-between items-center bg-white">
@@ -25,7 +26,7 @@ export const TaskDetailsHeader = ({ onClose, task, onDeleteTask }: TaskDetailsHe
                         <span className="hover:underline cursor-pointer">Project Board</span>
                         <span className="text-gray-300">/</span>
                         <ListChecks size={18} weight="bold" className="text-gray-500" />
-                        <span className=" text-gray-500  tracking-tight">{boardName.board.name}</span>
+                        <span className=" text-gray-500  tracking-tight">{board.name}</span>
                     </div>
 
                     <div className="flex items-center gap-1 ml-2 border-l pl-3 border-gray-200">
@@ -71,8 +72,9 @@ export const TaskDetailsHeader = ({ onClose, task, onDeleteTask }: TaskDetailsHe
                                         <button
                                             className='w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50'
                                             onClick={() => {
-                                                onDeleteTask(task._id),
-                                                onClose()
+                                                deleteTask(task._id),
+                                                updateTask
+                                                
                                             }
                                             }>Delete</button>
                                     </div>

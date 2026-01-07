@@ -1,8 +1,8 @@
-import { useAppDispatch, useAppSelector } from "../../../redux/app/hook"
+import {  useAppSelector } from "../../../redux/app/hook"
 
 
 export const HomeTab = () => {
-    const dispatch=useAppDispatch()
+   
     const user=useAppSelector(state=>state.login.user)
     
     
