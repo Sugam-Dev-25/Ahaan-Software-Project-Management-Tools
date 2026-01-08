@@ -1,22 +1,17 @@
 import { useContext, useState, } from "react"
 import type { Task } from "../../../types/allType"
-import {
-    Pencil, X, Check, Calendar, Tag, User as UserIcon, ListChecks, Paperclip, ClipboardText, List, Flag, At, PaperPlaneRight,
-} from "@phosphor-icons/react"
+import { Pencil, X, Check, Calendar, Tag, User as UserIcon, ListChecks, Paperclip, Flag, } from "@phosphor-icons/react"
 import UserSearchInput from "../../common/UserSearchInput"
 import { TaskDetailsHeader } from "../Task/TaskDetailsHeader"
 import { BoardContext } from "../../../context/board/BoardContext"
-
-
+import { ActivityDetails } from "../Task/ActivityDetails"
 
 interface TaskDetailsProps {
     task: Task,
     onClose: () => void,
-
     status: string | null,
-
 }
-// MOVE THIS OUTSIDE THE TaskDetails FUNCTION
+
 const EditableRow = ({
     field,
     label,
@@ -64,7 +59,6 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
     const [activeField, setActiveField] = useState<keyof Task | null>(null);
     const [editedTask, setEditedTask] = useState<Partial<Task>>({ ...task });
     const [isdropdown, setIsdropdown] = useState(false);
-
     const boardDetails = useContext(BoardContext)
     if (!boardDetails) return null
     const { updateTask } = boardDetails
@@ -97,8 +91,6 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
         const d = date instanceof Date ? date : new Date(date);
         return isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
     };
-
-
     type Priority = 'Low' | 'Medium' | 'High' | 'Critical';
     const priorityColors: Record<Priority, string> = {
         Low: "text-blue-500",
@@ -106,8 +98,6 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
         High: "text-yellow-500",
         Critical: "text-red-500",
     };
-
-    // reusable row for the sidebar fields
 
     return (
         <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50 p-4 backdrop-blur-sm">
@@ -305,38 +295,6 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
                                 <p className="text-gray-600 bg-gray-50 p-4 rounded-lg min-h-[100px]">{editedTask.description || "No description."}</p>
                             )}
                         </section>
-
-                        {/* SUBTASKS */}
-                        <section>
-                            <div className="flex justify-between items-center mb-2 border-b pb-1">
-                                <h3 className="text-lg font-semibold text-gray-700 flex items-center gap-2"><List size={20} /> Subtasks</h3>
-                                {activeField !== 'subtasks' && (
-                                    <button onClick={() => setActiveField('subtasks')} className="text-gray-400 hover:text-blue-600"><Pencil size={18} /></button>
-                                )}
-                            </div>
-                            {activeField === 'subtasks' ? (
-                                <div className="space-y-2">
-                                    <input
-                                        type="text" className="w-full border p-2 rounded" placeholder="Comma separated subtasks..."
-                                        value={Array.isArray(editedTask.subtasks) ? editedTask.subtasks.map((s: any) => s.title).join(', ') : ''}
-                                        onChange={(e) => handleChange('subtasks', e.target.value.split(',').map(t => ({ title: t.trim(), isCompleted: false })))}
-                                    />
-                                    <div className="flex justify-end gap-2">
-                                        <button onClick={handleFieldCancel} className="text-xs border px-2 py-1 rounded">Cancel</button>
-                                        <button onClick={handleFieldSave} className="text-xs bg-gray-800 text-white px-2 py-1 rounded">Save</button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 gap-2">
-                                    {Array.isArray(editedTask.subtasks) && editedTask.subtasks.map((sub: any, i) => (
-                                        <div key={i} className="flex items-center gap-2 bg-gray-50 p-2 rounded border border-gray-100">
-                                            <ClipboardText size={16} /> {sub.title}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </section>
-
                         <div className="py-3 flex items-start">
                             <div className="w-8 text-gray-400"><Paperclip size={20} /></div>
                             <div className=" w-full">
@@ -351,65 +309,7 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
                     </div>
 
                     {/* RIGHT COLUMN: Sidebar Details */}
-                    <div className="bg-white border-l border-gray-200 shadow-sm space-y-1 h-full">
-                        <h3 className="font-medium text-gray-400 mb-4  p-3 border-b border-gray-200">Activity</h3>
-
-                        <div className="flex flex-col  bg-white overflow-hidden max-w-2xl">
-                            {/* 1. Activity & Comments Feed Area */}
-                            <div className="p-4 h-64 overflow-y-auto space-y-4 bg-white">
-                                {/* Activity Logs (e.g., Priority changes) */}
-                                {editedTask.activityLog?.map((a, i) => (
-                                    <div key={i} className="flex items-center gap-3 text-xs text-gray-500">
-                                        <span className="text-gray-400">•</span>
-                                        <span>{a.action}</span>
-                                        <span className="ml-auto text-gray-400">20 mins</span>
-                                    </div>
-                                ))}
-
-                                {/* User Comments */}
-                                {editedTask.comments?.map((c, i) => (
-                                    <div key={i} className="flex flex-col text-sm border-l-2 border-gray-100 pl-3 py-1">
-                                        <div className="flex justify-between items-center mb-1">
-                                            <span className="font-semibold text-gray-700">{c.user[0]?.name}</span>
-                                            <span className="text-[10px] text-gray-400">Apr 21, 4:12 pm</span>
-                                        </div>
-                                        <p className="text-gray-600">{c.text}</p>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* 2. Custom Input Area */}
-                            <div className="border-t border-gray-200 p-3 bg-white">
-                                <div className="border border-gray-200 rounded-md ">
-                                    <textarea
-                                        className="w-full p-3 text-sm outline-none resize-none"
-                                        placeholder="Write a comment..."
-                                        rows={2}
-                                    />
-
-                                    <div className="flex items-center justify-between p-2 border-t border-gray-200 bg-gray-50/50">
-                                        <div className="flex items-center gap-1">
-                                            {/* Action Buttons */}
-                                            <button className="p-2 hover:bg-gray-200 rounded text-gray-500 transition-colors">
-                                                <Paperclip size={18} />
-                                            </button>
-                                            <button className="p-2 hover:bg-gray-200 rounded text-gray-500 transition-colors">
-                                                <At size={18} />
-                                            </button>
-                                        </div>
-
-                                        <div className="flex items-center gap-3">
-                                            <button className="text-gray-300 hover:text-blue-500 transition-colors">
-                                                <PaperPlaneRight size={20} weight="fill" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-
-                    </div>
+                   <ActivityDetails editedTask={editedTask}/>
                 </div>
             </div>
         </div >

@@ -33,8 +33,8 @@ export const DashBoardBody = ({   task }: DashBoardBodyProps) => {
 
   return (
     <div>
-      <div className='flex gap-2 mt-2'>
-        <div className='flex gap-2 relative h-full '>
+      <div className='flex gap-2 mt-2 '>
+        <div className='flex gap-2  relative h-full'>
           {column.map((c: any) => (
             <div key={c._id}
               className="bg-gray-100 rounded-lg p-2"
@@ -47,7 +47,7 @@ export const DashBoardBody = ({   task }: DashBoardBodyProps) => {
                 moveTask(data.taskId, c._id, bottomPosition);
               }}
             >
-              <div className="flex items-center justify-between font-bold text-xs ">
+              <div className="flex gap-4 items-center justify-between font-bold text-xs ">
                 <div className="flex items-center gap-2">
                   <div className="flex items-center bg-[#0052CC] text-white px-2 py-1 rounded-[3px] uppercase tracking-wide text-[10px]">
                     <span className="mr-1.5 inline-block w-3 h-3 border-2 border-white rounded-full opacity-80"></span>
