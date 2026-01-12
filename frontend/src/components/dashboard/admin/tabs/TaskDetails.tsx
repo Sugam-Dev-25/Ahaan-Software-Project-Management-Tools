@@ -5,6 +5,7 @@ import UserSearchInput from "../../common/UserSearchInput"
 import { TaskDetailsHeader } from "../Task/TaskDetailsHeader"
 import { BoardContext } from "../../../context/board/BoardContext"
 import { ActivityDetails } from "../Task/ActivityDetails"
+import { ProjectProgress } from "./ProjectProgress"
 
 interface TaskDetailsProps {
     task: Task,
@@ -69,19 +70,21 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
     };
 
     const handleFieldSave = () => {
-        let finalUpdate = { ...editedTask };
-        if (activeField === 'labels' && typeof editedTask.labels === 'string') {
-            const labelsArray = (editedTask.labels as string)
-                .split(',')
-                .map(tag => tag.trim())
-                .filter(tag => tag !== "")
-                .map(tag => ({ name: tag, color: '#3b82f6' }));
-            finalUpdate.labels = labelsArray;
-        }
-        updateTask(task._id, finalUpdate);
-        setActiveField(null);
-    };
+    let finalUpdate: Partial<Task> = { ...editedTask };
 
+    // FIX: If labels are a string (comma separated), convert to array of objects
+    if (activeField === 'labels' && typeof editedTask.labels === 'string') {
+        const labelsArray = (editedTask.labels as string)
+            .split(',')
+            .map(tag => tag.trim())
+            .filter(tag => tag !== "")
+            .map(tag => ({ name: tag, color: '#3b82f6' }));
+        
+        finalUpdate.labels = labelsArray;
+    }
+    updateTask(task._id, finalUpdate);
+    setActiveField(null);
+};
     const handleFieldCancel = () => {
         setEditedTask({ ...task });
         setActiveField(null);
@@ -98,12 +101,10 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
         High: "text-yellow-500",
         Critical: "text-red-500",
     };
-
     return (
         <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50 p-4 backdrop-blur-sm">
             <div className="bg-white w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col rounded-xl shadow-2xl">
                 <TaskDetailsHeader task={task}  onClose={onClose}/>
-
                 <div className="overflow-y-auto grid md:grid-cols-3 ">
                     <div className="md:col-span-2 p-3">
                         <div className="flex-grow">
@@ -163,7 +164,6 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
                             </EditableRow>
                         </div>
                         <div className="grid grid-cols-2 gap-10 w-full">
-                            {/* DATES ROW */}
                             <EditableRow
                                 field="dates"
                                 label="DATES"
@@ -185,8 +185,6 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
                                     <span className="text-green-700 font-medium">{formatDate(editedTask.dueDate)}</span>
                                 </div>
                             </EditableRow>
-
-                            {/* PRIORITY ROW */}
                             <EditableRow
                                 field="priority"
                                 label="PRIORITY"
@@ -234,7 +232,6 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
                                 /> {editedTask.priority}</span>
                             </EditableRow>
                         </div>
-                        {/* LABELS ROW - This is the one you were stuck on */}
                         <EditableRow
                             field="labels"
                             label="Labels"
@@ -245,7 +242,7 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
                             handleFieldCancel={handleFieldCancel}
                             editComponent={
                                 <input
-                                    autoFocus  // KEEPS THE CURSOR ACTIVE
+                                    autoFocus  
                                     type="text"
                                     className="text-sm border rounded px-2 py-1 w-full outline-none focus:ring-2 focus:ring-blue-500"
                                     value={
@@ -271,7 +268,6 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
                                 )}
                             </div>
                         </EditableRow>
-                        {/* DESCRIPTION */}
                         <section>
                             <div className="flex justify-between items-center mb-2 border-b pb-1">
                                 <h3 className="text-lg font-semibold text-gray-700 flex items-center gap-2"><ListChecks size={20} /> Description</h3>
@@ -304,10 +300,8 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
                                 <p className="text-sm text-gray-700 mt-1">{editedTask.attachment?.length || 0} Files</p>
                             </div>
                         </div>
-
+                        <ProjectProgress task={task}/>
                     </div>
-
-                    {/* RIGHT COLUMN: Sidebar Details */}
                    <ActivityDetails editedTask={editedTask}/>
                 </div>
             </div>

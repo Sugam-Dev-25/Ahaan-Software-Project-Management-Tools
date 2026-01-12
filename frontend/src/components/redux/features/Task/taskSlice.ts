@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, isRejectedWithValue, type PayloadAction } from "@reduxjs/toolkit";
 import type { Task } from "../../../types/allType";
 import axiosClient from "../../../api/axiosClient";
 
@@ -71,6 +71,16 @@ export const deleteTask = createAsyncThunk("task/deleteColumn", async ({ taskId 
     }
 })
 
+export const updateProgress=createAsyncThunk<Task, {taskId: string, progress:number}, {rejectValue: string}>("task/updateProgress", async({taskId, progress}, {rejectWithValue})=>{
+    try{
+        const res= await axiosClient.patch(`api/tasks/${taskId}/progress`, {progress}, {withCredentials: true})
+        return res.data
+    }
+    catch(err: any){
+        return rejectWithValue(err.response?.data?.message || err.message)
+    }
+})
+
 export const addComment = createAsyncThunk(
     "tasks/addComment",
     async ({ taskId, text }: { taskId: string; text: string }) => {
@@ -104,8 +114,6 @@ const taskSlice = createSlice({
             state.task.push(action.payload);
         })
         .addCase(addTask.rejected, (state, action) => { state.loading = "failed"; state.error = action.payload as string; })
-
-        // Move
         .addCase(moveTask.pending, (state, action) => {
             state.loading = "pending"; // Start loading for move
             const { taskId, newColumnId, newPosition } = action.meta.arg;
@@ -122,8 +130,6 @@ const taskSlice = createSlice({
         })
         .addCase(moveTask.fulfilled, (state) => { state.loading = "fulfilled"; })
         .addCase(moveTask.rejected, (state, action) => { state.loading = "failed"; state.error = action.payload as string; })
-
-        // Update (CRITICAL FIX)
         .addCase(updateTask.pending, (state) => { state.loading = "pending"; })
         .addCase(updateTask.fulfilled, (state, action) => {
             state.loading = "fulfilled"; // MUST reset loading here
@@ -131,23 +137,32 @@ const taskSlice = createSlice({
             if (index !== -1) state.task[index] = action.payload;
         })
         .addCase(updateTask.rejected, (state, action) => { state.loading = "failed"; state.error = action.payload as string; })
-
-        // Delete
         .addCase(deleteTask.pending, (state) => { state.loading = "pending"; })
         .addCase(deleteTask.fulfilled, (state, action) => {
             state.loading = "fulfilled"; // MUST reset loading here
             state.task = state.task.filter(t => t._id !== (action.payload as any).taskId);
         })
         .addCase(deleteTask.rejected, (state) => { state.loading = "failed"; })
-
-        // Comment (CRITICAL FIX)
         .addCase(addComment.pending, (state) => { state.loading = "pending"; })
         .addCase(addComment.fulfilled, (state, action) => {
             state.loading = "fulfilled"; // MUST reset loading here
             const index = state.task.findIndex(t => t._id === action.payload._id);
             if (index !== -1) state.task[index] = action.payload;
         })
-        .addCase(addComment.rejected, (state) => { state.loading = "failed"; });
+        .addCase(addComment.rejected, (state) => { state.loading = "failed"; })
+        .addCase(updateProgress.pending, (state)=>{state.loading="pending"})
+        .addCase(updateProgress.fulfilled, (state, action)=>{
+            state.loading="fulfilled"
+            const index=state.task.findIndex(t=> t._id===action.payload._id)
+            if(index !==-1){
+                state.task[index]=action.payload
+
+            }
+        })
+        .addCase(updateProgress.rejected, (state, action)=>{
+            state.loading="failed"
+            state.error=action.payload as string
+        })
 }
 })
 export default taskSlice.reducer

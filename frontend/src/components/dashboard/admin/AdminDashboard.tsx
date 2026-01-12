@@ -7,9 +7,10 @@ import { ProjectDetails } from './tabs/ProjectDetails'
 import { BoardProvider } from '../../context/board/BoardProvider'
 import { GlobalSpinner } from '../../context/board/GlobalSpinner'
 
+
 export const AdminDashboard = () => {
   return (
-    <BoardProvider> {/* Wrap everything ONCE here */}
+    <BoardProvider> 
       <GlobalSpinner />
       <div className='flex min-h-screen max-w-8xl mx-auto px-4 py-5 font-sans-serif'>
         <Sidebar />
@@ -17,6 +18,7 @@ export const AdminDashboard = () => {
           <Routes>
             <Route index element={<HomeTab />} />
             <Route path=":boardSlug" element={<ProjectDetails />} />
+           
           </Routes>
         </div>
       </div>

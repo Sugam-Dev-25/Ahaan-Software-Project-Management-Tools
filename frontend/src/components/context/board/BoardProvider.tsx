@@ -6,7 +6,7 @@ import { slugify } from "../../hooks/slugify"
 import { addMember, fetchBoard } from "../../redux/features/Board/boardSlice"
 import type { Board, Task } from "../../types/allType"
 import { addColumn, deleteColumn } from "../../redux/features/Column/columnSlice"
-import { addComment, deleteTask, moveTask, updateTask } from "../../redux/features/Task/taskSlice"
+import { addComment, deleteTask, moveTask, updateProgress, updateTask } from "../../redux/features/Task/taskSlice"
 
 interface BoardProviderProps{
   board: Board | null
@@ -18,6 +18,7 @@ interface BoardProviderProps{
   updateTask: (taskId:string, updates:Partial<Task>)=>void
   moveTask: (taskId:string, toColumnId:string, toPosition:number )=>void
    addComment:(taskId:string, text: string )=> void
+   updateProgress: (taskId:string, progress: number)=>void
 }
 
 
@@ -55,7 +56,8 @@ export const BoardProvider = ({children}:{children:ReactNode}) => {
       deleteTask:(taskId:string)=> dispatch(deleteTask({taskId})),
       updateTask:(taskId:string, updates:Partial<Task>)=>dispatch(updateTask({taskId, update:updates})),
       moveTask: (taskId:string, toColumnId:string, toPosition:number)=>dispatch(moveTask({taskId, newColumnId:toColumnId, newPosition:toPosition})),
-      addComment: (taskId: string, text: string) => dispatch(addComment({ taskId, text }))
+      addComment: (taskId: string, text: string) => dispatch(addComment({ taskId, text })),
+      updateProgress: (taskId: string, progress: number)=>dispatch(updateProgress({taskId, progress}))
 
     }), [currentBoard, dispatch, globalLoading])
     

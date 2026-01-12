@@ -1,4 +1,5 @@
 import {  useAppSelector } from "../../../redux/app/hook"
+import { ProjectProgress } from "./ProjectProgress";
 
 export const HomeTab = () => {
     const user = useAppSelector(state => state.login.user);
@@ -8,6 +9,7 @@ export const HomeTab = () => {
             <div className="flex-1 p-6 overflow-y-auto">
                 <h2 className="text-[25px] font-bold">Welcome 👋 {user?.name}</h2>
             </div>
+            
         </div>
     );
 };

@@ -242,4 +242,29 @@ const addTaskComment = async (req, res) => {
   }
 };
 
-module.exports = { createTask, getTasksForColumn, moveTask, updateTask, deleteTask, addTaskComment }
+const updateTaskProgress = async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const { progress } = req.body;
+
+    if (progress < 0 || progress > 100) {
+      return res.status(400).json({ message: "Progress must be between 0 and 100" });
+    }
+
+    const task = await Task.findById(taskId);
+    if (!task) return res.status(404).json({ message: "Task not found" });
+
+    // CRITICAL: Capture original values for the Activity Log
+    task._originalValues = task.toObject(); 
+    task._userContext = req.user._id; // Use req.user._id from auth middleware
+    
+    task.progress = progress;
+    await task.save();
+    
+    res.status(200).json(task);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update task" });
+  }
+};
+
+module.exports = { createTask, getTasksForColumn, moveTask, updateTask, deleteTask, addTaskComment, updateTaskProgress }

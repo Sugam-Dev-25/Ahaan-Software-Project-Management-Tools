@@ -38,6 +38,7 @@ type Subtask = { title: string, isCompleted: boolean };
 export type Task = {
     _id:string,
     title: string,
+    progress: number,
     description: string,
     priority: "Low" | "Medium" | "High" | "Critical",
     dueDate: Date,
