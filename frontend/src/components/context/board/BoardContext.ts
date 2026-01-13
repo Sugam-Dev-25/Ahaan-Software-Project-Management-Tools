@@ -3,6 +3,9 @@ import type { Board, Task } from "../../types/allType";
 export interface BoardProviderProps{
   board: Board | null;
   loading: boolean;
+  task:Task[]
+  
+  getTaskByColumn: (columnId: string) => Task[];
   addMember: (memberId: string)=> void
   addColumn: (name: string)=>void
   deleteColumn: (columnId:string)=> void

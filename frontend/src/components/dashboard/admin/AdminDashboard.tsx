@@ -17,7 +17,7 @@ export const AdminDashboard = () => {
         <div className="flex-1 p-6">
           <Routes>
             <Route index element={<HomeTab />} />
-            <Route path=":boardSlug" element={<ProjectDetails />} />
+            <Route path=":boardSlug" element={<BoardProvider><ProjectDetails /></BoardProvider>} />
            
           </Routes>
         </div>

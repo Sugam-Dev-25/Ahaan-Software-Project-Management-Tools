@@ -45,7 +45,7 @@ export type Task = {
     startDate: Date,
     assignedTo: User[],
     column: string,
-    board: Board[],
+    board: Board,
     subtasks: Subtask[],
     attachment: [],
     comments: Comment[],

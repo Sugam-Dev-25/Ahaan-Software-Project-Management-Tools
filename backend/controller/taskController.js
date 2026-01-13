@@ -47,7 +47,7 @@ const createTask = async (req, res) => {
     res.status(500).json({ message: 'Server Error: Failed to create task' });
   }
 }
-// controller/taskController.js
+
 const getTasksForColumn = async (req, res) => {
   try {
     const { boardId, columnId } = req.params;
@@ -181,7 +181,6 @@ const updateTask = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
 const deleteTask = async (req, res) => {
   try {
     const { taskId } = req.params;
@@ -241,7 +240,6 @@ const addTaskComment = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 const updateTaskProgress = async (req, res) => {
   try {
     const { taskId } = req.params;
@@ -250,17 +248,12 @@ const updateTaskProgress = async (req, res) => {
     if (progress < 0 || progress > 100) {
       return res.status(400).json({ message: "Progress must be between 0 and 100" });
     }
-
     const task = await Task.findById(taskId);
     if (!task) return res.status(404).json({ message: "Task not found" });
-
-    // CRITICAL: Capture original values for the Activity Log
     task._originalValues = task.toObject(); 
-    task._userContext = req.user._id; // Use req.user._id from auth middleware
-    
+    task._userContext = req.user._id; 
     task.progress = progress;
     await task.save();
-    
     res.status(200).json(task);
   } catch (error) {
     res.status(500).json({ message: "Failed to update task" });

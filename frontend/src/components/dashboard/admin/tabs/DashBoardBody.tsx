@@ -8,11 +8,9 @@ import {  useAppSelector } from "../../../redux/app/hook";
 import { BoardContext } from "../../../context/board/BoardContext";
 
 
-interface DashBoardBodyProps {
-  task: Task[]
-}
 
-export const DashBoardBody = ({   task }: DashBoardBodyProps) => {
+
+export const DashBoardBody = () => {
   const [showColumnInput, setShowColumnInput] = useState(false)
   const [columnName, setColumnName] = useState("")
   const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
@@ -20,17 +18,17 @@ export const DashBoardBody = ({   task }: DashBoardBodyProps) => {
   const [openMenuColumn,setOpenMenuColumn]=useState<string | null>(null)
   const columns = useAppSelector(state => state.column.columns)
 
-  const taskStatus = (task: Task) => {
-    return column.find(c => c._id === task.column)?.name || null
-  }
+  
 
   const boardDetails = useContext(BoardContext)
   if(!boardDetails) return null
-  const {board, addColumn, deleteColumn, moveTask}=boardDetails
+  const {board, addColumn, deleteColumn, moveTask, task }=boardDetails
 
   if (!board) return null
   const column = columns[board._id] || []
-
+const taskStatus = (task: Task) => {
+    return column.find(c => c._id === task.column)?.name || null
+  }
   return (
     <div>
       <div className='flex gap-2 mt-2 '>
