@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import type { Task, Column } from "../../../types/allType";
 import TaskView from "../../../redux/features/Task/taskView";
-import { CalendarBlank, Check, Flag, Plus, Tag, X } from "@phosphor-icons/react";
+import { CalendarBlank, Check, Flag, Plus, X } from "@phosphor-icons/react";
 import { TaskDetails } from "./TaskDetails";
 
 import { useAppSelector } from "../../../redux/app/hook";
@@ -128,9 +128,7 @@ export const DashBoardBody = () => {
                           <Flag size={14} weight="fill" className="text-yellow-500" />
                           <span>{t.priority}</span>
                         </div>
-                        <div className="flex items-center gap-1 px-2 py-0.5 border rounded-md text-gray-600 bg-gray-50/50 text-[11px] font-medium">
-                          <Tag size={14} /> <span>{t.labels.map(l => l.name)}</span>
-                        </div>
+                       
                       </div>
                     </div>
                   </div>

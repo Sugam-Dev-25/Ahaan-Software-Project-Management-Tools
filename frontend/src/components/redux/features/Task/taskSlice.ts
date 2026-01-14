@@ -71,12 +71,12 @@ export const deleteTask = createAsyncThunk("task/deleteColumn", async ({ taskId 
     }
 })
 
-export const updateProgress=createAsyncThunk<Task, {taskId: string, progress:number}, {rejectValue: string}>("task/updateProgress", async({taskId, progress}, {rejectWithValue})=>{
-    try{
-        const res= await axiosClient.patch(`api/tasks/${taskId}/progress`, {progress}, {withCredentials: true})
+export const updateProgress = createAsyncThunk<Task, { taskId: string, progress: number }, { rejectValue: string }>("task/updateProgress", async ({ taskId, progress }, { rejectWithValue }) => {
+    try {
+        const res = await axiosClient.patch(`api/tasks/${taskId}/progress`, { progress }, { withCredentials: true })
         return res.data
     }
-    catch(err: any){
+    catch (err: any) {
         return rejectWithValue(err.response?.data?.message || err.message)
     }
 })
@@ -88,7 +88,7 @@ export const addComment = createAsyncThunk(
         return response.data; // This should be the updated task from the backend
     }
 );
-        // 1. Add this Thunk
+// 1. Add this Thunk
 export const fetchAllTasks = createAsyncThunk<Task[], void, { rejectValue: string }>(
     "tasks/fetchAllTasks",
     async (_, { rejectWithValue }) => {
@@ -102,95 +102,142 @@ export const fetchAllTasks = createAsyncThunk<Task[], void, { rejectValue: strin
     }
 );
 
+export const fetchMyTasks = createAsyncThunk("task/fetchMyTasks", async () => {
+    const response = await axiosClient.get('api/tasks/my-tasks'); // Your new API
+    return response.data;
+});
+// Add this to your Thunk section
+export const toggleTimer = createAsyncThunk<
+    Task,
+    { taskId: string },
+    { rejectValue: string }
+>(
+    "task/toggleTimer",
+    async ({ taskId }, { rejectWithValue }) => {
+        try {
+            const res = await axiosClient.post(`/api/tasks/${taskId}/timer`, {}, { withCredentials: true });
+            return res.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || error.message);
+        }
+    }
+);
+
 
 const taskSlice = createSlice({
     name: "taskSlice",
     initialState,
     reducers: {
-    clearTasks: (state) => {
-      state.task = []; // Clears the array when switching boards
-    }
-  },
-   extraReducers: (builder) => {
-    builder
-        // Fetch
-        .addCase(fetchTasksForColumn.pending, (state) => { state.loading = "pending"; state.error = null; })
-        .addCase(fetchTasksForColumn.fulfilled, (state, action) => {
-            state.loading = "fulfilled";
-            action.payload.forEach(task => {
-                const index = state.task.findIndex(t => t._id === task._id);
-                if (index >= 0) state.task[index] = task;
-                else state.task.push(task);
-            });
-        })
-        .addCase(fetchTasksForColumn.rejected, (state, action) => { state.loading = "failed"; state.error = action.payload as string; })
-
-        // Add
-        .addCase(addTask.pending, (state) => { state.loading = "pending"; state.error = null; })
-        .addCase(addTask.fulfilled, (state, action) => {
-            state.loading = "fulfilled";
-            state.task.push(action.payload);
-        })
-        .addCase(addTask.rejected, (state, action) => { state.loading = "failed"; state.error = action.payload as string; })
-        .addCase(moveTask.pending, (state, action) => {
-            state.loading = "pending"; // Start loading for move
-            const { taskId, newColumnId, newPosition } = action.meta.arg;
-            const taskToMove = state.task.find(t => t._id === taskId);
-            if (taskToMove) {
-                taskToMove.column = newColumnId;
-                taskToMove.position = newPosition;
-                state.task.forEach(t => {
-                    if (t.column === newColumnId && t._id !== taskId) {
-                        if (t.position >= newPosition) t.position += 1;
-                    }
+        clearTasks: (state) => {
+            state.task = []; // Clears the array when switching boards
+        }
+    },
+    extraReducers: (builder) => {
+        builder
+            // Fetch
+            .addCase(fetchTasksForColumn.pending, (state) => { state.loading = "pending"; state.error = null; })
+            .addCase(fetchTasksForColumn.fulfilled, (state, action) => {
+                state.loading = "fulfilled";
+                action.payload.forEach(task => {
+                    const index = state.task.findIndex(t => t._id === task._id);
+                    if (index >= 0) state.task[index] = task;
+                    else state.task.push(task);
                 });
-            }
-        })
-        .addCase(moveTask.fulfilled, (state) => { state.loading = "fulfilled"; })
-        .addCase(moveTask.rejected, (state, action) => { state.loading = "failed"; state.error = action.payload as string; })
-        .addCase(updateTask.pending, (state) => { state.loading = "pending"; })
-        .addCase(updateTask.fulfilled, (state, action) => {
-            state.loading = "fulfilled"; // MUST reset loading here
-            const index = state.task.findIndex(t => t._id === action.payload._id);
-            if (index !== -1) state.task[index] = action.payload;
-        })
-        .addCase(updateTask.rejected, (state, action) => { state.loading = "failed"; state.error = action.payload as string; })
-        .addCase(deleteTask.pending, (state) => { state.loading = "pending"; })
-        .addCase(deleteTask.fulfilled, (state, action) => {
-            state.loading = "fulfilled"; // MUST reset loading here
-            state.task = state.task.filter(t => t._id !== (action.payload as any).taskId);
-        })
-        .addCase(deleteTask.rejected, (state) => { state.loading = "failed"; })
-        .addCase(addComment.pending, (state) => { state.loading = "pending"; })
-        .addCase(addComment.fulfilled, (state, action) => {
-            state.loading = "fulfilled"; // MUST reset loading here
-            const index = state.task.findIndex(t => t._id === action.payload._id);
-            if (index !== -1) state.task[index] = action.payload;
-        })
-        .addCase(addComment.rejected, (state) => { state.loading = "failed"; })
-        .addCase(updateProgress.pending, (state)=>{state.loading="pending"})
-        .addCase(updateProgress.fulfilled, (state, action)=>{
-            state.loading="fulfilled"
-            const index=state.task.findIndex(t=> t._id===action.payload._id)
-            if(index !==-1){
-                state.task[index]=action.payload
+            })
+            .addCase(fetchTasksForColumn.rejected, (state, action) => { state.loading = "failed"; state.error = action.payload as string; })
 
-            }
-        })
-        .addCase(updateProgress.rejected, (state, action)=>{
-            state.loading="failed"
-            state.error=action.payload as string
-        })
-        .addCase(fetchAllTasks.fulfilled, (state, action) => {
-    state.loading = "fulfilled";
-    // This checks if payload is an array; if not, it looks for a .tasks or .data property
-    const incomingTasks = Array.isArray(action.payload) 
-        ? action.payload 
-        : (action.payload as any).tasks || (action.payload as any).data || [];
-    
-    state.task = incomingTasks; 
-})
-}
+            // Add
+            .addCase(addTask.pending, (state) => { state.loading = "pending"; state.error = null; })
+            .addCase(addTask.fulfilled, (state, action) => {
+                state.loading = "fulfilled";
+                state.task.push(action.payload);
+            })
+            .addCase(addTask.rejected, (state, action) => { state.loading = "failed"; state.error = action.payload as string; })
+            .addCase(moveTask.pending, (state, action) => {
+                state.loading = "pending"; // Start loading for move
+                const { taskId, newColumnId, newPosition } = action.meta.arg;
+                const taskToMove = state.task.find(t => t._id === taskId);
+                if (taskToMove) {
+                    taskToMove.column = newColumnId;
+                    taskToMove.position = newPosition;
+                    state.task.forEach(t => {
+                        if (t.column === newColumnId && t._id !== taskId) {
+                            if (t.position >= newPosition) t.position += 1;
+                        }
+                    });
+                }
+            })
+            .addCase(moveTask.fulfilled, (state) => { state.loading = "fulfilled"; })
+            .addCase(moveTask.rejected, (state, action) => { state.loading = "failed"; state.error = action.payload as string; })
+            .addCase(updateTask.pending, (state) => { state.loading = "pending"; })
+            .addCase(updateTask.fulfilled, (state, action) => {
+                state.loading = "fulfilled"; // MUST reset loading here
+                const index = state.task.findIndex(t => t._id === action.payload._id);
+                if (index !== -1) state.task[index] = action.payload;
+            })
+            .addCase(updateTask.rejected, (state, action) => { state.loading = "failed"; state.error = action.payload as string; })
+            .addCase(deleteTask.pending, (state) => { state.loading = "pending"; })
+            .addCase(deleteTask.fulfilled, (state, action) => {
+                state.loading = "fulfilled"; // MUST reset loading here
+                state.task = state.task.filter(t => t._id !== (action.payload as any).taskId);
+            })
+            .addCase(deleteTask.rejected, (state) => { state.loading = "failed"; })
+            .addCase(addComment.pending, (state) => { state.loading = "pending"; })
+            .addCase(addComment.fulfilled, (state, action) => {
+                state.loading = "fulfilled"; // MUST reset loading here
+                const index = state.task.findIndex(t => t._id === action.payload._id);
+                if (index !== -1) state.task[index] = action.payload;
+            })
+            .addCase(addComment.rejected, (state) => { state.loading = "failed"; })
+            .addCase(updateProgress.pending, (state) => { state.loading = "pending" })
+            .addCase(updateProgress.fulfilled, (state, action) => {
+                state.loading = "fulfilled"
+                const index = state.task.findIndex(t => t._id === action.payload._id)
+                if (index !== -1) {
+                    state.task[index] = action.payload
+
+                }
+            })
+            .addCase(updateProgress.rejected, (state, action) => {
+                state.loading = "failed"
+                state.error = action.payload as string
+            })
+            .addCase(fetchAllTasks.fulfilled, (state, action) => {
+                state.loading = "fulfilled";
+                // This checks if payload is an array; if not, it looks for a .tasks or .data property
+                const incomingTasks = Array.isArray(action.payload)
+                    ? action.payload
+                    : (action.payload as any).tasks || (action.payload as any).data || [];
+
+                state.task = incomingTasks;
+            })
+            .addCase(fetchMyTasks.pending, (state) => {
+                state.loading = 'pending';
+            })
+            .addCase(fetchMyTasks.fulfilled, (state, action) => {
+                state.loading = 'fulfilled';
+                state.task = action.payload;
+            })
+            .addCase(fetchMyTasks.rejected, (state, action) => {
+                state.loading = 'failed';
+                state.error = action.error.message as string;
+            })
+            // Add this inside your taskSlice extraReducers builder
+            .addCase(toggleTimer.pending, (state) => {
+                state.loading = "pending";
+            })
+            .addCase(toggleTimer.fulfilled, (state, action) => {
+                state.loading = "fulfilled";
+                const index = state.task.findIndex(t => t._id === action.payload._id);
+                if (index !== -1) {
+                    state.task[index] = action.payload; // Updates task with new timeTracking data
+                }
+            })
+            .addCase(toggleTimer.rejected, (state, action) => {
+                state.loading = "failed";
+                state.error = action.payload as string;
+            })
+    }
 })
 export default taskSlice.reducer
 export const { clearTasks } = taskSlice.actions;

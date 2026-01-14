@@ -27,10 +27,10 @@ const TaskSchema = new Schema({
         type: String,
         required: true
     },
-    progress:{
+    progress: {
         type: Number,
         Min: 0,
-        Max:100,
+        Max: 100,
         default: 0
     },
     position: { type: Number, default: 0 },
@@ -56,7 +56,7 @@ const TaskSchema = new Schema({
         ref: 'Board',
         required: true
     },
-    
+
     attachments: [{
         fileName: String,
         fileUrl: String,
@@ -67,17 +67,24 @@ const TaskSchema = new Schema({
     }],
     comments: [commentSchema],
     activityLog: [activitySchema],
-    labels: [{
-        name: String,
-        color: String
-    }]
+    // Add to your TaskSchema
+    timeManagement: {
+        estimatedTime: { type: Number, default: 0 }, 
+        totalLoggedTime: { type: Number, default: 0 }, 
+        dailyLogs: [{
+            date: { type: String }, 
+            duration: { type: Number, default: 0 } 
+        }],
+        activeStartTime: { type: Date, default: null },
+        isRunning: { type: Boolean, default: false }
+    }
 }, { timestamps: true })
 
 TaskSchema.pre('save', async function (next) {
     if (this.isNew || !this._userContext) return next();
 
     const modifiedPaths = this.modifiedPaths();
-    
+
     const ignoreFields = ['activityLog', 'updatedAt', 'comments', 'board', '__v'];
 
     for (const path of modifiedPaths) {
@@ -90,25 +97,25 @@ TaskSchema.pre('save', async function (next) {
             let actionText = `updated the ${path}`;
             if (path === 'priority') {
                 actionText = `changed priority from ${oldValue || 'none'} to ${newValue}`;
-            } 
+            }
             else if (path === 'labels') {
                 const oldNames = oldValue?.map(l => l.name) || [];
                 const newNames = newValue?.map(l => l.name) || [];
                 const added = newNames.filter(n => !oldNames.includes(n));
                 if (added.length > 0) actionText = `added label: ${added.join(', ')}`;
-                else continue; 
+                else continue;
             }
             else if (path === 'assignedTo') {
                 const oldIds = (oldValue || []).map(id => id.toString());
                 const newIds = (newValue || []).map(id => id.toString());
                 const addedId = newIds.find(id => !oldIds.includes(id));
-                
+
                 if (addedId) {
                     const User = mongoose.model('User');
                     const user = await User.findById(addedId).select('name');
                     actionText = `assigned task to ${user ? user.name : 'a user'}`;
                 } else {
-                    continue; 
+                    continue;
                 }
             }
             this.activityLog.push({

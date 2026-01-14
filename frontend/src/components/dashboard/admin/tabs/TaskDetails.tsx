@@ -1,11 +1,13 @@
-import { useContext, useState, } from "react"
+import { useContext, useState } from "react"
 import type { Task } from "../../../types/allType"
-import { Pencil, X, Check, Calendar, Tag, User as UserIcon, ListChecks, Paperclip, Flag, } from "@phosphor-icons/react"
+import { 
+    Pencil, X, Check, Calendar, Tag, User as UserIcon, 
+    ListChecks, Paperclip, Flag, Clock, Target, ChartBar 
+} from "@phosphor-icons/react"
 import UserSearchInput from "../../common/UserSearchInput"
 import { TaskDetailsHeader } from "../Task/TaskDetailsHeader"
 import { BoardContext } from "../../../context/board/BoardContext"
 import { ActivityDetails } from "../Task/ActivityDetails"
-import { ProjectProgress } from "./ProjectProgress"
 
 interface TaskDetailsProps {
     task: Task,
@@ -28,26 +30,26 @@ const EditableRow = ({
 
     return (
         <div className="group flex items-center py-2">
-            <div className="w-8 flex-shrink-0 text-gray-600 pt-1">{icon}</div>
-            <div className="flex justify-center items-center">
-                <p className="w-32 text-sm font-bold text-gray-600 tracking-wider">{label}</p>
-                <div className="mt-1">{isEditingThis ? editComponent : children}</div>
+            <div className="w-8 flex-shrink-0 text-gray-500 pt-1">{icon}</div>
+            <div className="flex flex-col flex-grow">
+                <p className="text-[10px] font-bold text-gray-400 tracking-wider uppercase">{label}</p>
+                <div className="mt-0.5 min-h-[24px] flex items-center">
+                    {isEditingThis ? editComponent : children}
+                </div>
             </div>
             <div className="flex items-center ml-2">
                 {isEditingThis ? (
                     <div className="flex gap-1">
-                        {/* Save Button */}
                         <button onClick={handleFieldSave} className="p-1 text-green-600 hover:bg-green-50 rounded">
-                            <Check size={20} weight="bold" />
+                            <Check size={18} weight="bold" />
                         </button>
-                        {/* Cancel Button */}
                         <button onClick={handleFieldCancel} className="p-1 text-red-600 hover:bg-red-50 rounded">
-                            <X size={20} weight="bold" />
+                            <X size={18} weight="bold" />
                         </button>
                     </div>
                 ) : (
-                    <button onClick={() => setActiveField(field)} className="p-1 text-gray-400 opacity-0 group-hover:opacity-100 hover:text-blue-600 transition-all">
-                        <Pencil size={18} />
+                    <button onClick={() => setActiveField(field)} className="p-1 text-gray-300 opacity-0 group-hover:opacity-100 hover:text-blue-600 transition-all">
+                        <Pencil size={16} />
                     </button>
                 )}
             </div>
@@ -56,44 +58,48 @@ const EditableRow = ({
 };
 
 export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
-    // track which field is currently being edited
-    const [activeField, setActiveField] = useState<keyof Task | null>(null);
+    const [activeField, setActiveField] = useState<keyof Task | 'timeGoal' | 'dates' | null>(null);
     const [editedTask, setEditedTask] = useState<Partial<Task>>({ ...task });
     const [isdropdown, setIsdropdown] = useState(false);
+    
     const boardDetails = useContext(BoardContext)
     if (!boardDetails) return null
     const { updateTask } = boardDetails
-
 
     const handleChange = (field: keyof Task, value: any) => {
         setEditedTask(prev => ({ ...prev, [field]: value }));
     };
 
     const handleFieldSave = () => {
-    let finalUpdate: Partial<Task> = { ...editedTask };
+        let finalUpdate: Partial<Task> = { ...editedTask };
 
-    // FIX: If labels are a string (comma separated), convert to array of objects
-    if (activeField === 'labels' && typeof editedTask.labels === 'string') {
-        const labelsArray = (editedTask.labels as string)
-            .split(',')
-            .map(tag => tag.trim())
-            .filter(tag => tag !== "")
-            .map(tag => ({ name: tag, color: '#3b82f6' }));
+        if (activeField === 'labels' && typeof editedTask.labels === 'string') {
+            const labelsArray = (editedTask.labels as string)
+                .split(',')
+                .map(tag => tag.trim())
+                .filter(tag => tag !== "")
+                .map(tag => ({ name: tag, color: '#3b82f6' }));
+            
+            finalUpdate.labels = labelsArray;
+        }
         
-        finalUpdate.labels = labelsArray;
-    }
-    updateTask(task._id, finalUpdate);
-    setActiveField(null);
-};
+        updateTask(task._id, finalUpdate);
+        setActiveField(null);
+    };
+
     const handleFieldCancel = () => {
         setEditedTask({ ...task });
         setActiveField(null);
     };
+
     const formatDate = (date: Date | string | undefined): string => {
-        if (!date) return '';
+        if (!date) return 'Not set';
         const d = date instanceof Date ? date : new Date(date);
-        return isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
+        return isNaN(d.getTime()) ? 'Not set' : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     };
+
+    const msToHours = (ms: number = 0) => (ms / 3600000).toFixed(1);
+
     type Priority = 'Low' | 'Medium' | 'High' | 'Critical';
     const priorityColors: Record<Priority, string> = {
         Low: "text-blue-500",
@@ -101,208 +107,247 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
         High: "text-yellow-500",
         Critical: "text-red-500",
     };
+
+    // Calculate Progress Percentage for the Goal
+    const goalMs = (editedTask.timeManagement?.estimatedTime || 0) * 3600000;
+    const loggedMs = editedTask.timeManagement?.totalLoggedTime || 0;
+    const progressPercent = goalMs > 0 ? Math.min((loggedMs / goalMs) * 100, 100) : 0;
+
     return (
-        <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50 p-4 backdrop-blur-sm">
-            <div className="bg-white w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col rounded-xl shadow-2xl">
-                <TaskDetailsHeader task={task}  onClose={onClose}/>
-                <div className="overflow-y-auto grid md:grid-cols-3 ">
-                    <div className="md:col-span-2 p-3">
-                        <div className="flex-grow">
+        <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50 p-4 backdrop-blur-sm">
+            <div className="bg-white w-full max-w-6xl max-h-[92vh] overflow-hidden flex flex-col rounded-2xl shadow-2xl border border-gray-100">
+                
+                <TaskDetailsHeader task={task} onClose={onClose}/>
+
+                <div className="overflow-y-auto grid md:grid-cols-3 divide-x divide-gray-100">
+                    
+                    {/* LEFT & CENTER CONTENT */}
+                    <div className="md:col-span-2 p-6 space-y-8">
+                        
+                        {/* Title Section */}
+                        <div className="space-y-1">
                             {activeField === 'title' ? (
                                 <div className="flex items-center gap-2">
                                     <input
-                                        className="text-2xl text-black font-semibold border-b-2 border-blue-500 outline-none w-full"
+                                        className="text-3xl text-black font-bold border-b-2 border-blue-500 outline-none w-full pb-1"
                                         value={editedTask.title || ''}
+                                        autoFocus
                                         onChange={(e) => handleChange('title', e.target.value)}
-
                                     />
-                                    <button onClick={handleFieldSave} className="text-green-600"><Check size={24} /></button>
-                                    <button onClick={handleFieldCancel} className="text-red-600"><X size={24} /></button>
+                                    <button onClick={handleFieldSave} className="text-green-600 p-2 hover:bg-green-50 rounded-full"><Check size={28} weight="bold" /></button>
+                                    <button onClick={handleFieldCancel} className="text-red-600 p-2 hover:bg-red-50 rounded-full"><X size={28} weight="bold" /></button>
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-2 group">
-                                    <h2 className="text-2xl font-semibold text-gray-800">{editedTask.title}</h2>
-                                    <button onClick={() => setActiveField('title')} className="opacity-0 group-hover:opacity-100 text-gray-400"><Pencil size={18} /></button>
+                                    <h2 className="text-3xl font-bold text-gray-800 tracking-tight">{editedTask.title}</h2>
+                                    <button onClick={() => setActiveField('title')} className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-blue-600 transition-all pt-1">
+                                        <Pencil size={20} />
+                                    </button>
                                 </div>
                             )}
                         </div>
-                        <div className="grid grid-cols-2 gap-10 w-full">
-                            <div className=" flex items-center py-2 gap-3 font-bold text-gray-400">
-                                <div className="w-5 h-5 rounded-full border-2 border-gray-400 flex  items-center justify-center">
-                                    <div className="w-[10px] h-[10px] rounded-full border-2 border-gray-500" ></div>
-                                </div>
 
-                                <div className="w-32 text-sm text-gray-600">Status</div>
-                                <span className="bg-[#2D9B71] text-white text-[11px] font-bold px-3 py-1 rounded  tracking-wider">
-                                    {status || 'OPEN'}
-                                </span>
+                        {/* Metadata Grid */}
+                        <div className="grid grid-cols-2 gap-x-12 gap-y-4 border-y border-gray-50 py-4">
+                            <div className="flex items-center py-2">
+                                <div className="w-8 flex-shrink-0 text-gray-400 pt-1">
+                                    <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center">
+                                        <div className="w-2 h-2 rounded-full bg-gray-400" />
+                                    </div>
+                                </div>
+                                <div className="flex flex-col">
+                                    <p className="text-[10px] font-bold text-gray-400 tracking-wider uppercase">Status</p>
+                                    <span className="mt-1 w-fit bg-emerald-500 text-white text-[10px] font-black px-2.5 py-0.5 rounded uppercase tracking-widest">
+                                        {status || 'OPEN'}
+                                    </span>
+                                </div>
                             </div>
+
                             <EditableRow
-                                field="assignedTo"
-                                label="ASSIGNEES"
-                                icon={<UserIcon size={20} />}
-                                activeField={activeField}
-                                setActiveField={setActiveField}
-                                handleFieldSave={handleFieldSave}    
-                                handleFieldCancel={handleFieldCancel} 
+                                field="assignedTo" label="Assignees" icon={<UserIcon size={20} />}
+                                activeField={activeField} setActiveField={setActiveField}
+                                handleFieldSave={handleFieldSave} handleFieldCancel={handleFieldCancel} 
                                 editComponent={
                                     <UserSearchInput onUserSelect={(selectedUser) => {
-                                        const currentAssigned = Array.isArray(editedTask.assignedTo) ? editedTask.assignedTo : [];
-                                        if (!currentAssigned.some(u => u._id === selectedUser._id)) {
-                                            handleChange('assignedTo', [...currentAssigned, selectedUser]);
+                                        const current = Array.isArray(editedTask.assignedTo) ? editedTask.assignedTo : [];
+                                        if (!current.some(u => u._id === selectedUser._id)) {
+                                            handleChange('assignedTo', [...current, selectedUser]);
                                         }
                                     }} excludeUserIds={Array.isArray(editedTask.assignedTo) ? editedTask.assignedTo.map(u => u._id) : []} />
                                 }
                             >
                                 <div className="flex -space-x-2">
                                     {Array.isArray(editedTask.assignedTo) && editedTask.assignedTo.map((u: any) => (
-                                        <div key={u._id} title={u.name} className="w-8 h-8 rounded-full bg-purple-400 border-2 border-white flex items-center justify-center text-[10px] text-white font-bold cursor-pointer">
+                                        <div key={u._id} title={u.name} className="w-7 h-7 rounded-full bg-indigo-500 border-2 border-white flex items-center justify-center text-[10px] text-white font-bold shadow-sm">
                                             {u.name?.trim()[0]?.toUpperCase()}
                                         </div>
                                     ))}
+                                    {(!editedTask.assignedTo || editedTask.assignedTo.length === 0) && <span className="text-sm text-gray-400">Unassigned</span>}
                                 </div>
                             </EditableRow>
-                        </div>
-                        <div className="grid grid-cols-2 gap-10 w-full">
+
                             <EditableRow
-                                field="dates"
-                                label="DATES"
-                                icon={<Calendar size={20} />}
-                                activeField={activeField}
-                                setActiveField={setActiveField}
-                                handleFieldSave={handleFieldSave}
-                                handleFieldCancel={handleFieldCancel}
+                                field="dates" label="Dates" icon={<Calendar size={20} />}
+                                activeField={activeField} setActiveField={setActiveField}
+                                handleFieldSave={handleFieldSave} handleFieldCancel={handleFieldCancel}
                                 editComponent={
                                     <div className="flex gap-2">
-                                        <input type="date" className="text-xs border p-1 rounded" onChange={(e) => handleChange('startDate', e.target.value)} />
-                                        <input type="date" className="text-xs border p-1 rounded" onChange={(e) => handleChange('dueDate', e.target.value)} />
+                                        <input type="date" className="text-xs border p-1 rounded" value={formatDate(editedTask.startDate)} onChange={(e) => handleChange('startDate', e.target.value)} />
+                                        <input type="date" className="text-xs border p-1 rounded" value={formatDate(editedTask.dueDate)} onChange={(e) => handleChange('dueDate', e.target.value)} />
                                     </div>
                                 }
                             >
-                                <div className="flex items-center gap-2 text-xs text-gray-700">
-                                    <span>{formatDate(editedTask.startDate)}</span>
-                                    <span className="text-gray-400">→</span>
-                                    <span className="text-green-700 font-medium">{formatDate(editedTask.dueDate)}</span>
+                                <div className="text-sm font-medium text-gray-700">
+                                    {formatDate(editedTask.startDate)} <span className="text-gray-300 mx-1">→</span> <span className="text-emerald-600">{formatDate(editedTask.dueDate)}</span>
                                 </div>
                             </EditableRow>
+
                             <EditableRow
-                                field="priority"
-                                label="PRIORITY"
-                                icon={<Flag size={20} />}
-                                activeField={activeField}
-                                setActiveField={setActiveField}
-                                handleFieldSave={handleFieldSave}
-                                handleFieldCancel={handleFieldCancel}
+                                field="priority" label="Priority" icon={<Flag size={20} />}
+                                activeField={activeField} setActiveField={setActiveField}
+                                handleFieldSave={handleFieldSave} handleFieldCancel={handleFieldCancel}
                                 editComponent={
-                                    <div className="relative w-25">
-                                        <div className="flex items-center gap-2 border p-1 rounded cursor-pointer" onClick={() => setIsdropdown(!isdropdown)}>
-                                            <Flag
-                                                size={14}
-                                                weight="fill"
-                                                className={
-                                                    editedTask.priority
-                                                        ? priorityColors[editedTask.priority as keyof typeof priorityColors]
-                                                        : "text-gray-400"
-                                                }
-                                            />
-                                            {editedTask.priority}
+                                    <div className="relative w-32">
+                                        <div className="flex items-center justify-between border p-1 rounded cursor-pointer text-xs" onClick={() => setIsdropdown(!isdropdown)}>
+                                            {editedTask.priority} <Flag size={12} weight="fill" className={priorityColors[editedTask.priority as Priority]} />
                                         </div>
                                         {isdropdown && (
-                                            <div className="absolute z-10 mt-1 w-full border rounded bg-white shadow">
+                                            <div className="absolute z-10 mt-1 w-full border rounded bg-white shadow-lg overflow-hidden">
                                                 {["Low", "Medium", "High", "Critical"].map(p => (
-                                                    <div key={p} className=" flex items-center gap-3 p-1 hover:bg-gray-100 cursor-pointer text-sm" onClick={() => { handleChange("priority", p); setIsdropdown(false); }}> <Flag
-                                                        weight="fill"
-                                                        size={14}
-                                                        className={priorityColors[p as keyof typeof priorityColors]}
-                                                    />{p}</div>
+                                                    <div key={p} className="flex items-center justify-between p-2 hover:bg-gray-50 cursor-pointer text-xs" 
+                                                         onClick={() => { handleChange("priority", p); setIsdropdown(false); }}>
+                                                        {p} <Flag weight="fill" size={12} className={priorityColors[p as Priority]} />
+                                                    </div>
                                                 ))}
                                             </div>
                                         )}
                                     </div>
                                 }
                             >
-                                <span className="text-sm flex gap-3 items-center"><Flag
-                                    size={14}
-                                    weight="fill"
-                                    className={
-                                        editedTask.priority
-                                            ? priorityColors[editedTask.priority as keyof typeof priorityColors]
-                                            : "text-gray-400"
-                                    }
-                                /> {editedTask.priority}</span>
+                                <div className="flex items-center gap-1.5 text-sm font-semibold">
+                                    <Flag weight="fill" size={14} className={priorityColors[editedTask.priority as Priority]} />
+                                    <span className={priorityColors[editedTask.priority as Priority]}>{editedTask.priority}</span>
+                                </div>
                             </EditableRow>
                         </div>
-                        <EditableRow
-                            field="labels"
-                            label="Labels"
-                            icon={<Tag size={20} />}
-                            activeField={activeField}
-                            setActiveField={setActiveField}
-                            handleFieldSave={handleFieldSave}
-                            handleFieldCancel={handleFieldCancel}
-                            editComponent={
-                                <input
-                                    autoFocus  
-                                    type="text"
-                                    className="text-sm border rounded px-2 py-1 w-full outline-none focus:ring-2 focus:ring-blue-500"
-                                    value={
-                                        typeof editedTask.labels === 'string'
-                                            ? editedTask.labels
-                                            : (Array.isArray(editedTask.labels)
-                                                ? editedTask.labels.map((l: any) => typeof l === 'string' ? l : l.name).join(', ')
-                                                : '')
-                                    }
-                                    onChange={(e) => handleChange('labels', e.target.value)}
-                                />
-                            }
-                        >
-                            <div className="flex gap-2 items-center min-h-[24px]">
-                                {Array.isArray(editedTask.labels) && editedTask.labels.length > 0 ? (
-                                    editedTask.labels.map((label: any, index: number) => (
-                                        <span key={index} className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[11px] font-bold rounded-lg tracking-tight">
-                                            {typeof label === 'string' ? label : label.name}
-                                        </span>
-                                    ))
-                                ) : (
-                                    <span className="text-gray-300">empty</span>
-                                )}
+
+                        {/* --- TIME TRACKING & GOALS SECTION --- */}
+                        <div className="bg-slate-50 border border-slate-100 rounded-2xl p-5">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                                    <Clock size={16} weight="bold" /> Time Management
+                                </h3>
+                                <div className="flex items-center gap-1.5 bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm">
+                                    <ChartBar size={14} className="text-blue-500" />
+                                    <span className="text-[10px] font-bold text-slate-600">{progressPercent.toFixed(0)}% of goal</span>
+                                </div>
                             </div>
-                        </EditableRow>
-                        <section>
-                            <div className="flex justify-between items-center mb-2 border-b pb-1">
-                                <h3 className="text-lg font-semibold text-gray-700 flex items-center gap-2"><ListChecks size={20} /> Description</h3>
+
+                            <div className="grid grid-cols-2 gap-8 mb-4">
+                                <EditableRow
+                                    field="timeGoal" label="Estimated Goal" icon={<Target size={20} className="text-blue-600" />}
+                                    activeField={activeField} setActiveField={setActiveField}
+                                    handleFieldSave={handleFieldSave} handleFieldCancel={handleFieldCancel}
+                                    editComponent={
+                                        <div className="flex items-center gap-2">
+                                            <input type="number" className="w-16 border rounded px-1.5 py-0.5 text-sm font-bold"
+                                                value={editedTask.timeManagement?.estimatedTime || ''}
+                                                onChange={(e) => handleChange('timeManagement', { ...editedTask.timeManagement, estimatedTime: Number(e.target.value) })}
+                                            />
+                                            <span className="text-[10px] font-bold text-slate-400">HRS</span>
+                                        </div>
+                                    }
+                                >
+                                    <span className="text-lg font-black text-slate-700">{editedTask.timeManagement?.estimatedTime || 0} <span className="text-xs font-normal text-slate-400 uppercase">hours</span></span>
+                                </EditableRow>
+
+                                <div className="flex items-center py-2">
+                                    <div className="w-8 flex-shrink-0 text-emerald-500 pt-1"><Clock size={20} weight="fill" /></div>
+                                    <div className="flex flex-col">
+                                        <p className="text-[10px] font-bold text-gray-400 tracking-wider uppercase">Total Worked</p>
+                                        <p className="text-lg font-black text-emerald-600">
+                                            {msToHours(editedTask.timeManagement?.totalLoggedTime)} <span className="text-xs font-normal text-slate-400 uppercase">hours</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Goal Progress Bar */}
+                            <div className="space-y-1.5">
+                                <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden shadow-inner">
+                                    <div className="bg-blue-500 h-full transition-all duration-700 ease-out shadow-[0_0_10px_rgba(59,130,246,0.5)]" 
+                                         style={{ width: `${progressPercent}%` }} />
+                                </div>
+                            </div>
+
+                            {/* Daily Breakdown List */}
+                            <div className="mt-6">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Daily Log Breakdown</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {editedTask.timeManagement?.dailyLogs?.map((log) => (
+                                        <div key={log.date} className="bg-white border border-slate-200 px-3 py-2 rounded-xl flex flex-col items-center min-w-[70px] shadow-sm">
+                                            <span className="text-[9px] font-bold text-slate-400">{new Date(log.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
+                                            <span className="text-sm font-black text-slate-700">{msToHours(log.duration)}h</span>
+                                        </div>
+                                    ))}
+                                    {(!editedTask.timeManagement?.dailyLogs || editedTask.timeManagement.dailyLogs.length === 0) && (
+                                        <span className="text-xs text-slate-300 italic">No time logs recorded yet...</span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Description Section */}
+                        <section className="space-y-3">
+                            <div className="flex justify-between items-center border-b border-gray-50 pb-2">
+                                <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                    <ListChecks size={18} weight="bold" /> Description
+                                </h3>
                                 {activeField !== 'description' && (
-                                    <button onClick={() => setActiveField('description')} className="text-gray-400 hover:text-blue-600"><Pencil size={18} /></button>
+                                    <button onClick={() => setActiveField('description')} className="text-gray-300 hover:text-blue-600 transition-all"><Pencil size={18} /></button>
                                 )}
                             </div>
                             {activeField === 'description' ? (
-                                <div className="space-y-2">
+                                <div className="space-y-3">
                                     <textarea
-                                        className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" rows={4}
-                                        value={editedTask.description} onChange={(e) => handleChange('description', e.target.value)}
+                                        className="w-full p-4 border border-blue-100 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none transition-all text-sm leading-relaxed" 
+                                        rows={5} value={editedTask.description} onChange={(e) => handleChange('description', e.target.value)}
+                                        placeholder="Add a detailed description..."
                                     />
                                     <div className="flex justify-end gap-2">
-                                        <button onClick={handleFieldCancel} className="px-3 py-1 text-sm border rounded">Cancel</button>
-                                        <button onClick={handleFieldSave} className="px-3 py-1 text-sm bg-gray-800 text-white rounded">Save</button>
+                                        <button onClick={handleFieldCancel} className="px-4 py-1.5 text-xs font-bold border rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+                                        <button onClick={handleFieldSave} className="px-4 py-1.5 text-xs font-bold bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-shadow shadow-md">Save Changes</button>
                                     </div>
                                 </div>
                             ) : (
-                                <p className="text-gray-600 bg-gray-50 p-4 rounded-lg min-h-[100px]">{editedTask.description || "No description."}</p>
+                                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap min-h-[60px]">
+                                    {editedTask.description || "Click the pencil to add a description..."}
+                                </p>
                             )}
                         </section>
-                        <div className="py-3 flex items-start">
-                            <div className="w-8 text-gray-400"><Paperclip size={20} /></div>
-                            <div className=" w-full">
-                                <p className="text-sm font-bold text-gray-700 mb-4 tracking-tight">Attachments</p>
-                                <div className="border border-dashed border-gray-400 rounded-lg p-5 flex flex-col items-center justify-center bg-gray-50/50">
-                                    <p className="text-xs text-gray-400">Drop your files here to <span className="text-blue-500 underline cursor-pointer">upload</span></p>
+
+                        {/* Attachments Section */}
+                        <div className="flex items-start gap-4">
+                            <div className="mt-1 text-gray-400"><Paperclip size={20} weight="bold" /></div>
+                            <div className="flex-grow">
+                                <p className="text-sm font-bold text-gray-700 mb-3 tracking-tight">Attachments</p>
+                                <div className="border-2 border-dashed border-gray-100 rounded-2xl p-8 flex flex-col items-center justify-center bg-gray-50/50 group hover:border-blue-200 hover:bg-blue-50/30 transition-all cursor-pointer">
+                                    <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm mb-2 group-hover:scale-110 transition-transform">
+                                        <Paperclip size={20} className="text-blue-500" />
+                                    </div>
+                                    <p className="text-xs text-gray-400 font-medium">Drop files or <span className="text-blue-500 font-bold underline">browse</span></p>
                                 </div>
-                                <p className="text-sm text-gray-700 mt-1">{editedTask.attachment?.length || 0} Files</p>
+                                <p className="text-[10px] font-bold text-gray-400 mt-2 uppercase tracking-widest">{editedTask.attachments?.length || 0} Files attached</p>
                             </div>
                         </div>
-                        <ProjectProgress task={task}/>
+                        
                     </div>
-                   <ActivityDetails editedTask={editedTask}/>
+
+                    {/* RIGHT SIDEBAR (ACTIVITY) */}
+                    <div className="bg-gray-50/30">
+                        <ActivityDetails editedTask={editedTask}/>
+                    </div>
+
                 </div>
             </div>
         </div >

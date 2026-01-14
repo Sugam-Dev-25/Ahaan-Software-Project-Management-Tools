@@ -6,6 +6,7 @@ import {HomeTab} from './tabs/HomeTab'
 import { ProjectDetails } from './tabs/ProjectDetails'
 import { BoardProvider } from '../../context/board/BoardProvider'
 import { GlobalSpinner } from '../../context/board/GlobalSpinner'
+import { MyTask } from './tabs/MyTask'
 
 
 export const AdminDashboard = () => {
@@ -15,6 +16,7 @@ export const AdminDashboard = () => {
       <div className="flex-1 p-6">
         <Routes>
           <Route index element={<HomeTab />} />
+          <Route path='my-tasks' element={<MyTask/>}/>
           
           {/* Wrap ONLY the project details and use the slug as a key */}
           <Route 

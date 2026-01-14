@@ -275,5 +275,56 @@ const getAllUserTasks = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch all tasks" });
   }
 };
+// Backend Controller
+// Backend Controller: getMyIndividualTasks
+const getMyIndividualTasks = async (req, res) => {
+  try {
+    // We filter by the logged-in user's ID (from your auth middleware)
+    const tasks = await Task.find({ assignedTo: req.user._id })
+      .populate('board', 'name')   // Need this to show project name
+      .populate('column', 'name')  // Need this to show status
+      .sort({ createdAt: -1 });
+    
+    res.status(200).json(tasks);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch tasks" });
+  }
+};
+const toggleTimer = async (req, res) => {
+    const { taskId } = req.params;
+    const task = await Task.findById(taskId);
 
-module.exports = { createTask, getTasksForColumn, moveTask, updateTask, deleteTask, addTaskComment, updateTaskProgress, getAllUserTasks }
+    if (!task) return res.status(404).json({ message: "Task not found" });
+
+    const now = new Date();
+
+    if (task.timeManagement.isRunning) {
+        // --- STOPPING THE TIMER ---
+        const startTime = new Date(task.timeManagement.activeStartTime);
+        const workDone = now.getTime() - startTime.getTime();
+        const todayStr = now.toISOString().split('T')[0];
+
+        // Update total time
+        task.timeManagement.totalLoggedTime += workDone;
+
+        // Update daily log breakdown
+        const dayEntry = task.timeManagement.dailyLogs.find(log => log.date === todayStr);
+        if (dayEntry) {
+            dayEntry.duration += workDone;
+        } else {
+            task.timeManagement.dailyLogs.push({ date: todayStr, duration: workDone });
+        }
+
+        task.timeManagement.isRunning = false;
+        task.timeManagement.activeStartTime = null;
+    } else {
+        // --- STARTING THE TIMER ---
+        task.timeManagement.isRunning = true;
+        task.timeManagement.activeStartTime = now;
+    }
+
+    await task.save();
+    res.status(200).json(task);
+};
+
+module.exports = { createTask, getTasksForColumn, moveTask, updateTask, deleteTask, addTaskComment, updateTaskProgress, getAllUserTasks,  getMyIndividualTasks, toggleTimer }
