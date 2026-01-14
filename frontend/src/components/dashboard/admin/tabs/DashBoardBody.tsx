@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
-import type { Task } from "../../../types/allType";
+import type { Task, Column } from "../../../types/allType";
 import TaskView from "../../../redux/features/Task/taskView";
-import { CalendarBlank, Flag, Plus, Tag, X } from "@phosphor-icons/react";
+import { CalendarBlank, Check, Flag, Plus, Tag, X } from "@phosphor-icons/react";
 import { TaskDetails } from "./TaskDetails";
 
 import { useAppSelector } from "../../../redux/app/hook";
@@ -20,7 +20,7 @@ export const DashBoardBody = () => {
   const { board, addColumn, deleteColumn, moveTask, task } = boardDetails
 
   if (!board) return null
-  const column = columns[board._id] || []
+  const column: Column[] = columns[board._id] || []
   const taskStatus = (task: Task) => {
     return column.find(c => c._id === task.column)?.name || null
   }
@@ -178,20 +178,29 @@ export const DashBoardBody = () => {
               <Plus />
             </button>
           ) : (
-            <div className="flex space-x-2 items-center">
-              <input
+            <div className="flex space-x-1 items-center">
+              <select
                 value={columnName}
                 onChange={(e) => setColumnName(e.target.value)}
-                placeholder="Column name"
+
                 className="px-2 py-1 border rounded"
-              />
-              <button
-                onClick={() => addColumn(columnName)}
-                className="px-3 py-1 bg-green-500 text-white rounded"
               >
-                Save
+                <option value="">Select a value</option>
+                <option value="Todo">Todo</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Delay"> Delay</option>
+                <option value="Completed">Completed</option>
+              </select>
+              <button
+                onClick={() => { addColumn(columnName), setShowColumnInput(false) }}
+                className="p-[6px] hover:bg-green-300 rounded"
+              >
+               
+              <Check/>
               </button>
-              <button onClick={() => setShowColumnInput(false)}>❌</button>
+              <button onClick={() => setShowColumnInput(false)} className="p-[5px] hover:bg-red-200 rounded">
+                <X />
+              </button>
             </div>
           )}
         </div>

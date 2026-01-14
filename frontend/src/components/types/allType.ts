@@ -8,7 +8,7 @@ export type Column = {
     _id: string;
     name: string;
     board: string;
-    task: string[];
+   
 
 }
 export type Board = {

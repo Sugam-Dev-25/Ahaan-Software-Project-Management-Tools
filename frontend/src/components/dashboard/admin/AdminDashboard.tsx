@@ -35,6 +35,7 @@ const BoardProviderWrapper = () => {
   return (
     // The 'key' forces React to destroy and recreate the provider on slug change
     <BoardProvider key={boardSlug}>
+      <GlobalSpinner/>
       <ProjectDetails />
      
     </BoardProvider>

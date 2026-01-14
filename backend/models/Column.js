@@ -4,6 +4,7 @@ const {Schema } =require('mongoose')
 const ColumnSchema= new Schema({
     name:{
         type: String,
+        enum: ['Todo', 'In Progress', 'Delay', 'Completed'],
         required: true,
     },
     board:{
