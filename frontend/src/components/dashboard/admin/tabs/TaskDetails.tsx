@@ -1,8 +1,8 @@
 import { useContext, useState } from "react"
 import type { Task } from "../../../types/allType"
-import { 
-    Pencil, X, Check, Calendar, Tag, User as UserIcon, 
-    ListChecks, Paperclip, Flag, Clock, Target, ChartBar 
+import {
+    Pencil, X, Check, Calendar, Tag, User as UserIcon,
+    ListChecks, Paperclip, Flag, Clock, Target, ChartBar
 } from "@phosphor-icons/react"
 import UserSearchInput from "../../common/UserSearchInput"
 import { TaskDetailsHeader } from "../Task/TaskDetailsHeader"
@@ -61,7 +61,7 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
     const [activeField, setActiveField] = useState<keyof Task | 'timeGoal' | 'dates' | null>(null);
     const [editedTask, setEditedTask] = useState<Partial<Task>>({ ...task });
     const [isdropdown, setIsdropdown] = useState(false);
-    
+
     const boardDetails = useContext(BoardContext)
     if (!boardDetails) return null
     const { updateTask } = boardDetails
@@ -79,10 +79,10 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
                 .map(tag => tag.trim())
                 .filter(tag => tag !== "")
                 .map(tag => ({ name: tag, color: '#3b82f6' }));
-            
+
             finalUpdate.labels = labelsArray;
         }
-        
+
         updateTask(task._id, finalUpdate);
         setActiveField(null);
     };
@@ -107,23 +107,37 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
         High: "text-yellow-500",
         Critical: "text-red-500",
     };
-
-    // Calculate Progress Percentage for the Goal
     const goalMs = (editedTask.timeManagement?.estimatedTime || 0) * 3600000;
     const loggedMs = editedTask.timeManagement?.totalLoggedTime || 0;
     const progressPercent = goalMs > 0 ? Math.min((loggedMs / goalMs) * 100, 100) : 0;
 
+    const formatToFourDigit = (ms: number) => {
+        if (!ms) return "00:00:00";
+
+        const totalSeconds = Math.floor(ms / 1000);
+        const seconds = Math.floor(totalSeconds % 60);
+        const minutes = Math.floor((totalSeconds / 60) % 60);
+        const hours = Math.floor(totalSeconds / 3600);
+
+        // .padStart(2, '0') ensures "5" becomes "05"
+        const hh = String(hours).padStart(2, '0');
+        const mm = String(minutes).padStart(2, '0');
+        const ss = String(seconds).padStart(2, '0');
+
+        return `${hh}:${mm}:${ss}`;
+    };
+
     return (
         <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50 p-4 backdrop-blur-sm">
             <div className="bg-white w-full max-w-6xl max-h-[92vh] overflow-hidden flex flex-col rounded-2xl shadow-2xl border border-gray-100">
-                
-                <TaskDetailsHeader task={task} onClose={onClose}/>
+
+                <TaskDetailsHeader task={task} onClose={onClose} />
 
                 <div className="overflow-y-auto grid md:grid-cols-3 divide-x divide-gray-100">
-                    
+
                     {/* LEFT & CENTER CONTENT */}
                     <div className="md:col-span-2 p-6 space-y-8">
-                        
+
                         {/* Title Section */}
                         <div className="space-y-1">
                             {activeField === 'title' ? (
@@ -166,7 +180,7 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
                             <EditableRow
                                 field="assignedTo" label="Assignees" icon={<UserIcon size={20} />}
                                 activeField={activeField} setActiveField={setActiveField}
-                                handleFieldSave={handleFieldSave} handleFieldCancel={handleFieldCancel} 
+                                handleFieldSave={handleFieldSave} handleFieldCancel={handleFieldCancel}
                                 editComponent={
                                     <UserSearchInput onUserSelect={(selectedUser) => {
                                         const current = Array.isArray(editedTask.assignedTo) ? editedTask.assignedTo : [];
@@ -214,8 +228,8 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
                                         {isdropdown && (
                                             <div className="absolute z-10 mt-1 w-full border rounded bg-white shadow-lg overflow-hidden">
                                                 {["Low", "Medium", "High", "Critical"].map(p => (
-                                                    <div key={p} className="flex items-center justify-between p-2 hover:bg-gray-50 cursor-pointer text-xs" 
-                                                         onClick={() => { handleChange("priority", p); setIsdropdown(false); }}>
+                                                    <div key={p} className="flex items-center justify-between p-2 hover:bg-gray-50 cursor-pointer text-xs"
+                                                        onClick={() => { handleChange("priority", p); setIsdropdown(false); }}>
                                                         {p} <Flag weight="fill" size={12} className={priorityColors[p as Priority]} />
                                                     </div>
                                                 ))}
@@ -275,8 +289,8 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
                             {/* Goal Progress Bar */}
                             <div className="space-y-1.5">
                                 <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden shadow-inner">
-                                    <div className="bg-blue-500 h-full transition-all duration-700 ease-out shadow-[0_0_10px_rgba(59,130,246,0.5)]" 
-                                         style={{ width: `${progressPercent}%` }} />
+                                    <div className="bg-blue-500 h-full transition-all duration-700 ease-out shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+                                        style={{ width: `${progressPercent}%` }} />
                                 </div>
                             </div>
 
@@ -285,9 +299,13 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Daily Log Breakdown</p>
                                 <div className="flex flex-wrap gap-2">
                                     {editedTask.timeManagement?.dailyLogs?.map((log) => (
-                                        <div key={log.date} className="bg-white border border-slate-200 px-3 py-2 rounded-xl flex flex-col items-center min-w-[70px] shadow-sm">
-                                            <span className="text-[9px] font-bold text-slate-400">{new Date(log.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
-                                            <span className="text-sm font-black text-slate-700">{msToHours(log.duration)}h</span>
+                                        <div key={log.date} className="bg-white border border-slate-200 px-3 py-2 rounded-xl flex flex-col items-center min-w-[90px] shadow-sm">
+                                            <span className="text-[9px] font-bold text-slate-400 uppercase">
+                                                {new Date(log.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
+                                            </span>
+                                            <span className="text-sm font-mono font-black text-slate-700">
+                                                {formatToFourDigit(log.duration)}
+                                            </span>
                                         </div>
                                     ))}
                                     {(!editedTask.timeManagement?.dailyLogs || editedTask.timeManagement.dailyLogs.length === 0) && (
@@ -310,7 +328,7 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
                             {activeField === 'description' ? (
                                 <div className="space-y-3">
                                     <textarea
-                                        className="w-full p-4 border border-blue-100 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none transition-all text-sm leading-relaxed" 
+                                        className="w-full p-4 border border-blue-100 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none transition-all text-sm leading-relaxed"
                                         rows={5} value={editedTask.description} onChange={(e) => handleChange('description', e.target.value)}
                                         placeholder="Add a detailed description..."
                                     />
@@ -340,12 +358,10 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
                                 <p className="text-[10px] font-bold text-gray-400 mt-2 uppercase tracking-widest">{editedTask.attachments?.length || 0} Files attached</p>
                             </div>
                         </div>
-                        
-                    </div>
 
-                    {/* RIGHT SIDEBAR (ACTIVITY) */}
+                    </div>
                     <div className="bg-gray-50/30">
-                        <ActivityDetails editedTask={editedTask}/>
+                        <ActivityDetails editedTask={editedTask} />
                     </div>
 
                 </div>

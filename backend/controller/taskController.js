@@ -4,7 +4,7 @@ const Board = require('../models/Board')
 
 const createTask = async (req, res) => {
   const { boardId, columnId } = req.params;
-  const { title, description, priority, assignedTo, dueDate } = req.body;
+  const { title, description, priority, assignedTo, dueDate, startDate } = req.body;
   try {
     const board = await Board.findById(boardId).select('members');
     if (!board) {
@@ -19,6 +19,7 @@ const createTask = async (req, res) => {
       description,
       priority,
       dueDate,
+      startDate,
       assignedTo,
       column: columnId,
       board: boardId,

@@ -2,13 +2,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { useAppDispatch } from "../../app/hook";
 import { addTask } from "./taskSlice";
-
-interface AddTaskForm {
-    title: string;
-    description: string;
-    priority: "Low" | "Medium" | "High" | "Critical";
-    dueDate: Date;
-}
+import type { Task } from "../../../types/allType";
 
 interface Props {
     boardId: string;
@@ -23,27 +17,28 @@ const TaskView: React.FC<Props> = ({ boardId, columnId }) => {
         handleSubmit,
         reset,
         formState: { errors },
-    } = useForm<AddTaskForm>();
+    } = useForm<Task>();
 
-   const onSubmit = (data: AddTaskForm) => {
-    dispatch(
-        addTask({
-            boardId,
-            columnId,
-            taskData: {
-                ...data,
-                dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
-            },
-        })
-    )
-        .unwrap()
-        .then(() => {
-            reset();
-        })
-        .catch((err) => {
-            console.error("Add task failed:", err);
-        });
-};
+    const onSubmit = (data: Task) => {
+        dispatch(
+            addTask({
+                boardId,
+                columnId,
+                taskData: {
+                    ...data,
+                    startDate: data.startDate? new Date(data.startDate):undefined,
+                    dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
+                },
+            })
+        )
+            .unwrap()
+            .then(() => {
+                reset();
+            })
+            .catch((err) => {
+                console.error("Add task failed:", err);
+            });
+    };
 
 
     return (
@@ -74,7 +69,14 @@ const TaskView: React.FC<Props> = ({ boardId, columnId }) => {
                 className="w-full border px-3 py-2 rounded"
             />
 
-            {/* Priority */}
+            <div className="flex space-x-2">
+                <input type="date" {...register("startDate")} className="px-3 py-2 rounded border w-full" />
+                <input
+                    type="date"
+                    {...register("dueDate")}
+                    className="w-full border px-3 py-2 rounded"
+                />
+            </div>
             <select
                 {...register("priority", { required: true })}
                 className="w-full border px-3 py-2 rounded"
@@ -85,13 +87,7 @@ const TaskView: React.FC<Props> = ({ boardId, columnId }) => {
                 <option value="High">High</option>
                 <option value="Critical">Critical</option>
             </select>
-
-            {/* Due Date */}
-            <input
-                type="date"
-                {...register("dueDate")}
-                className="w-full border px-3 py-2 rounded"
-            />
+           
 
             <button
                 type="submit"
