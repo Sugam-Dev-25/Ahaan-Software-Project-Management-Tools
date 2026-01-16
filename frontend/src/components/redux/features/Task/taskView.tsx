@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useAppDispatch } from "../../app/hook";
+import { useAppDispatch, useAppSelector } from "../../app/hook";
 import { addTask } from "./taskSlice";
 import type { Task } from "../../../types/allType";
+import UserSearchInput from "../../../dashboard/common/UserSearchInput";
+import { X } from "@phosphor-icons/react";
 
 interface Props {
     boardId: string;
@@ -10,34 +12,36 @@ interface Props {
 }
 
 const TaskView: React.FC<Props> = ({ boardId, columnId }) => {
+    const [editedTask, setEditedTask] = useState<Partial<Task>>({ assignedTo: [] });
     const dispatch = useAppDispatch();
+    const boards = useAppSelector(state => state.board.boards);
+    
+    // Find the current board to get members
+    const currentBoard = boards.find(b => b._id === boardId);
 
-    const {
-        register,
-        handleSubmit,
-        reset,
-        formState: { errors },
-    } = useForm<Task>();
+    const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<Task>();
 
     const onSubmit = (data: Task) => {
-        dispatch(
-            addTask({
-                boardId,
-                columnId,
-                taskData: {
-                    ...data,
-                    startDate: data.startDate ? new Date(data.startDate) : undefined,
-                    dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
-                },
-            })
-        )
-            .unwrap()
-            .then(() => {
-                reset();
-            })
-            .catch((err) => {
-                console.error("Add task failed:", err);
-            });
+        dispatch(addTask({
+            boardId,
+            columnId,
+            taskData: {
+                ...data,
+                // Ensure assignedTo from state is included in the submission
+                assignedTo: editedTask.assignedTo,
+                startDate: data.startDate ? new Date(data.startDate) : undefined,
+                dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
+            },
+        }))
+        .unwrap()
+        .then(() => {
+            reset();
+            setEditedTask({ assignedTo: [] }); // Reset local state
+        });
+    };
+
+    const handleChange = (field: keyof Task, value: any) => {
+        setEditedTask(prev => ({ ...prev, [field]: value }));
     };
 
 
@@ -87,6 +91,40 @@ const TaskView: React.FC<Props> = ({ boardId, columnId }) => {
                 <option value="High">High</option>
                 <option value="Critical">Critical</option>
             </select>
+            <div className="space-y-2">
+                <UserSearchInput
+                    onUserSelect={(selectedUser) => {
+                        const current = Array.isArray(editedTask.assignedTo) ? editedTask.assignedTo : [];
+                        if (!current.some(u => u._id === selectedUser._id)) {
+                            handleChange('assignedTo', [...current, selectedUser]);
+                        }
+                    }}
+                    excludeUserIds={Array.isArray(editedTask.assignedTo) ? editedTask.assignedTo.map(u => u._id) : []}
+                    includeUserIds={currentBoard?.members.map((m: any) => m._id) || []}
+                />
+
+                {/* 2. Visual list of selected users (Avatar Chips) */}
+                <div className="flex flex-wrap gap-2 mt-2">
+                    {Array.isArray(editedTask.assignedTo) && editedTask.assignedTo.map((u: any) => (
+                        <div key={u._id} className="flex items-center gap-2 bg-slate-100 pl-1 pr-2 py-1 rounded-full border border-slate-200">
+                            <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-[8px] text-white font-bold">
+                                {u.name?.trim()[0]?.toUpperCase()}
+                            </div>
+                            <span className="text-xs font-medium text-slate-700">{u.name}</span>
+                            <button 
+                                type="button"
+                                onClick={() => {
+                                    const filtered = editedTask.assignedTo?.filter((user: any) => user._id !== u._id);
+                                    handleChange('assignedTo', filtered);
+                                }}
+                                className="text-slate-400 hover:text-red-500 transition-colors"
+                            >
+                                <X size={14} weight="bold" />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            </div>
 
 
             <button
