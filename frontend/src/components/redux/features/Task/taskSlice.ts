@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice, isRejectedWithValue, type PayloadAction } from "@reduxjs/toolkit";
 import type { Task } from "../../../types/allType";
 import axiosClient from "../../../api/axiosClient";
+import { deleteColumn } from "../Column/columnSlice";
 
 interface taskState {
     task: Task[];
@@ -258,6 +259,14 @@ const taskSlice = createSlice({
             .addCase(toggleTimer.rejected, (state, action) => {
                 state.loading = "failed";
                 state.error = action.payload as string;
+            })
+            .addCase(deleteColumn.fulfilled, (state, action) => {
+                const { columnId } = action.payload;
+                // state.task exists here, so the error will disappear
+                state.task = state.task.filter((t) => {
+                    const taskColId = typeof t.column === 'object' ? t.column._id : t.column;
+                    return taskColId !== columnId;
+                });
             })
     }
 })

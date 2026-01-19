@@ -45,12 +45,12 @@ export const fetchColumn = createAsyncThunk<Column[], string>(
         }
     }
 );
-export const deleteColumn = createAsyncThunk("column/deleteColumn", async({boardId, columnId}:{boardId: string, columnId:string}, {rejectWithValue})=>{
-    try{
-       await axiosClient.delete(`/api/boards/${boardId}/columns/${columnId}`, {withCredentials: true})
-        return {boardId, columnId}
+export const deleteColumn = createAsyncThunk("column/deleteColumn", async ({ boardId, columnId }: { boardId: string, columnId: string }, { rejectWithValue }) => {
+    try {
+        await axiosClient.delete(`/api/boards/${boardId}/columns/${columnId}`, { withCredentials: true })
+        return { boardId, columnId }
     }
-    catch(error: any){
+    catch (error: any) {
         return rejectWithValue(error.response?.data?.message || error.message)
     }
 })
@@ -77,7 +77,7 @@ const columnSlice = createSlice({
                 state.error = action.payload as string;
             })
             .addCase(fetchColumn.fulfilled, (state, action) => {
-                const boardId = action.meta.arg; 
+                const boardId = action.meta.arg;
                 state.columns[boardId] = action.payload;
                 state.loading = false;
                 state.error = null;
@@ -90,22 +90,23 @@ const columnSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload as string;
             })
-            .addCase(deleteColumn.pending, (state)=>{
-                state.loading=true
+            .addCase(deleteColumn.pending, (state) => {
+                state.loading = true
             })
-            .addCase(deleteColumn.fulfilled, (state, action)=>{
-                const {boardId, columnId}=action.payload
-                if(state.columns[boardId]){
-                    state.columns[boardId]===state.columns[boardId].filter((col)=>
-                        col._id !== columnId
-                    )
+            .addCase(deleteColumn.fulfilled, (state, action) => {
+                const { boardId, columnId } = action.payload;
+                if (state.columns[boardId]) {
+                    // Only filter the columns here
+                    state.columns[boardId] = state.columns[boardId].filter(
+                        (col) => col._id !== columnId
+                    );
                 }
-                state.loading= false
-                state.error=null
+                state.loading = false;
+                state.error = null;
             })
-            .addCase(deleteColumn.rejected, (state, action)=>{
-                state.loading=false
-                state.error=action.payload as string
+            .addCase(deleteColumn.rejected, (state, action) => {
+                state.loading = false
+                state.error = action.payload as string
             })
     },
 

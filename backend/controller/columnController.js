@@ -1,5 +1,6 @@
 const Board=require('../models/Board')
-const Column=require('../models/Column')
+const Column=require('../models/Column');
+const Task = require('../models/Task');
 
 const  createColumn= async(req, res)=>{
     const boardId=req.params.boardId;
@@ -44,31 +45,37 @@ const fetchTasksByBoard = async (req, res) => {
         res.status(500).json({ message: "Error fetching tasks" });
     }
 }
-const deleteColumn= async(req, res)=>{
-    const {columnId}=req.params
-    try{
-        const column=await Column.findById(columnId);
-        if(!column){
-            return res.status(404).json({message: "Column Not found"})
+const deleteColumn = async (req, res) => {
+    const { columnId } = req.params;
+    try {
+        const column = await Column.findById(columnId);
+        if (!column) {
+            return res.status(404).json({ message: "Column Not found" });
         }
-        const board= await Board.findById(column.board).select('members')
-        const isMember=board.members.some(member=> member._id.toString()===req.user._id.toString())
-        if(!isMember){
-            return res.status(403).json({message: "Access Denied Deleting Column"})
-        }
-        await Board.findByIdAndUpdate(column.board, {
-            $pull: {columns: columnId}
-        })
-        await Column.findByIdAndDelete(columnId)
 
-        return res.status(200).json({message: "Deleted Column Successfully"})
-    }
-    catch(error){
-        console.error(`error deleting column ${columnId}`, error)
-        res.status(500).json({message: "Internal server error"})
+        const board = await Board.findById(column.board).select('members');
+        const isMember = board.members.some(member => member._id.toString() === req.user._id.toString());
+        if (!isMember) {
+            return res.status(403).json({ message: "Access Denied Deleting Column" });
+        }
+
+        // 1. Remove Column reference from Board
+        await Board.findByIdAndUpdate(column.board, {
+            $pull: { columns: columnId }
+        });
+
+        // 2. NEW: Delete all tasks associated with this column
+        await Task.deleteMany({ column: columnId });
+
+        // 3. Delete the column itself
+        await Column.findByIdAndDelete(columnId);
+
+        return res.status(200).json({ message: "Deleted Column and associated tasks successfully" });
+    } catch (error) {
+        console.error(`error deleting column ${columnId}`, error);
+        res.status(500).json({ message: "Internal server error" });
     }
 }
-// Controller: getColumns
 const getColumns = async (req, res) => {
   try {
     const columns = await Column.find({ board: req.params.boardId });
