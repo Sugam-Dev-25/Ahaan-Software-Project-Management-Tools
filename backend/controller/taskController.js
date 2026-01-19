@@ -265,9 +265,11 @@ const getAllUserTasks = async (req, res) => {
     const boards = await Board.find({ members: req.user._id }).select('_id');
     const boardIds = boards.map(b => b._id);
 
-    // 2. Find all tasks belonging to those boards
+    // 2. Find all tasks and POPULATE the column and board names
     const tasks = await Task.find({ board: { $in: boardIds } })
       .populate('assignedTo', 'name email')
+      .populate('column', 'name') // <--- Add this to get column name
+      .populate('board', 'name')  // <--- Add this to get board name
       .sort({ createdAt: -1 });
 
     res.status(200).json(tasks);

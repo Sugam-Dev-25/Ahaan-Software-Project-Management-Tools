@@ -1,25 +1,36 @@
 import React, { useEffect } from 'react';
 import { fetchAllTasks } from '../../../redux/features/Task/taskSlice';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hook';
-// Phosphor Icons
-import { 
-    Clock, 
-    WarningCircle, 
-    Users, 
-    ChartBar, 
-    CalendarBlank, 
+import {
+    Clock,
+    WarningCircle,
+    Users,
+    ChartBar,
+    CalendarBlank,
     Tray,
-    CheckCircle 
+    Hourglass,
+    SealCheck
 } from '@phosphor-icons/react';
 
 export const AllTask = () => {
     const dispatch = useAppDispatch();
-    
-    const { task: tasks, loading, error } = useAppSelector((state) => state.task);
+    const { task: tasks, loading } = useAppSelector((state) => state.task);
 
     useEffect(() => {
         dispatch(fetchAllTasks());
     }, [dispatch]);
+
+    const msToHours = (ms: number = 0) => (ms / 3600000).toFixed(1);
+
+    const calculateProgress = (timeManagement: any) => {
+        const goalMs = (timeManagement?.estimatedTime || 0) * 3600000;
+        const loggedMs = timeManagement?.totalLoggedTime || 0;
+        const percent = goalMs > 0 ? Math.min((loggedMs / goalMs) * 100, 100) : 0;
+        const isOvertime = loggedMs > goalMs && goalMs > 0;
+        const overtimeMs = isOvertime ? loggedMs - goalMs : 0;
+
+        return { percent, isOvertime, overtimeHours: msToHours(overtimeMs) };
+    };
 
     const getPriorityStyle = (priority: string) => {
         switch (priority) {
@@ -44,120 +55,106 @@ export const AllTask = () => {
 
     return (
         <div className="p-4 sm:p-6 bg-gray-50 min-h-screen font-sans">
-            {/* Header Section */}
             <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
                         <Tray size={28} weight="duotone" className="text-indigo-600" />
                         Global Task Overview
                     </h1>
-                    <p className="text-gray-500 text-sm">Monitoring workload across all organizational boards.</p>
+                    <p className="text-gray-500 text-sm">Real-time resource and time tracking across all boards.</p>
                 </div>
-                
-                <div className="flex gap-3">
-                    <div className="bg-white p-3 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3">
-                        <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
-                            <ChartBar size={24} weight="fill" />
-                        </div>
-                        <div>
-                            <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Total Volume</p>
-                            <p className="text-xl font-black text-gray-800 leading-none">{tasks.length}</p>
-                        </div>
-                    </div>
+                <div className="bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3">
+                    <ChartBar size={20} weight="fill" className="text-indigo-500" />
+                    <span className="text-sm font-bold text-gray-700">{tasks?.length || 0} Active Tasks</span>
                 </div>
             </div>
-
-            {/* Table Container */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-gray-50/50 border-b border-gray-200">
                                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Identify</th>
-                                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Context</th>
                                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Team</th>
                                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Urgency</th>
-                                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Completion</th>
+                                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Time Progress</th>
                                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Timeline</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {tasks.map((t: any) => (
-                                <tr key={t._id} className="hover:bg-indigo-50/20 transition-all duration-200 group">
-                                    <td className="px-6 py-4">
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-bold text-gray-800 group-hover:text-indigo-600 transition-colors">
-                                                {t.title}
-                                            </span>
-                                            <span className="text-xs text-gray-400 line-clamp-1 max-w-[200px]">
-                                                {t.description || 'No context provided'}
-                                            </span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex flex-col gap-1">
-                                            <span className="text-[10px] font-black text-gray-400 uppercase">
-                                                {(t.board as any)?.name || 'Internal'}
-                                            </span>
-                                            <span className="text-xs font-semibold text-indigo-500">
-                                                {typeof t.column === 'object' ? (t.column as any).name : 'Unassigned'}
-                                            </span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex -space-x-2">
-                                            {t.assignedTo && t.assignedTo.length > 0 ? (
-                                                t.assignedTo.map((user: any) => (
-                                                    <div 
-                                                        key={user._id} 
-                                                        className="h-8 w-8 rounded-full border-2 border-white bg-indigo-600 flex items-center justify-center text-white font-bold text-[10px] shadow-sm"
-                                                        title={user.name}
-                                                    >
-                                                        {user.name.charAt(0).toUpperCase()}
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <Users size={20} weight="light" className="text-gray-300" />
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded-lg text-[10px] font-black border uppercase tracking-tighter ${getPriorityStyle(t.priority)}`}>
-                                            {t.priority}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex-1 bg-gray-100 rounded-full h-1.5 min-w-[80px]">
-                                                <div 
-                                                    className={`h-1.5 rounded-full transition-all duration-700 ease-out ${t.progress === 100 ? 'bg-emerald-500' : 'bg-indigo-500'}`}
-                                                    style={{ width: `${t.progress}%` }}
-                                                ></div>
+                            {tasks.map((t: any) => {
+                                // These variables are now used in the UI below
+                                const { percent, isOvertime, overtimeHours } = calculateProgress(t.timeManagement);
+
+                                return (
+                                    <tr key={t._id} className="hover:bg-slate-50/50 transition-all group">
+                                        <td className="px-6 py-4">
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-bold text-gray-800">{t.title}</span>
+                                                <div className="flex items-center gap-1.5 mt-0.5">
+                                                    <span className="text-[10px] font-black text-indigo-500 uppercase">{t.board?.name || "No Board"}</span>
+                                                    <span className="text-gray-300 text-[10px]">•</span>
+                                                    <span className="text-[10px] font-bold text-slate-500 uppercase px-1.5 py-0.5 bg-slate-100 rounded">{t.column?.name || "No Status"}</span>
+                                                </div>
                                             </div>
-                                            <span className="text-[10px] font-bold text-gray-500">{t.progress}%</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-2 text-gray-500">
-                                            <CalendarBlank size={16} weight="regular" />
-                                            <span className="text-xs font-medium">
-                                                {t.dueDate ? new Date(t.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Flexible'}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex -space-x-2">
+                                                {t.assignedTo?.length > 0 ? (
+                                                    t.assignedTo.map((user: any) => (
+                                                        <div key={user._id} title={user.name} className="h-7 w-7 rounded-full border-2 border-white bg-indigo-600 flex items-center justify-center text-white font-bold text-[9px]">
+                                                            {user.name?.charAt(0).toUpperCase() || 'U'}
+                                                        </div>
+                                                    ))
+                                                ) : <Users size={18} className="text-gray-300" />}
+                                            </div>
+                                        </td>
+                                        
+                                        {/* URGENCY CELL */}
+                                        <td className="px-6 py-4">
+                                            <span className={`px-2 py-0.5 rounded text-[10px] font-black border uppercase ${getPriorityStyle(t.priority)}`}>
+                                                {t.priority}
                                             </span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                                        </td>
+
+                                        {/* TIME PROGRESS CELL (Uses percent, isOvertime, and overtimeHours) */}
+                                        <td className="px-6 py-4 min-w-[200px]">
+                                            <div className="flex flex-col gap-1.5">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="flex items-center gap-1 text-[10px] font-bold text-gray-500 uppercase">
+                                                        <Hourglass size={12} /> {msToHours(t.timeManagement?.totalLoggedTime)}h / {t.timeManagement?.estimatedTime || 0}h
+                                                    </span>
+                                                    {isOvertime ? (
+                                                        <span className="text-[9px] font-black text-rose-500 flex items-center gap-1 uppercase">
+                                                            <WarningCircle weight="fill" size={12} className="animate-pulse" />
+                                                            +{overtimeHours}h Over
+                                                        </span>
+                                                    ) : percent === 100 ? (
+                                                        <SealCheck weight="fill" size={14} className="text-emerald-500" />
+                                                    ) : null}
+                                                </div>
+                                                <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden relative">
+                                                    <div
+                                                        className={`h-full transition-all duration-1000 ${isOvertime ? 'bg-rose-500' : 'bg-indigo-500'}`}
+                                                        style={{ width: `${percent}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                        <td className="px-6 py-4 text-gray-500">
+                                            <div className="flex items-center gap-2">
+                                                <CalendarBlank size={14} />
+                                                <span className="text-xs font-medium">
+                                                    {t.dueDate ? new Date(t.dueDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'No Date'}
+                                                </span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
-                {tasks.length === 0 && (
-                    <div className="py-24 text-center">
-                        <div className="inline-flex p-4 bg-gray-50 rounded-full mb-4">
-                            <WarningCircle className="text-gray-300" size={48} weight="thin" />
-                        </div>
-                        <p className="text-gray-400 font-medium">The workspace is currently clear.</p>
-                    </div>
-                )}
             </div>
         </div>
     );
