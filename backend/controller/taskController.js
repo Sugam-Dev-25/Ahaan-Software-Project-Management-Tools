@@ -198,6 +198,7 @@ const deleteTask = async (req, res) => {
     res.status(500).json("Failed to delete task");
   }
 };
+
 const addTaskComment = async (req, res) => {
   try {
     const { taskId } = req.params;
@@ -240,6 +241,7 @@ const addTaskComment = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 const updateTaskProgress = async (req, res) => {
   try {
     const { taskId } = req.params;

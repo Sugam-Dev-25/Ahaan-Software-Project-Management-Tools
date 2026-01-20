@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { fetchAllTasks } from '../../../redux/features/Task/taskSlice';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hook';
 import {
@@ -82,7 +82,6 @@ export const AllTask = () => {
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {tasks.map((t: any) => {
-                                // These variables are now used in the UI below
                                 const { percent, isOvertime, overtimeHours } = calculateProgress(t.timeManagement);
 
                                 return (
@@ -109,14 +108,11 @@ export const AllTask = () => {
                                             </div>
                                         </td>
                                         
-                                        {/* URGENCY CELL */}
                                         <td className="px-6 py-4">
                                             <span className={`px-2 py-0.5 rounded text-[10px] font-black border uppercase ${getPriorityStyle(t.priority)}`}>
                                                 {t.priority}
                                             </span>
                                         </td>
-
-                                        {/* TIME PROGRESS CELL (Uses percent, isOvertime, and overtimeHours) */}
                                         <td className="px-6 py-4 min-w-[200px]">
                                             <div className="flex flex-col gap-1.5">
                                                 <div className="flex justify-between items-center">

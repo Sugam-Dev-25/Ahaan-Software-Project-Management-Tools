@@ -73,8 +73,9 @@ export const DashBoardBody = () => {
               </div>
               {task
                 .filter((t) => {
-                  const taskColumnId = typeof t.column === 'object' ? t.column._id : t.column;
-                  return taskColumnId?.toString() === c._id.toString();
+                  if (!t || !t.column) return false; // Skip if task or column is missing
+                  const taskColumnId = typeof t.column === 'object' ? t.column?._id : t.column;
+                  return taskColumnId?.toString() === c._id?.toString();
                 })
                 .sort((a, b) => (a.position || 0) - (b.position || 0))
                 .map((t, index) => (
@@ -128,7 +129,7 @@ export const DashBoardBody = () => {
                           <Flag size={14} weight="fill" className="text-yellow-500" />
                           <span>{t.priority}</span>
                         </div>
-                       
+
                       </div>
                     </div>
                   </div>
@@ -193,8 +194,8 @@ export const DashBoardBody = () => {
                 onClick={() => { addColumn(columnName), setShowColumnInput(false) }}
                 className="p-[6px] hover:bg-green-300 rounded"
               >
-               
-              <Check/>
+
+                <Check />
               </button>
               <button onClick={() => setShowColumnInput(false)} className="p-[5px] hover:bg-red-200 rounded">
                 <X />
