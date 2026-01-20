@@ -86,30 +86,38 @@ export const HomeTab = () => {
     });
 }, [dispatch, boards.length]);
 
- const calculateStats = (boardId: string): Stats => {
-    // 1. Safe filter for board tasks
+const calculateStats = (boardId: string): Stats => {
+    // 1. Filter tasks belonging to this board
     const boardTasks = allTasks.filter(t => {
-        if (!t || !t.board) return false; // Guard against null tasks/boards
-        const id = typeof t.board === 'object' ? (t.board as any)?._id : t.board;
-        return String(id) === String(boardId);
+        if (!t || !t.board) return false;
+        
+        // Handle both populated object 
+        const taskId = t.board._id ? String(t.board._id) : String(t.board);
+        return taskId === String(boardId);
     });
 
     const boardColumns = columnsByBoard[boardId] || [];
 
-    // 2. Safe filter for column counts using Optional Chaining (?.)
+    // 2. Filter using populated column objects
+    const getCountByStatus = (statusName: string) => {
+        return boardTasks.filter(t => {
+            if (!t.column) return false;
+            
+            // If backend populated it, t.column is an object { _id, name }
+            // If not, we find it in the boardColumns array
+            const columnName = t.column.name 
+                ? t.column.name 
+                : boardColumns.find(c => c?._id === t?.column)?.name;
+                
+            return columnName === statusName;
+        }).length;
+    };
+
     const counts = {
-        Todo: boardTasks.filter(t => 
-            boardColumns.find(c => c?._id === t?.column)?.name === "Todo"
-        ).length,
-        InProgress: boardTasks.filter(t => 
-            boardColumns.find(c => c?._id === t?.column)?.name === "In Progress"
-        ).length,
-        Completed: boardTasks.filter(t => 
-            boardColumns.find(c => c?._id === t?.column)?.name === "Completed"
-        ).length,
-        Delay: boardTasks.filter(t => 
-            boardColumns.find(c => c?._id === t?.column)?.name === "Delay"
-        ).length,
+        Todo: getCountByStatus("Todo"),
+        InProgress: getCountByStatus("In Progress"),
+        Completed: getCountByStatus("Completed"),
+        Delay: getCountByStatus("Delay"),
     };
 
     const total = boardTasks.length;

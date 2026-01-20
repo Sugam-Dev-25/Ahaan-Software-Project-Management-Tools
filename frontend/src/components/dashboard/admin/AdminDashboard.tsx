@@ -30,11 +30,7 @@ export const AdminDashboard = () => {
             path="my-tasks" 
             element={role === 'admin' || role === 'super-admin' ? <AllTask /> : <MyTask />} 
           />
-          
-          {/* The Wrapper should check if the slug is valid before providing context */}
           <Route path=":boardSlug" element={<BoardProviderWrapper />} />
-
-          {/* If everything fails, go back to dashboard root */}
           <Route path="*" element={<Navigate to={`/${role}/dashboard`} replace />} />
         </Routes>
       </div>
@@ -42,15 +38,12 @@ export const AdminDashboard = () => {
   );
 };
 
-
-// Helper component to handle the dynamic key
 const BoardProviderWrapper = () => {
   const { boardSlug } = useParams();
   if (!boardSlug || boardSlug === "undefined") {
     return <HomeTab />;
   }
   return (
-    // The 'key' forces React to destroy and recreate the provider on slug change
     <BoardProvider key={boardSlug}>
       <GlobalSpinner/>
       <ProjectDetails />
