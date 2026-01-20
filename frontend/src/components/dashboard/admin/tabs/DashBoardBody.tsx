@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import type { Task, Column } from "../../../types/allType";
 import TaskView from "../../../redux/features/Task/taskView";
 import { CalendarBlank, Check, Flag, Plus, X } from "@phosphor-icons/react";
@@ -13,7 +13,19 @@ export const DashBoardBody = () => {
   const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [openMenuColumn, setOpenMenuColumn] = useState<string | null>(null)
+  const dropdownRef=useRef<HTMLDivElement |null>(null)
   const columns = useAppSelector(state => state.column.columns)
+
+  useEffect(()=>{
+    const handaleClickoutside=(e:MouseEvent)=>{
+      if(dropdownRef.current && !dropdownRef.current.contains(e.target as Node)){
+        setShowColumnInput(false)
+        setActiveColumnId(null)
+      }
+    }
+    window.addEventListener("mousedown", handaleClickoutside)
+    return ()=> window.removeEventListener("mousedown", handaleClickoutside)
+  })
 
   const boardDetails = useContext(BoardContext)
   if (!boardDetails) return null
@@ -129,7 +141,6 @@ export const DashBoardBody = () => {
                           <Flag size={14} weight="fill" className="text-yellow-500" />
                           <span>{t.priority}</span>
                         </div>
-
                       </div>
                     </div>
                   </div>
@@ -152,7 +163,7 @@ export const DashBoardBody = () => {
               </button>
 
               {activeColumnId === c._id && (
-                <div className="relative mt-2 shadow-lg rounded-lg">
+                <div className="relative mt-2 shadow-lg rounded-lg" ref={dropdownRef}>
                   <TaskView boardId={board._id} columnId={c._id} />
                   <button
                     onClick={() => setActiveColumnId(null)}
@@ -177,7 +188,7 @@ export const DashBoardBody = () => {
               <Plus />
             </button>
           ) : (
-            <div className="flex space-x-1 items-center">
+            <div className="flex space-x-1 items-center" ref={dropdownRef}>
               <select
                 value={columnName}
                 onChange={(e) => setColumnName(e.target.value)}
@@ -194,7 +205,6 @@ export const DashBoardBody = () => {
                 onClick={() => { addColumn(columnName), setShowColumnInput(false) }}
                 className="p-[6px] hover:bg-green-300 rounded"
               >
-
                 <Check />
               </button>
               <button onClick={() => setShowColumnInput(false)} className="p-[5px] hover:bg-red-200 rounded">
