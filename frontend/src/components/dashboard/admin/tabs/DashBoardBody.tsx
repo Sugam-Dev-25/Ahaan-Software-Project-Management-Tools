@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import type { Task, Column } from "../../../types/allType";
 import TaskView from "../../../redux/features/Task/taskView";
-import { CalendarBlank, Check, Flag, Plus, X } from "@phosphor-icons/react";
+import { ArrowRight, CalendarBlank, Check, Flag, Plus, X } from "@phosphor-icons/react";
 import { TaskDetails } from "./TaskDetails";
 
 import { useAppSelector } from "../../../redux/app/hook";
@@ -13,18 +13,18 @@ export const DashBoardBody = () => {
   const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [openMenuColumn, setOpenMenuColumn] = useState<string | null>(null)
-  const dropdownRef=useRef<HTMLDivElement |null>(null)
+  const dropdownRef = useRef<HTMLDivElement | null>(null)
   const columns = useAppSelector(state => state.column.columns)
 
-  useEffect(()=>{
-    const handaleClickoutside=(e:MouseEvent)=>{
-      if(dropdownRef.current && !dropdownRef.current.contains(e.target as Node)){
+  useEffect(() => {
+    const handaleClickoutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setShowColumnInput(false)
         setActiveColumnId(null)
       }
     }
     window.addEventListener("mousedown", handaleClickoutside)
-    return ()=> window.removeEventListener("mousedown", handaleClickoutside)
+    return () => window.removeEventListener("mousedown", handaleClickoutside)
   })
 
   const boardDetails = useContext(BoardContext)
@@ -128,14 +128,17 @@ export const DashBoardBody = () => {
                         </div>
                       )}
                       <div className="flex flex-wrap gap-1.5 items-center">
-                        <div className="flex items-center gap-1 px-2 py-0.5 border rounded-md text-[#2D7A7B] bg-gray-50/50 text-[11px] font-medium">
+                        <div className="flex items-center gap-2 px-2 py-0.5 border rounded-md text-[#2D7A7B] bg-gray-50/50 text-[11px] font-medium">
                           <CalendarBlank size={14} weight="bold" />
-                          <span>
-                            {new Date(t.dueDate).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                            })}
-                          </span>
+                          <div className="flex items-center gap-1">
+                            <span>
+                              {new Date(t.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                            </span>
+                            <span className=" text-[#2D7A7B] font-medium"><ArrowRight /></span>
+                            <span>
+                              {new Date(t.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                            </span>
+                          </div>
                         </div>
                         <div className="flex items-center gap-1 px-2 py-0.5 border rounded-md text-gray-600 bg-gray-50/50 text-[11px] font-medium">
                           <Flag size={14} weight="fill" className="text-yellow-500" />

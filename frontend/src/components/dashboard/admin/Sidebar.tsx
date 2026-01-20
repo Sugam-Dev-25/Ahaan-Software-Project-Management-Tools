@@ -56,7 +56,9 @@ export const Sidebar = () => {
                 >
                     Project Board
                 </button>
-                <button onClick={() => setCreateBoard(true)} className="relative inline-block"><Plus /></button >
+         {(role==='admin' || role==='super-admin') &&
+            ( <button onClick={() => setCreateBoard(true)} className="relative inline-block"><Plus /></button >)
+         }       
                 {createBoard && (
                     <div className="absolute left-full top-15 ml-2 w-70 p-4 rounded-lg bg-gray-50 shadow-lg z-50" ref={dropdownRef}>
                         <BoardTab />
@@ -80,7 +82,7 @@ export const Sidebar = () => {
                     })}
                 </>
             )}
-            <button onClick={() => setCreateBoard(!createBoard)} className="text-sm text-gray-400 w-full appearance-none flex justify-center items-center gap-2 p-1 border border-gray-300 border-dotted rounded"><Plus />Create Project</button >
+           
         </div>
     )
 }
