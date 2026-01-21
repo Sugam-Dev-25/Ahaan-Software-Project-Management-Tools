@@ -8,7 +8,7 @@ import { BoardTab } from "./tabs/BoardTab"
 export const Sidebar = () => {
     const [showBoard, setShowBoard] = useState<boolean>(false);
     const [createBoard, setCreateBoard] = useState<boolean>(false)
-    const dropdownRef=useRef<HTMLDivElement | null>(null)
+    const dropdownRef = useRef<HTMLDivElement | null>(null)
     const base = "block  py-3 px-3"
     const active = "text-blue-600 border-l-4 border-blue-600 bg-blue-50"
 
@@ -23,15 +23,15 @@ export const Sidebar = () => {
         dispatch(fetchBoard())
     }, [dispatch])
 
-    useEffect(()=>{
-        const handaleClickOutside=(e:MouseEvent)=>{
-            if(dropdownRef.current && !dropdownRef.current.contains(e.target as Node)){
-               
+    useEffect(() => {
+        const handaleClickOutside = (e: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+
                 setCreateBoard(false)
             }
         }
         document.addEventListener("mousedown", handaleClickOutside)
-        return ()=> document.removeEventListener("mousedown", handaleClickOutside)
+        return () => document.removeEventListener("mousedown", handaleClickOutside)
     }, [])
 
     if (role === 'admin' || role === 'super-admin') {
@@ -47,20 +47,20 @@ export const Sidebar = () => {
                 Home
             </NavLink>
             <NavLink to={`/${role}/dashboard/my-tasks`} className={({ isActive }) => `${base} ${isActive ? active : inactive} `}>
-                {role==='admin' || role==='super-admin' ? "All tasks" : "My Tasks"}
+                {role === 'admin' || role === 'super-admin' ? "All tasks" : "My Tasks"}
             </NavLink>
-            <div className="flex justify-between items-center" >
+            <div className="flex justify-between items-center" ref={dropdownRef}>
                 <button
                     onClick={() => setShowBoard(true)}
                     className={`${base} ${inactive} `}
                 >
                     Project Board
                 </button>
-         {(role==='admin' || role==='super-admin') &&
-            ( <button onClick={() => setCreateBoard(true)} className="relative inline-block"><Plus /></button >)
-         }       
+                {(role === 'admin' || role === 'super-admin') &&
+                    (<button onClick={() => setCreateBoard(true)} className="relative inline-block"><Plus /></button >)
+                }
                 {createBoard && (
-                    <div className="absolute left-full top-15 ml-2 w-70 p-4 rounded-lg bg-gray-50 shadow-lg z-50" ref={dropdownRef}>
+                    <div className="absolute left-full top-15 ml-2 w-70 p-4 rounded-lg bg-gray-50 shadow-lg z-50" >
                         <BoardTab />
                     </div>
                 )}
@@ -82,7 +82,7 @@ export const Sidebar = () => {
                     })}
                 </>
             )}
-           
+
         </div>
     )
 }

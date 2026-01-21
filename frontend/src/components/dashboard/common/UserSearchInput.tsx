@@ -11,7 +11,7 @@ interface SearchUser {
 interface UserSearchInputProps {
     onUserSelect: (user: SearchUser) => void;
     excludeUserIds: string[];
-    includeUserIds?: string[]; // Fixed naming to camelCase
+    includeUserIds?: string[]; 
 }
 
 const UserSearchInput: React.FC<UserSearchInputProps> = ({ onUserSelect, excludeUserIds, includeUserIds }) => {
@@ -35,10 +35,6 @@ const UserSearchInput: React.FC<UserSearchInputProps> = ({ onUserSelect, exclude
                 });
 
                 const data: SearchUser[] = response.data;
-
-                // 2. CRITICAL FILTER: 
-                // Only keep users who are in the 'includeUserIds' (Board Members)
-                // AND not already assigned (excludeUserIds)
                 const filteredResults = data.filter((user) => {
                     const isBoardMember = includeUserIds 
                         ? includeUserIds.includes(user._id) 

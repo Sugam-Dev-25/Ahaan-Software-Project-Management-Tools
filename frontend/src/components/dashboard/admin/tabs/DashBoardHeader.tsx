@@ -52,7 +52,9 @@ export const DashBoardHeader = () => {
                             <div className="text-blue-300 font-bold text-lg">+{board.members.length - 3} </div>
                         )}
                     </div>
-                    <p
+                    
+                    <div className='relative' ref={dropdownRef}>
+                        <p
                         className='font-bold cursor-pointer'
                         onClick={() => {
                             setIsOpen(true)
@@ -60,10 +62,8 @@ export const DashBoardHeader = () => {
                             setSelectedUser(null)
                         }}
                     ><Plus /></p>
-                    <div className='relative'>
-
                         {isOpen && currentBoardId === board._id && (
-                            <div ref={dropdownRef} className='absolute left-[-250px] top-[35px] w-60 border border-gray-50 px-3 py-4 shadow-lg rounded'>
+                            <div  className='absolute left-[-250px] top-[35px] w-60 border border-gray-50 px-3 py-4 shadow-lg rounded'>
                                 <UserSearchInput
                                     onUserSelect={(user) => {
                                         setSelectedUser(user)

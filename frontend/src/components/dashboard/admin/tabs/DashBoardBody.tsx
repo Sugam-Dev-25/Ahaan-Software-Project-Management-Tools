@@ -21,6 +21,7 @@ export const DashBoardBody = () => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setShowColumnInput(false)
         setActiveColumnId(null)
+        setOpenMenuColumn(null)
       }
     }
     window.addEventListener("mousedown", handaleClickoutside)
@@ -62,7 +63,7 @@ export const DashBoardBody = () => {
                     {task.filter(t => t.column === c._id).length}
                   </span>
                 </div>
-                <div className="relative">
+                <div className="relative" ref={dropdownRef}>
                   <button className="text-gray-400 hover:text-gray-600 cursor-pointer text-lg leading-none"
                     onClick={() => setOpenMenuColumn(openMenuColumn === c._id ? null : c._id)}
                   >

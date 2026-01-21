@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import {
     X, ListChecks, UsersIcon, Folder, Plus, ArrowSquareOut, Star, CornersOut, DotsThree,
 } from "@phosphor-icons/react"
@@ -12,6 +12,17 @@ interface TaskDetailsHeaderProps {
 
 export const TaskDetailsHeader = ({ task, onClose }: TaskDetailsHeaderProps) => {
     const [openTaskId, setOpenTaskId] = useState<string | null>(null)
+    const dropdownRef=useRef<HTMLDivElement |null>(null)
+    useEffect(()=>{
+        const handaleClickOutside=(e: any)=>{
+            if(dropdownRef.current && !dropdownRef.current.contains(e.target as Node)){
+                setOpenTaskId(null)
+            }
+
+        }
+        window.addEventListener("mousedown", handaleClickOutside)
+        return ()=> window.removeEventListener("mousedown", handaleClickOutside)
+    }, [])
     const boardDetails = useContext(BoardContext)
     if (!boardDetails) return null
     const {board, deleteTask, updateTask }=boardDetails
@@ -29,14 +40,7 @@ export const TaskDetailsHeader = ({ task, onClose }: TaskDetailsHeaderProps) => 
                         <span className=" text-gray-500  tracking-tight">{board.name}</span>
                     </div>
 
-                    <div className="flex items-center gap-1 ml-2 border-l pl-3 border-gray-200">
-                        <button className="p-1 hover:bg-gray-100 rounded text-gray-500">
-                            <Plus size={20} />
-                        </button>
-                        <button className="p-1 hover:bg-gray-100 rounded text-gray-500">
-                            <ArrowSquareOut size={20} />
-                        </button>
-                    </div>
+                    
                 </div>
 
                 {/* Right Side: Meta Info and Global Actions */}
@@ -57,7 +61,7 @@ export const TaskDetailsHeader = ({ task, onClose }: TaskDetailsHeaderProps) => 
                         </button>
 
                         <div className="flex items-center gap-0.5 ml-2 border-l pl-2 border-gray-200">
-                            <div className="relative">
+                            <div className="relative" ref={dropdownRef}>
                                 <button
                                     className="p-2 hover:bg-gray-100 rounded text-gray-500"
                                     onClick={() => {
