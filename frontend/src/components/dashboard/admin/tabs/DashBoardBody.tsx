@@ -13,12 +13,15 @@ export const DashBoardBody = () => {
   const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [openMenuColumn, setOpenMenuColumn] = useState<string | null>(null)
-  const dropdownRef = useRef<HTMLDivElement | null>(null)
+  const columnMenuRef = useRef<HTMLDivElement | null>(null)
+const taskPopupRef = useRef<HTMLDivElement | null>(null)
+const columnInputRef = useRef<HTMLDivElement | null>(null)
+
   const columns = useAppSelector(state => state.column.columns)
 
   useEffect(() => {
     const handaleClickoutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (!columnInputRef.current?.contains(e.target as Node) && !columnMenuRef.current?.contains(e.target as Node) && !taskPopupRef.current?.contains(e.target as Node)) {
         setShowColumnInput(false)
         setActiveColumnId(null)
         setOpenMenuColumn(null)
@@ -26,7 +29,7 @@ export const DashBoardBody = () => {
     }
     window.addEventListener("mousedown", handaleClickoutside)
     return () => window.removeEventListener("mousedown", handaleClickoutside)
-  })
+  }, [])
 
   const boardDetails = useContext(BoardContext)
   if (!boardDetails) return null
@@ -63,8 +66,9 @@ export const DashBoardBody = () => {
                     {task.filter(t => t.column === c._id).length}
                   </span>
                 </div>
-                <div className="relative" ref={dropdownRef}>
+                <div className="relative" ref={columnMenuRef}>
                   <button className="text-gray-400 hover:text-gray-600 cursor-pointer text-lg leading-none"
+                  onMouseDown={(e) => e.stopPropagation()}
                     onClick={() => setOpenMenuColumn(openMenuColumn === c._id ? null : c._id)}
                   >
                     ···
@@ -160,14 +164,14 @@ export const DashBoardBody = () => {
               )}
 
               <button
-                onClick={() => setActiveColumnId(c._id)}
+              onMouseDown={(e) => e.stopPropagation()}
+                onClick={() => setActiveColumnId(prev=> prev===c._id? null :c._id)}
                 className="apperance-none flex justify-center gap-2 items-center mt-2"
               >
                 <Plus /> create task
               </button>
-
               {activeColumnId === c._id && (
-                <div className="relative mt-2 shadow-lg rounded-lg" ref={dropdownRef}>
+                <div className="relative mt-2 shadow-lg rounded-lg" ref={taskPopupRef}>
                   <TaskView boardId={board._id} columnId={c._id} />
                   <button
                     onClick={() => setActiveColumnId(null)}
@@ -192,7 +196,7 @@ export const DashBoardBody = () => {
               <Plus />
             </button>
           ) : (
-            <div className="flex space-x-1 items-center" ref={dropdownRef}>
+            <div className="flex space-x-1 items-center" ref={columnInputRef}>
               <select
                 value={columnName}
                 onChange={(e) => setColumnName(e.target.value)}

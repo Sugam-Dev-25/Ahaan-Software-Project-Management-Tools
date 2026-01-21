@@ -48,13 +48,9 @@ export const BoardProvider = ({ children }: { children: ReactNode }) => {
     return null;
   }, [boards, boardSlug]);
 
- // 1. Fetch Board and Columns only when boardSlug changes
 useEffect(() => {
   if (boardSlug) {
-    // Wrap this in a single action if possible, or sequence them
-    dispatch(fetchBoard()).then((res) => {
-       // Logic to find current board from results
-    });
+    dispatch(fetchBoard())
   }
 }, [boardSlug, dispatch]);
 useEffect(() => {
