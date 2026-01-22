@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import type { Task, Column } from "../../../types/allType";
 import TaskView from "../../../redux/features/Task/taskView";
-import { ArrowRight, CalendarBlank, Check, Flag, Plus, X } from "@phosphor-icons/react";
+import { ArrowRight, CalendarBlank, Chat, Check, Flag, Plus, X } from "@phosphor-icons/react";
 import { TaskDetails } from "./TaskDetails";
 
 import { useAppSelector } from "../../../redux/app/hook";
@@ -148,6 +148,10 @@ const columnInputRef = useRef<HTMLDivElement | null>(null)
                         <div className="flex items-center gap-1 px-2 py-0.5 border rounded-md text-gray-600 bg-gray-50/50 text-[11px] font-medium">
                           <Flag size={14} weight="fill" className="text-yellow-500" />
                           <span>{t.priority}</span>
+                        </div>
+                        <div className="flex gap-2 text-yellow-500 justify-center items-center text-[11px] px-2 py-0.5 border rounded-md">
+                          <Chat size={14} className=""/>
+                        <span>{t.comments.length}</span>
                         </div>
                       </div>
                     </div>

@@ -1,7 +1,7 @@
 const Task = require('../models/Task')
 const Column = require('../models/Column')
 const Board = require('../models/Board')
-
+const Notification=require('../models/Notification')
 const createTask = async (req, res) => {
   const { boardId, columnId } = req.params;
   const { title, description, priority, assignedTo, dueDate, startDate } = req.body;
@@ -202,34 +202,29 @@ const addTaskComment = async (req, res) => {
   try {
     const { taskId } = req.params;
     const { text } = req.body;
-    const userId = req.user._id; // From auth middleware
+    const userId = req.user._id;
 
-    if (!text) {
-      return res.status(400).json({ message: "Comment text is required" });
-    }
+    if (!text) return res.status(400).json({ message: "Comment text is required" });
 
     const task = await Task.findById(taskId);
-    if (!task) {
-      return res.status(404).json({ message: "Task not found" });
-    }
+    if (!task) return res.status(404).json({ message: "Task not found" });
 
-    // 1. Add the Comment
-    task.comments.push({
-      user: userId,
-      text: text,
-      createdAt: new Date()
-    });
+    // SET CONTEXT for the Schema hooks
+    task._userContext = userId;
 
-    // 2. Add to Activity Log
+    // 1. Add Comment
+    task.comments.push({ user: userId, text: text, createdAt: new Date() });
+
+    // 2. Add Activity Log
     task.activityLog.push({
       user: userId,
       action: `added a comment: "${text.substring(0, 20)}${text.length > 20 ? '...' : ''}"`,
       createdAt: new Date()
     });
 
-    await task.save();
+    // This ONE save triggers the TaskSchema.post('save') notification logic
+    await task.save(); 
 
-    // 3. Populate user details so the frontend has names to display
     const updatedTask = await Task.findById(taskId)
       .populate('comments.user', 'name email')
       .populate('activityLog.user', 'name')

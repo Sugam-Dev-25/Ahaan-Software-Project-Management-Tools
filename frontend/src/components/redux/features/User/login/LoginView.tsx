@@ -1,75 +1,78 @@
 import { useForm } from "react-hook-form";
-import { useAppDispatch, useAppSelector } from "../../../app/hook";
-import { loginUsers } from "./loginSlice";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-
+import { useAppDispatch, useAppSelector } from "../../../app/hook";
+import { loginUsers } from "./loginSlice";
+ 
 interface LoginForm {
   email: string;
   password: string;
 }
-
+ 
 export const LoginView = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { loading, error, redirectTo } = useAppSelector(
+ 
+  const { loading, error, user } = useAppSelector(
     (state) => state.login
   );
-
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>();
-
+ 
+  const { register, handleSubmit } = useForm<LoginForm>();
+ 
   const submitLogin = (data: LoginForm) => {
     dispatch(loginUsers(data));
   };
-
-  // Redirect after successful login
+ 
+  // ✅ ROLE BASED REDIRECT
   useEffect(() => {
-    if (loading === "successed" && redirectTo) {
-      const timer = setTimeout(() => {
-        navigate(redirectTo);
-      }, 300);
-
-      return () => clearTimeout(timer);
+    if (user?.role) {
+      navigate(`/${user.role}/dashboard`, { replace: true });
     }
-  }, [loading, redirectTo, navigate]);
-
+  }, [user, navigate]);
+ 
   return (
-    <div className="py-24 px-8 w-full flex justify-center">
-      <div className="w-full max-w-sm rounded-lg shadow-lg p-6 bg-white border border-gray-100">
-        <h3 className="text-2xl font-bold text-[#feb238] mb-8 text-center">Sign In</h3>
-        <form onSubmit={handleSubmit(submitLogin)} className="space-y-6">
-          <div className="flex flex-col">
-            <label className="font-medium mb-1 text-gray-700">Email</label>
-            <input
-              className="border rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#feb238] transition"
-              {...register("email", { required: "Email is required" })}
-              type="email"
-            />
-            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
-          </div>
-
-          <div className="flex flex-col">
-            <label className="font-medium mb-1 text-gray-700">Password</label>
-            <input
-              className="border rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#feb238] transition"
-              {...register("password", { required: "Password is required" })}
-              type="password"
-            />
-            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
-          </div>
-
-          {error && <p className="text-red-500 text-sm bg-red-50 p-2 rounded">{error}</p>}
-          {loading === "successed" && <p className="text-green-500 text-sm bg-green-50 p-2 rounded">Login successful! Redirecting...</p>}
-
-          <button
-            type="submit"
-            disabled={loading === "pending"}
-            className="bg-[#feb238] text-white w-full py-3 rounded-md font-semibold hover:bg-[#d69830] transition disabled:opacity-50"
-          >
-            {loading === "pending" ? "Logging in..." : "Login"}
-          </button>
-        </form>
+    <div className="w-full">
+      {/* HEADING */}
+      <div className="text-center mb-12">
+        <h2 className="text-3xl font-bold text-black">
+          Sign in to Your Account
+        </h2>
+        <p className="text-gray-500 mt-2">
+          Please sign in to access your dashboard
+        </p>
       </div>
+ 
+      {/* FORM */}
+      <form onSubmit={handleSubmit(submitLogin)} className="space-y-6">
+        <input
+          type="email"
+          placeholder="Email address"
+          {...register("email", { required: true })}
+          className="w-full px-6 py-4 rounded-full border bg-blue-50"
+        />
+ 
+        <input
+          type="password"
+          placeholder="Password"
+          {...register("password", { required: true })}
+          className="w-full px-6 py-4 rounded-full border bg-blue-50"
+        />
+ 
+        {error && (
+          <p className="text-red-500 text-sm text-center">
+            {error}
+          </p>
+        )}
+ 
+        <button
+          type="submit"
+          disabled={loading === "pending"}
+          className="w-full py-4 rounded-full bg-black text-white font-semibold"
+        >
+          {loading === "pending" ? "Signing in..." : "Sign In"}
+        </button>
+      </form>
     </div>
   );
 };
+ 

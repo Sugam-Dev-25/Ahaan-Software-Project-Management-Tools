@@ -52,19 +52,10 @@ const loginUser= async(req, res)=>{
         if(!isMatch) return res.status(401).json({message:'Invalid credentials'})
         const token=user.generateJWT()
         res.cookie('authToken', token, cookieOptions);
-        let redirectTo='/dashboard'
-        if(user.role==='super-admin'){
-            redirectTo='/super-admin/dashboard';
-        }
-        else if(user.role==='admin'){
-            redirectTo='/admin/dashboard';           
-        }
-       
-       
         res.status(200).json({
             message: 'Login success',
             user:{id:user._id, name:user.name, role: user.role},
-            redirectTo
+            
         })
     }
     catch(error){
@@ -86,13 +77,10 @@ const getProfile = (req,res)=>{
 }
 
 const searchUsers = async (req, res) => {
-    // 1. Get query and boardId from request parameters
     const { query, boardId } = req.query; 
-
     if (!query || query.length < 2) {
         return res.status(400).json({ message: 'Search query must be at least 2 characters long.' });
     }
-
     try {
         let searchCriteria = {
             $or: [
@@ -100,23 +88,17 @@ const searchUsers = async (req, res) => {
                 { email: { $regex: query, $options: 'i' } }
             ]
         };
-
-        // 2. If boardId is provided, restrict search to those board members
         if (boardId) {
             const board = await Board.findById(boardId);
             if (!board) {
                 return res.status(404).json({ message: 'Board not found' });
             }
-            
-            // Add a restriction: the user _id must be in the board.members array
             searchCriteria._id = { $in: board.members };
         }
-
-        // 3. Execute the search with restricted criteria
         const users = await User.find(searchCriteria)
             .select('_id name email role profilepicture')
-            .limit(10);
-
+            .limit(10)
+            .lean()
         res.status(200).json(users);
 
     } catch (error) {

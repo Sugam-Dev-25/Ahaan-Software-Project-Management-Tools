@@ -27,9 +27,7 @@ userSchema.pre('save', async function (next) {
     next();
 });
 
-// Method to generate JWT (STATLESS: doesn't save to DB)
 userSchema.methods.generateJWT = function () {
-    // Token valid for 3 days
     const token = jwt.sign({ id: this._id, role: this.role }, process.env.JWT_SECRET, { expiresIn: '3d' });
     return token;
 };

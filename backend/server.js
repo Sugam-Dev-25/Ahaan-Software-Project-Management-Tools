@@ -41,6 +41,7 @@ app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/boards', require('./routes/boardRoute'))
 app.use('/api/column', require('./routes/columnRoute'))
 app.use('/api/tasks', require('./routes/taskRoutes'))
+app.use('/api/notifications', require('./routes/notificationRoute'))
 
 
 // Default route

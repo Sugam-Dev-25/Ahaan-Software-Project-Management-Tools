@@ -9,6 +9,8 @@ import { GlobalSpinner } from '../../context/board/GlobalSpinner'
 import { MyTask } from './tabs/MyTask'
 import { AllTask } from './tabs/AllTask'
 import { useAppSelector } from '../../redux/app/hook'
+import { Topbar } from './TopBar'
+
 
 
 export const AdminDashboard = () => {
@@ -20,8 +22,12 @@ export const AdminDashboard = () => {
 
   return (
     <div className='flex min-h-screen max-w-8xl mx-auto px-4 py-5 font-sans-serif'>
-      <Sidebar />
+    
+      <Sidebar/>
+
       <div className="flex-1 p-6">
+        
+         <Topbar/>
         <Routes>
           {/* Explicitly define the root for the dashboard */}
           <Route path="/" element={role ? <HomeTab /> : <GlobalSpinner />} /> 

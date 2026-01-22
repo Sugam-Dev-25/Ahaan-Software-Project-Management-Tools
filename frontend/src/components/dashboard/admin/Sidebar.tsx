@@ -38,7 +38,7 @@ export const Sidebar = () => {
 
     }
     return (
-        <div className="w-40 relative mt-12" >
+        <div className="w-40 relative px-3 py-6" >
             <NavLink
                 to={`/${role}/dashboard`}
                 end
