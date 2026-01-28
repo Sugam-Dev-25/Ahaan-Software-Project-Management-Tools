@@ -129,45 +129,33 @@ TaskSchema.pre('save', async function (next) {
     next();
 });
 TaskSchema.post('save', async function (doc) {
-    console.log("--- Post Save Hook Triggered ---");
-    
-    if (!doc._userContext) {
-        console.log("Exit: No _userContext found on document.");
-        return;
-    }
+    if (!doc._userContext) return;
 
     const lastActivity = doc.activityLog[doc.activityLog.length - 1];
-    if (!lastActivity) {
-        console.log("Exit: No activity log found.");
-        return;
-    }
+    if (!lastActivity) return;
 
-    // Check if there are other people assigned
-    const recipients = doc.assignedTo.filter(
-        id => id.toString() !== doc._userContext.toString()
-    );
-
-    console.log(`Context User: ${doc._userContext}`);
-    console.log(`Total Assigned: ${doc.assignedTo.length}`);
-    console.log(`Recipients to notify: ${recipients.length}`);
-
-    if (recipients.length > 0) {
-        const notifications = recipients.map(recipientId => ({
-            recipient: recipientId,
+    try {
+        const User = mongoose.model('User');
+        
+        // 1. Fetch EVERY user ID in the system
+        const allUsers = await User.find({}).select('_id');
+        
+        // 2. Map them to notification objects
+        const notifications = allUsers.map(user => ({
+            recipient: user._id,
             sender: doc._userContext,
             task: doc._id,
             action: lastActivity.action,
             isRead: false
         }));
 
-        try {
-            const result = await Notification.insertMany(notifications);
-            console.log("Success: Notifications created in DB:", result.length);
-        } catch (err) {
-            console.error("DB Error during notification creation:", err.message);
+        // 3. Insert all at once
+        if (notifications.length > 0) {
+            await Notification.insertMany(notifications);
+            
         }
-    } else {
-        console.log("Exit: No one to notify (You are the only one assigned).");
+    } catch (err) {
+        console.error("Global Notification Error:", err.message);
     }
 });
 

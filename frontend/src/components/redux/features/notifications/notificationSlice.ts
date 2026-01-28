@@ -50,6 +50,17 @@ export const markAsRead = createAsyncThunk<string, string, { rejectValue: string
         }
     }
 );
+export const markAllNotificationsAsRead = createAsyncThunk<void, void, { rejectValue: string }>(
+    "notifications/markAllAsRead",
+    async (_, { rejectWithValue }) => {
+        try {
+            // MATCH THIS URL TO YOUR BACKEND ROUTE EXACTLY
+            await axiosClient.put("/api/notifications/read-all", {}, { withCredentials: true });
+        } catch (err: any) {
+            return rejectWithValue(err.message);
+        }
+    }
+);
 
 const notificationSlice = createSlice({
     name: "notifications",
@@ -82,6 +93,10 @@ const notificationSlice = createSlice({
                     state.notifications[index].isRead = true;
                     state.unreadCount -= 1;
                 }
+            })
+            .addCase(markAllNotificationsAsRead.fulfilled, (state) => {
+                state.notifications.forEach(n => n.isRead = true);
+                state.unreadCount = 0;
             });
     },
 });

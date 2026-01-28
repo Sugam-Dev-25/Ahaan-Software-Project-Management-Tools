@@ -3,11 +3,12 @@ const Notification = require('../models/Notification');
 // Get all notifications for the logged-in user
 const getNotifications = async (req, res) => {
     try {
-        const notifications = await Notification.find({ recipient: req.user._id })
-            .populate('sender', 'name email')
-            .populate('task', 'title')
-            .sort({ createdAt: -1 })
-            .limit(50); // Keep it performant
+        const notifications = await Notification.find({ 
+            recipient: req.user._id // Ensure this matches the ID in the DB
+        })
+        .populate('sender', 'name email')
+        .populate('task', 'title')
+        .sort({ createdAt: -1 });
 
         res.status(200).json(notifications);
     } catch (error) {

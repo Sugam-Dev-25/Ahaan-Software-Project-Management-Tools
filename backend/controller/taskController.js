@@ -26,7 +26,8 @@ const createTask = async (req, res) => {
       activityLog: [{
         user: req.user._id,
         action: "Task created"
-      }]
+      }],
+      _userContext: req.user._id,
 
     })
     await newTask.save()

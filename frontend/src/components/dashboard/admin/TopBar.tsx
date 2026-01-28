@@ -2,8 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../redux/app/hook";
 import { 
   fetchNotifications, 
-  markAsRead, 
-  // ensure you add markAllAsRead to your notificationSlice
+  markAllNotificationsAsRead, 
+  markAsRead 
 } from "../../redux/features/notifications/notificationSlice";
 import {
   MagnifyingGlass,
@@ -21,21 +21,17 @@ export const Topbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // 1. Custom Date Formatter Helper
   const formatNotificationDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    
     const isToday = date.toDateString() === now.toDateString();
     const yesterday = new Date();
     yesterday.setDate(now.getDate() - 1);
     const isYesterday = date.toDateString() === yesterday.toDateString();
-
     const timeOptions: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hour12: true };
     
     if (isToday) return `Today at ${date.toLocaleTimeString([], timeOptions)}`;
     if (isYesterday) return `Yesterday at ${date.toLocaleTimeString([], timeOptions)}`;
-    
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', ...timeOptions });
   };
 
@@ -61,7 +57,6 @@ export const Topbar = () => {
 
   return (
     <header className="sticky top-0 z-40 h-16 px-6 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-gray-100">
-      {/* LEFT : SEARCH */}
       <div className="flex items-center gap-3 w-[420px] max-w-full">
         <MagnifyingGlass size={18} className="text-gray-500" />
         <input
@@ -71,13 +66,11 @@ export const Topbar = () => {
         />
       </div>
 
-      {/* RIGHT */}
       <div className="flex items-center gap-5">
         <button className="relative text-gray-500 hover:text-black transition">
           <Chats size={20} />
         </button>
 
-        {/* NOTIFICATION WRAPPER */}
         <div className="relative" ref={dropdownRef}>
           <button 
             onClick={() => setIsOpen(!isOpen)}
@@ -91,14 +84,13 @@ export const Topbar = () => {
             )}
           </button>
 
-          {/* DROPDOWN POPUP */}
           {isOpen && (
             <div className="absolute right-0 mt-3 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in zoom-in duration-150">
               <div className="p-4 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
                 <h3 className="font-bold text-sm text-gray-800">Notifications</h3>
                 <button 
                   className="text-[11px] text-blue-600 font-semibold hover:text-blue-800 transition"
-                  onClick={() => {/* dispatch(markAllAsRead()) */}}
+                  onClick={() => dispatch(markAllNotificationsAsRead())}
                 >
                   Mark all as read
                 </button>
@@ -114,14 +106,17 @@ export const Topbar = () => {
                         !n.isRead ? "bg-blue-50/30 hover:bg-blue-50" : "hover:bg-gray-50"
                       }`}
                     >
-                      {/* Avatar Circle */}
+                      {/* Avatar Circle: Always shows actual name first letter */}
                       <div className="h-9 w-9 rounded-full bg-indigo-100 flex-shrink-0 flex items-center justify-center text-xs font-bold text-indigo-600 border border-indigo-200">
                         {n.sender?.name?.charAt(0) || "U"}
                       </div>
 
                       <div className="flex flex-col gap-0.5 flex-1">
                         <p className="text-xs text-gray-800 leading-normal">
-                          <span className="font-bold text-black">{n.sender?.name}</span> {n.action}
+                          <span className="font-bold text-black">
+                            {/* Logic: Show "You" if it's the logged-in user, else the Name */}
+                            {n.sender?._id === user?._id ? "You" : n.sender?.name}
+                          </span> {n.action}
                         </p>
                         {n.task && (
                           <div className="flex items-center gap-1.5 mt-0.5">
@@ -147,7 +142,6 @@ export const Topbar = () => {
                         <Bell size={24} className="text-gray-400" />
                     </div>
                     <p className="text-gray-500 text-sm font-medium">All caught up!</p>
-                    <p className="text-gray-400 text-xs">No new notifications.</p>
                   </div>
                 )}
               </div>
@@ -159,12 +153,10 @@ export const Topbar = () => {
           )}
         </div>
 
-        {/* SETTINGS */}
         <button className="text-gray-500 hover:text-black transition">
           <Gear size={20} />
         </button>
 
-        {/* USER PROFILE */}
         <div className="flex items-center gap-2 pl-3 border-l border-gray-200 cursor-pointer group">
           <UserCircle size={28} className="text-gray-400 group-hover:text-black transition" />
           <div className="text-sm leading-tight hidden sm:block">
