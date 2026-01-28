@@ -277,6 +277,7 @@ const getMyIndividualTasks = async (req, res) => {
   try {
     // We filter by the logged-in user's ID (from your auth middleware)
     const tasks = await Task.find({ assignedTo: req.user._id })
+    .populate('assignedTo', 'name email')
       .populate('board', 'name')   // Need this to show project name
       .populate('column', 'name')  // Need this to show status
       .sort({ createdAt: -1 });

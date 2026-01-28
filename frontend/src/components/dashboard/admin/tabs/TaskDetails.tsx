@@ -63,10 +63,8 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
     const [isdropdown, setIsdropdown] = useState(false);
 
     const boardDetails = useContext(BoardContext)
-    if (!boardDetails) return null
-    const { updateTask } = boardDetails
-
-    const handleChange = (field: keyof Task, value: any) => {
+    
+   const handleChange = (field: keyof Task, value: any) => {
         setEditedTask(prev => ({ ...prev, [field]: value }));
     };
 
@@ -83,9 +81,16 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
             finalUpdate.labels = labelsArray;
         }
 
-        updateTask(task._id, finalUpdate);
+        // 2. CHECK IF UPDATE FUNCTION EXISTS BEFORE CALLING
+        if (boardDetails?.updateTask) {
+            boardDetails.updateTask(task._id, finalUpdate);
+        } else {
+            console.error("BoardContext not found. Cannot save changes.");
+        }
+        
         setActiveField(null);
     };
+    
 
     const handleFieldCancel = () => {
         setEditedTask({ ...task });
@@ -196,7 +201,7 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
                                             }
                                         }}
                                         excludeUserIds={Array.isArray(editedTask.assignedTo) ? editedTask.assignedTo.map(u => u._id) : []}
-                                        includeUserIds={boardDetails.board?.members.map((m: any) => m._id)}
+                                        includeUserIds={boardDetails?.board?.members.map((m: any) => m._id)}
                                     />
                                 }
                             >

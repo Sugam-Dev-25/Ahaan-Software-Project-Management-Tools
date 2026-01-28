@@ -157,15 +157,7 @@ const columnInputRef = useRef<HTMLDivElement | null>(null)
                     </div>
                   </div>
                 ))}
-              {selectedTask && (
-                <div className="absolute w-40 h-60 shadow-lg bg-gray-50">
-                  <TaskDetails
-                    status={taskStatus(selectedTask)}
-                    task={selectedTask}
-                    onClose={() => setSelectedTask(null)}
-                  />
-                </div>
-              )}
+             
 
               <button
               onMouseDown={(e) => e.stopPropagation()}
@@ -226,6 +218,15 @@ const columnInputRef = useRef<HTMLDivElement | null>(null)
           )}
         </div>
       </div>
+       {selectedTask && (
+                <div className="absolute w-40 h-60 shadow-lg bg-gray-50">
+                  <TaskDetails
+                    status={taskStatus(selectedTask)}
+                    task={selectedTask}
+                    onClose={() => setSelectedTask(null)}
+                  />
+                </div>
+              )}
     </div >
   )
 }

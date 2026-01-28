@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react'; // Added useState
 import { fetchAllTasks } from '../../../redux/features/Task/taskSlice';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hook';
+import { TaskDetails } from './TaskDetails'; // Import your TaskDetails component
 import {
     Clock,
     WarningCircle,
@@ -15,6 +16,9 @@ import {
 export const AllTask = () => {
     const dispatch = useAppDispatch();
     const { task: tasks, loading } = useAppSelector((state) => state.task);
+
+    // --- SAME LOGIC AS MyTask: STATE FOR MODAL ---
+    const [selectedTask, setSelectedTask] = useState<any>(null);
 
     useEffect(() => {
         dispatch(fetchAllTasks());
@@ -68,6 +72,7 @@ export const AllTask = () => {
                     <span className="text-sm font-bold text-gray-700">{tasks?.length || 0} Active Tasks</span>
                 </div>
             </div>
+
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
@@ -85,14 +90,20 @@ export const AllTask = () => {
                                 const { percent, isOvertime, overtimeHours } = calculateProgress(t.timeManagement);
 
                                 return (
-                                    <tr key={t._id} className="hover:bg-slate-50/50 transition-all group">
+                                    <tr key={t._id} 
+                                        // --- SAME LOGIC: ADDED CLICK HANDLER ---
+                                        onClick={() => setSelectedTask(t)}
+                                        className="hover:bg-slate-50/50 transition-all group cursor-pointer"
+                                    >
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col">
                                                 <span className="text-sm font-bold text-gray-800">{t.title}</span>
                                                 <div className="flex items-center gap-1.5 mt-0.5">
                                                     <span className="text-[10px] font-black text-indigo-500 uppercase">{t.board?.name || "No Board"}</span>
                                                     <span className="text-gray-300 text-[10px]">•</span>
-                                                    <span className="text-[10px] font-bold text-slate-500 uppercase px-1.5 py-0.5 bg-slate-100 rounded">{t.column?.name || "No Status"}</span>
+                                                    <span className="text-[10px] font-bold text-slate-500 uppercase px-1.5 py-0.5 bg-slate-100 rounded">
+                                                        {t.column?.name || "No Status"}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </td>
@@ -152,6 +163,15 @@ export const AllTask = () => {
                     </table>
                 </div>
             </div>
+
+            {/* --- SAME LOGIC: RENDER MODAL IF TASK IS SELECTED --- */}
+            {selectedTask && (
+                <TaskDetails 
+                    task={selectedTask} 
+                    status={selectedTask.column?.name || "Task"} 
+                    onClose={() => setSelectedTask(null)} 
+                />
+            )}
         </div>
     );
 };

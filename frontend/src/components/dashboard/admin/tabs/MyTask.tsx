@@ -1,35 +1,24 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react"; // Added useState
 import { useAppDispatch, useAppSelector } from "../../../redux/app/hook";
 import { fetchMyTasks } from "../../../redux/features/Task/taskSlice";
 import { Timer } from "../Home/Timer";
+import { TaskDetails } from "./TaskDetails"; // Import your TaskDetails component
+import type { Task } from "../../../types/allType";
 
 export const MyTask = () => {
     const dispatch = useAppDispatch();
     const task = useAppSelector(state => state.task.task);
     const user = useAppSelector(state => state.login.user);
 
+    // --- NEW STATE FOR MODAL ---
+    const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
     useEffect(() => {
         dispatch(fetchMyTasks());
     }, [dispatch]);
 
     const formatHours = (ms: number) => (ms / 3600000).toFixed(1) + "h";
-const getPriorityStyle = (priority: string) => {
 
-        switch (priority) {
-
-            case 'Critical': return 'bg-red-100 text-red-700 border-red-200';
-
-            case 'High': return 'bg-orange-100 text-orange-700 border-orange-200';
-
-            case 'Medium': return 'bg-blue-100 text-blue-700 border-blue-200';
-
-            case 'Low': return 'bg-green-100 text-green-700 border-green-200';
-
-            default: return 'bg-gray-100 text-gray-700 border-gray-200';
-
-        }
-
-    };
     return (
         <div className="p-6 max-w-5xl mx-auto">
             <header className="mb-8">
@@ -39,7 +28,12 @@ const getPriorityStyle = (priority: string) => {
             
             <div className="grid gap-4">
                 {task.map(t => (
-                    <div key={t._id} className="group p-5 border border-gray-100 rounded-2xl bg-white hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/5 transition-all">
+                    <div 
+                        key={t._id} 
+                        // --- ADDED CLICK HANDLER ---
+                        onClick={() => setSelectedTask(t)}
+                        className="group p-5 border border-gray-100 rounded-2xl bg-white hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/5 transition-all cursor-pointer"
+                    >
                         <div className="flex justify-between items-center">
                             <div className="space-y-1">
                                 <div className="flex items-center gap-3">
@@ -54,7 +48,10 @@ const getPriorityStyle = (priority: string) => {
                                    {t.board?.name} • <span className="text-blue-500">{t.column?.name}</span>
                                 </p>
                             </div>
-                            <Timer taskId={t._id} timeData={t.timeManagement} />
+                            {/* stopPropagation ensures clicking the timer doesn't trigger the modal */}
+                            <div onClick={(e) => e.stopPropagation()}>
+                                <Timer taskId={t._id} timeData={t.timeManagement} />
+                            </div>
                         </div>
 
                         {/* Progress Bar and Stats */}
@@ -72,7 +69,6 @@ const getPriorityStyle = (priority: string) => {
                                 </div>
                             </div>
                             
-                            {/* Daily Log Mini-Bubbles */}
                             <div className="flex -space-x-1.5 overflow-hidden">
                                 {t.timeManagement?.dailyLogs?.slice(-3).map((log, i) => (
                                     <div key={log.date} 
@@ -93,6 +89,15 @@ const getPriorityStyle = (priority: string) => {
                     </div>
                 )}
             </div>
+
+            {/* --- RENDER MODAL IF TASK IS SELECTED --- */}
+            {selectedTask && (
+                <TaskDetails 
+                    task={selectedTask} 
+                    status={selectedTask.column?.name || "Task"} 
+                    onClose={() => setSelectedTask(null)} 
+                />
+            )}
         </div>
     );
 };
