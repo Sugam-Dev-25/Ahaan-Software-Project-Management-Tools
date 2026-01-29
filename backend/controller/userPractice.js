@@ -118,3 +118,27 @@ const getProfile=(req, res)=>{
         user: req.user
     })
 }
+
+const createBoard=async(req, res)=>{
+    const {name, members}=req.body
+    const ownerId=req.user._id
+    try{
+        const newBoard=new Board({
+            name, 
+            owner: ownerId,
+            members:[ownerId, ...(members || [])]
+        })
+        await newBoard.save()
+        await User.updateMany(
+            {_id:{$in: newBoard.members}},
+            {$addToSet:{memberOfBoards: newBoard._id}}
+        )
+        res.status(201).json(newBoard)
+
+    }
+    catch(error){
+        console.log("something went wrong", error)
+        res.status(500).json({message: "Somethin erron in Internal server"})
+    }
+
+}

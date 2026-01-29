@@ -16,8 +16,6 @@ import {
 export const AllTask = () => {
     const dispatch = useAppDispatch();
     const { task: tasks, loading } = useAppSelector((state) => state.task);
-
-    // --- SAME LOGIC AS MyTask: STATE FOR MODAL ---
     const [selectedTask, setSelectedTask] = useState<any>(null);
 
     useEffect(() => {
@@ -91,7 +89,6 @@ export const AllTask = () => {
 
                                 return (
                                     <tr key={t._id} 
-                                        // --- SAME LOGIC: ADDED CLICK HANDLER ---
                                         onClick={() => setSelectedTask(t)}
                                         className="hover:bg-slate-50/50 transition-all group cursor-pointer"
                                     >
@@ -163,8 +160,6 @@ export const AllTask = () => {
                     </table>
                 </div>
             </div>
-
-            {/* --- SAME LOGIC: RENDER MODAL IF TASK IS SELECTED --- */}
             {selectedTask && (
                 <TaskDetails 
                     task={selectedTask} 
