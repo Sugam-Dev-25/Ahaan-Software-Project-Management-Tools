@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"; // Added useState
 import { useAppDispatch, useAppSelector } from "../../../redux/app/hook";
-import { fetchMyTasks } from "../../../redux/features/Task/taskSlice";
+import { fetchMyTasks, getTasks } from "../../../redux/features/Task/taskSlice";
 import { Timer } from "../Home/Timer";
 import { TaskDetails } from "./TaskDetails"; // Import your TaskDetails component
 import type { Task } from "../../../types/allType";
@@ -13,9 +13,7 @@ export const MyTask = () => {
     // --- NEW STATE FOR MODAL ---
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
-    useEffect(() => {
-        dispatch(fetchMyTasks());
-    }, [dispatch]);
+  
 
     const formatHours = (ms: number) => (ms / 3600000).toFixed(1) + "h";
 

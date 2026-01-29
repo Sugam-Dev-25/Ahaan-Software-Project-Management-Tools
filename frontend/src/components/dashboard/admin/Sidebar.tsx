@@ -38,7 +38,8 @@ export const Sidebar = () => {
 
     }
     return (
-        <div className="w-40 relative px-3 py-6" >
+        <div className="w-40 relative px-3 py-6 " >
+            
             <NavLink
                 to={`/${role}/dashboard`}
                 end
@@ -46,7 +47,8 @@ export const Sidebar = () => {
             >
                 Home
             </NavLink>
-            <NavLink to={`/${role}/dashboard/my-tasks`} className={({ isActive }) => `${base} ${isActive ? active : inactive} `}>
+            <NavLink to={`/${role}/dashboard/tasks?scope=${role === 'admin' || role === 'super-admin' ? 'all' : 'mine'}`}
+ className={({ isActive }) => `${base} ${isActive ? active : inactive} `}>
                 {role === 'admin' || role === 'super-admin' ? "All tasks" : "My Tasks"}
             </NavLink>
             <div className="flex justify-between items-center" ref={dropdownRef}>

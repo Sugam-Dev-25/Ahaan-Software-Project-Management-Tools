@@ -10,6 +10,7 @@ import { MyTask } from './tabs/MyTask'
 import { AllTask } from './tabs/AllTask'
 import { useAppSelector } from '../../redux/app/hook'
 import { Topbar } from './TopBar'
+import { TasksPageWrapper } from './TaskPagewrapper'
 
 
 
@@ -32,10 +33,7 @@ export const AdminDashboard = () => {
           {/* Explicitly define the root for the dashboard */}
           <Route path="/" element={role ? <HomeTab /> : <GlobalSpinner />} /> 
           
-          <Route 
-            path="my-tasks" 
-            element={role === 'admin' || role === 'super-admin' ? <AllTask /> : <MyTask />} 
-          />
+            <Route path="tasks" element={<TasksPageWrapper />} />
           <Route path=":boardSlug" element={<BoardProviderWrapper />} />
           <Route path="*" element={<Navigate to={`/${role}/dashboard`} replace />} />
         </Routes>

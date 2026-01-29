@@ -1,7 +1,6 @@
 const Task = require('../models/Task')
 const Column = require('../models/Column')
 const Board = require('../models/Board')
-const Notification=require('../models/Notification')
 const createTask = async (req, res) => {
   const { boardId, columnId } = req.params;
   const { title, description, priority, assignedTo, dueDate, startDate } = req.body;
@@ -49,37 +48,7 @@ const createTask = async (req, res) => {
     res.status(500).json({ message: 'Server Error: Failed to create task' });
   }
 }
-const getTasksForColumn = async (req, res) => {
-  try {
-    const { boardId, columnId } = req.params;
 
-    // Check if boardId and columnId are provided
-    if (!boardId || !columnId) {
-      return res.status(400).json({ message: 'boardId and columnId are required' });
-    }
-
-    const board = await Board.findById(boardId).select('members');
-    if (!board) {
-      return res.status(404).json({ message: 'Board not found' });
-    }
-
-    // Ensure user is a member of the board
-    if (!board.members.some(member => member.toString() === req.user._id.toString())) {
-      return res.status(403).json({ message: 'Access denied. Not a board member' });
-    }
-
-    const tasks = await Task.find({ board: boardId, column: columnId })
-      .populate('assignedTo', 'name email role')
-      .populate('attachments.uploadedBy', 'name email')
-      .populate('comments.user', 'name profilePicture')
-      .populate('activityLog.user', 'name');
-
-    res.status(200).json(tasks);
-  } catch (error) {
-    console.error(`Error fetching tasks for board ${req.params.boardId} and column ${req.params.columnId}`, error);
-    res.status(500).json({ message: 'Server error fetching tasks' });
-  }
-};
 const moveTask = async (req, res) => {
   const { newColumnId, newPosition } = req.body;
   const taskId = req.params.taskId;
@@ -159,14 +128,8 @@ const updateTask = async (req, res) => {
 
     const task = await Task.findById(taskId);
     if (!task) return res.status(404).json({ message: "Task not found" });
-
-    // 1. Bridge the user context
     task._userContext = req.user._id;
-
-    // 2. Take a snapshot of the data BEFORE applying updates
     task._originalValues = JSON.parse(JSON.stringify(task));
-
-    // 3. Apply updates
     Object.keys(updates).forEach((key) => {
         task[key] = updates[key];
     });
@@ -209,14 +172,8 @@ const addTaskComment = async (req, res) => {
 
     const task = await Task.findById(taskId);
     if (!task) return res.status(404).json({ message: "Task not found" });
-
-    // SET CONTEXT for the Schema hooks
     task._userContext = userId;
-
-    // 1. Add Comment
     task.comments.push({ user: userId, text: text, createdAt: new Date() });
-
-    // 2. Add Activity Log
     task.activityLog.push({
       user: userId,
       action: `added a comment: "${text.substring(0, 20)}${text.length > 20 ? '...' : ''}"`,
@@ -255,38 +212,7 @@ const updateTaskProgress = async (req, res) => {
     res.status(500).json({ message: "Failed to update task" });
   }
 };
-const getAllUserTasks = async (req, res) => {
-  try {
-    // 1. Find all boards where the user is a member
-    const boards = await Board.find({ members: req.user._id }).select('_id');
-    const boardIds = boards.map(b => b._id);
 
-    // 2. Find all tasks and POPULATE the column and board names
-    const tasks = await Task.find({ board: { $in: boardIds } })
-      .populate('assignedTo', 'name email')
-      .populate('column', 'name') // <--- Add this to get column name
-      .populate('board', 'name')  // <--- Add this to get board name
-      .sort({ createdAt: -1 });
-
-    res.status(200).json(tasks);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to fetch all tasks" });
-  }
-};
-const getMyIndividualTasks = async (req, res) => {
-  try {
-    // We filter by the logged-in user's ID (from your auth middleware)
-    const tasks = await Task.find({ assignedTo: req.user._id })
-    .populate('assignedTo', 'name email')
-      .populate('board', 'name')   // Need this to show project name
-      .populate('column', 'name')  // Need this to show status
-      .sort({ createdAt: -1 });
-    
-    res.status(200).json(tasks);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to fetch tasks" });
-  }
-};
 const toggleTimer = async (req, res) => {
     const { taskId } = req.params;
     const task = await Task.findById(taskId);
@@ -338,5 +264,57 @@ const toggleTimer = async (req, res) => {
     await task.save();
     res.status(200).json(task);
 };
+const getTasks = async (req, res) => {
+  try {
+    const { scope, boardId, columnId } = req.query;
+    // board view
+    if (boardId && columnId) {
+      const board = await Board.findById(boardId).select('members');
+      if (!board) {
+        return res.status(404).json({ message: 'Board not found' });
+      }
 
-module.exports = { createTask, getTasksForColumn, moveTask, updateTask, deleteTask, addTaskComment, updateTaskProgress, getAllUserTasks,  getMyIndividualTasks, toggleTimer }
+      if (!board.members.some(m => m.toString() === req.user._id.toString())) {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+
+      const tasks = await Task.find({ board: boardId, column: columnId })
+        .populate('assignedTo', 'name email role')
+        .populate('attachments.uploadedBy', 'name email')
+        .populate('comments.user', 'name profilePicture')
+        .populate('activityLog.user', 'name')
+        .sort({ position: 1 });
+
+      return res.status(200).json(tasks);
+    }
+// Individual assign task
+    if (scope === 'mine') {
+      const tasks = await Task.find({ assignedTo: req.user._id })
+        .populate('assignedTo', 'name email')
+        .populate('board', 'name')
+        .populate('column', 'name')
+        .sort({ createdAt: -1 });
+
+      return res.status(200).json(tasks);
+    }
+
+    // All Task
+    const boards = await Board.find({ members: req.user._id }).select('_id');
+    const boardIds = boards.map(b => b._id);
+
+    const tasks = await Task.find({ board: { $in: boardIds } })
+      .populate('assignedTo', 'name email')
+      .populate('board', 'name')
+      .populate('column', 'name')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(tasks);
+
+  } catch (error) {
+    console.error('Get tasks error:', error);
+    res.status(500).json({ message: 'Failed to fetch tasks' });
+  }
+};
+
+
+module.exports = { createTask, moveTask, updateTask, deleteTask, addTaskComment, updateTaskProgress,  toggleTimer, getTasks }

@@ -14,6 +14,11 @@ const initialState: taskState = {
     loading: 'idle',
     error: null
 }
+interface GetTasksParams {
+  scope?: "mine" | "all";
+  boardId?: string;
+  columnId?: string;
+}
 export const fetchTasksForColumn = createAsyncThunk<Task[], { boardId: string; columnId: string }, { rejectValue: string }>("tasks/fetchTasksForColumn", async ({ boardId, columnId }, { rejectWithValue }) => {
     try {
         const res = await axiosClient.get(`/api/boards/${boardId}/columns/${columnId}`, {
@@ -112,6 +117,26 @@ export const toggleTimer = createAsyncThunk<Task,{ taskId: string },{ rejectValu
             return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
+);
+export const getTasks = createAsyncThunk<Task[], GetTasksParams | undefined, { rejectValue: string }>(
+  "tasks/getTasks",
+  async (params, { rejectWithValue }) => {
+    try {
+      const query = new URLSearchParams();
+
+      if (params?.scope) query.append("scope", params.scope);
+      if (params?.boardId) query.append("boardId", params.boardId);
+      if (params?.columnId) query.append("columnId", params.columnId);
+
+      const res = await axiosClient.get(`/api/tasks?${query.toString()}`, {
+        withCredentials: true,
+      });
+
+      return res.data;
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data?.message || err.message);
+    }
+  }
 );
 
 
@@ -268,6 +293,18 @@ const taskSlice = createSlice({
                     return taskColId !== columnId;
                 });
             })
+            .addCase(getTasks.pending, (state) => {
+        state.loading = "pending";
+        state.error = null;
+      })
+      .addCase(getTasks.fulfilled, (state, action: PayloadAction<Task[]>) => {
+        state.loading = "fulfilled";
+        state.task = action.payload;
+      })
+      .addCase(getTasks.rejected, (state, action) => {
+        state.loading = "failed";
+        state.error = action.payload as string;
+      });
     }
 })
 export default taskSlice.reducer

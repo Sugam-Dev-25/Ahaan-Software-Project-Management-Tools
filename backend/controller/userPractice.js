@@ -138,7 +138,7 @@ const createBoard=async(req, res)=>{
     }
     catch(error){
         console.log("something went wrong", error)
-        res.status(500).json({message: "Somethin erron in Internal server"})
+        res.status(500).json({message: "Something erron in Internal server"})
     }
 
 }

@@ -6,7 +6,7 @@ import { slugify } from "../../hooks/slugify"
 import { addMember, fetchBoard } from "../../redux/features/Board/boardSlice"
 import type { Board, Task } from "../../types/allType"
 import { addColumn, deleteColumn, fetchColumn } from "../../redux/features/Column/columnSlice"
-import { addComment, clearTasks, deleteTask, fetchTasksForColumn, moveTask, updateProgress, updateTask } from "../../redux/features/Task/taskSlice"
+import { addComment, getTasks, clearTasks, deleteTask, fetchTasksForColumn, moveTask, updateProgress, updateTask } from "../../redux/features/Task/taskSlice"
 
 interface BoardProviderProps {
   board: Board | null
@@ -72,17 +72,14 @@ useEffect(() => {
 // 3. Fetch Tasks ONLY when columns are first populated
 // 3. Fetch Tasks ONLY when columns are first populated
 useEffect(() => {
-  const boardId = currentBoard?._id;
-  // Use optional chaining and fallback to empty array
-  const boardColumns = boardId ? (columns[boardId] || []) : [];
-  
-  if (boardId && boardColumns.length > 0) {
-    boardColumns.forEach((col) => {
-      dispatch(fetchTasksForColumn({ boardId, columnId: col._id }));
-    });
+  if (currentBoard?._id) {
+    // Fetch all tasks for the current board (kanban view)
+    dispatch(getTasks({ boardId: currentBoard._id }));
+  } else {
+    // Optional: Fetch all tasks for all boards when no boardSlug is selected (Home view)
+    dispatch(getTasks());
   }
-  // FIX: Access length safely using optional chaining
-}, [currentBoard?._id, columns[currentBoard?._id || ""]?.length, dispatch]);
+}, [currentBoard?._id, dispatch]);
 
  // Inside BoardProvider.tsx
 const getTaskByColumn = (columnId: string) => {
