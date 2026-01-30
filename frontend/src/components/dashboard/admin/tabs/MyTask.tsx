@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react"; // Added useState
-import { useAppDispatch, useAppSelector } from "../../../redux/app/hook";
+import {  useState } from "react"; // Added useState
+import { useAppSelector } from "../../../redux/app/hook";
 
 import { Timer } from "../Home/Timer";
 import { TaskDetails } from "./TaskDetails"; // Import your TaskDetails component
 import type { Task } from "../../../types/allType";
 
 export const MyTask = () => {
-    const dispatch = useAppDispatch();
+    
     const task = useAppSelector(state => state.task.task);
     const user = useAppSelector(state => state.login.user);
 
@@ -68,7 +68,7 @@ export const MyTask = () => {
                             </div>
                             
                             <div className="flex -space-x-1.5 overflow-hidden">
-                                {t.timeManagement?.dailyLogs?.slice(-3).map((log, i) => (
+                                {t.timeManagement?.dailyLogs?.slice(-3).map((log) => (
                                     <div key={log.date} 
                                          className="h-8 w-8 rounded-full bg-white border-2 border-gray-50 flex items-center justify-center text-[10px] font-bold text-blue-600 shadow-sm"
                                          title={`${log.date}: ${formatHours(log.duration)}`}

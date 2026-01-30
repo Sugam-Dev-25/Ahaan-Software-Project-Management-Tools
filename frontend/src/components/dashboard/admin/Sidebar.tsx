@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { fetchBoard } from "../../redux/features/Board/boardSlice"
 import { slugify } from '../../hooks/slugify'
 import { Plus } from "@phosphor-icons/react"
-import { BoardTab } from "./tabs/BoardTab"
+import { CreateBoardForm } from "../../redux/features/Board/CreateBoardForm"
 export const Sidebar = () => {
     const [showBoard, setShowBoard] = useState<boolean>(false);
     const [createBoard, setCreateBoard] = useState<boolean>(false)
@@ -65,7 +65,7 @@ export const Sidebar = () => {
                 }
                 {createBoard && (
                     <div className="absolute left-full top-15 ml-2 w-70 p-4 rounded-lg bg-gray-50 shadow-lg z-50" >
-                        <BoardTab />
+                        <CreateBoardForm />
                     </div>
                 )}
             </div>

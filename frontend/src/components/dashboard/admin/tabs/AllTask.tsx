@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'; // Added useState
-import { useAppDispatch, useAppSelector } from '../../../redux/app/hook';
+import { useState } from 'react'; // Added useState
+import {  useAppSelector } from '../../../redux/app/hook';
 import { TaskDetails } from './TaskDetails'; // Import your TaskDetails component
 import {
     Clock,
@@ -13,7 +13,7 @@ import {
 } from '@phosphor-icons/react';
 
 export const AllTask = () => {
-    const dispatch = useAppDispatch();
+    
     const { task: tasks, loading } = useAppSelector((state) => state.task);
     const [selectedTask, setSelectedTask] = useState<any>(null);
     const msToHours = (ms: number = 0) => (ms / 3600000).toFixed(1);

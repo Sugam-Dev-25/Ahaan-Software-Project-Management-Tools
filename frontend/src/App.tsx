@@ -1,10 +1,13 @@
-
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { useCurrentUser } from './components/api/useCurrentUser'
-import { IndexPage } from './components/pages/IndexPage'
+import { Auth } from './components/redux/features/User/Auth';
+import { useAppSelector } from './components/redux/app/hook';
+import { AdminDashboard } from './components/dashboard/admin/AdminDashboard';
 
 function App() {
-  
-    const { isFetched } = useCurrentUser(); 
+    const user = useAppSelector(state => state.login.user)
+
+    const { isFetched } = useCurrentUser();
     if (!isFetched) {
         return (
             <div className="flex items-center justify-center min-h-screen text-xl text-gray-700">
@@ -12,8 +15,22 @@ function App() {
             </div>
         );
     }
-
-    return <IndexPage/>
+    return (
+        <Routes>
+            <Route path="/" element={<Auth />} />
+            <Route
+                path="/:name/*"
+                element={
+                    user?.name ? (
+                        <AdminDashboard />
+                    ) : (
+                        <Navigate to="/" replace />
+                    )
+                }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+    )
 }
 
 export default App
