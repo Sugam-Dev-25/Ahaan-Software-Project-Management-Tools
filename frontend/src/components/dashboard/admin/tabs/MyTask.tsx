@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"; // Added useState
 import { useAppDispatch, useAppSelector } from "../../../redux/app/hook";
-import { fetchMyTasks, getTasks } from "../../../redux/features/Task/taskSlice";
+
 import { Timer } from "../Home/Timer";
 import { TaskDetails } from "./TaskDetails"; // Import your TaskDetails component
 import type { Task } from "../../../types/allType";

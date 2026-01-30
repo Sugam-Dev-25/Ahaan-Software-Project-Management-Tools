@@ -1,16 +1,13 @@
 
 import { Sidebar } from './Sidebar'
-import { Routes, Route, useParams, Navigate} from 'react-router-dom'
+import { Routes, Route, Navigate} from 'react-router-dom'
 import {HomeTab} from './tabs/HomeTab'
-
-import { ProjectDetails } from './tabs/ProjectDetails'
-import { BoardProvider } from '../../context/board/BoardProvider'
 import { GlobalSpinner } from '../../context/board/GlobalSpinner'
-import { MyTask } from './tabs/MyTask'
-import { AllTask } from './tabs/AllTask'
+
 import { useAppSelector } from '../../redux/app/hook'
 import { Topbar } from './TopBar'
 import { TasksPageWrapper } from './TaskPagewrapper'
+import { BoardQueryWrapper } from './BoardQueryWrapper'
 
 
 
@@ -32,26 +29,12 @@ export const AdminDashboard = () => {
         <Routes>
           {/* Explicitly define the root for the dashboard */}
           <Route path="/" element={role ? <HomeTab /> : <GlobalSpinner />} /> 
-          
+          <Route path="project" element={<BoardQueryWrapper />} />
             <Route path="tasks" element={<TasksPageWrapper />} />
-          <Route path=":boardSlug" element={<BoardProviderWrapper />} />
-          <Route path="*" element={<Navigate to={`/${role}/dashboard`} replace />} />
+         
+          <Route path="*" element={<Navigate to={`/`} replace />} />
         </Routes>
       </div>
     </div>
-  );
-};
-
-const BoardProviderWrapper = () => {
-  const { boardSlug } = useParams();
-  if (!boardSlug || boardSlug === "undefined") {
-    return <HomeTab />;
-  }
-  return (
-    <BoardProvider key={boardSlug}>
-      <GlobalSpinner/>
-      <ProjectDetails />
-     
-    </BoardProvider>
   );
 };

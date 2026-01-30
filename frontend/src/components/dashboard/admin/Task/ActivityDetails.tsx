@@ -2,6 +2,7 @@ import { At, Paperclip, PaperPlaneRight, CaretDown, CaretUp } from "@phosphor-ic
 import { useContext, useState } from "react";
 import { BoardContext } from "../../../context/board/BoardContext";
 import type { Task } from "../../../types/allType";
+import { useAppSelector } from "../../../redux/app/hook";
 
 interface ActivityDetailsProps {
     editedTask: Partial<Task>;
@@ -26,6 +27,8 @@ export const ActivityDetails = ({ editedTask }: ActivityDetailsProps) => {
     
     const boardDetails = useContext(BoardContext);
     const addComment = boardDetails?.addComment;
+
+    const user=useAppSelector(state=>state.login.user)
 
     const handleSendComment = async () => {
         if (!commentText.trim() || !editedTask._id) return;
@@ -72,7 +75,13 @@ export const ActivityDetails = ({ editedTask }: ActivityDetailsProps) => {
                             <div key={i} className="flex flex-col gap-1">
                                 <div className="flex items-start gap-2 text-xs text-gray-500">
                                     <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0" />
-                                    <p><span className="font-bold text-gray-700">{item.user?.name}</span> {item.action}</p>
+                                  <p>
+                            <span className="font-bold text-gray-700">
+                                {/* Use 'user?._id' to match your Redux variable */}
+                                {item.user?._id === user?._id ? "You" : item.user?.name}
+                            </span> 
+                            {" "}{item.action}
+                        </p>
                                 </div>
                                 <span className="text-[10px] text-gray-400 ml-3">{getRelativeTime(item.createdAt)}</span>
                             </div>

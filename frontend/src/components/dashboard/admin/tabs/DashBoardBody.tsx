@@ -14,8 +14,8 @@ export const DashBoardBody = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [openMenuColumn, setOpenMenuColumn] = useState<string | null>(null)
   const columnMenuRef = useRef<HTMLDivElement | null>(null)
-const taskPopupRef = useRef<HTMLDivElement | null>(null)
-const columnInputRef = useRef<HTMLDivElement | null>(null)
+  const taskPopupRef = useRef<HTMLDivElement | null>(null)
+  const columnInputRef = useRef<HTMLDivElement | null>(null)
 
   const columns = useAppSelector(state => state.column.columns)
 
@@ -63,12 +63,15 @@ const columnInputRef = useRef<HTMLDivElement | null>(null)
                     {c.name}
                   </div>
                   <span className="ml-1 text-gray-500 font-medium text-sm">
-                    {task.filter(t => t.column === c._id).length}
+                    {task.filter(t => {
+                      const taskId = typeof t.column === 'object' ? t.column?._id : t.column;
+                      return taskId?.toString() === c._id?.toString();
+                    }).length}
                   </span>
                 </div>
                 <div className="relative" ref={columnMenuRef}>
                   <button className="text-gray-400 hover:text-gray-600 cursor-pointer text-lg leading-none"
-                  onMouseDown={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
                     onClick={() => setOpenMenuColumn(openMenuColumn === c._id ? null : c._id)}
                   >
                     ···
@@ -150,18 +153,18 @@ const columnInputRef = useRef<HTMLDivElement | null>(null)
                           <span>{t.priority}</span>
                         </div>
                         <div className="flex gap-2 text-yellow-500 justify-center items-center text-[11px] px-2 py-0.5 border rounded-md">
-                          <Chat size={14} className=""/>
-                        <span>{t.comments.length}</span>
+                          <Chat size={14} className="" />
+                          <span>{t.comments.length}</span>
                         </div>
                       </div>
                     </div>
                   </div>
                 ))}
-             
+
 
               <button
-              onMouseDown={(e) => e.stopPropagation()}
-                onClick={() => setActiveColumnId(prev=> prev===c._id? null :c._id)}
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={() => setActiveColumnId(prev => prev === c._id ? null : c._id)}
                 className="apperance-none flex justify-center gap-2 items-center mt-2"
               >
                 <Plus /> create task
@@ -218,15 +221,15 @@ const columnInputRef = useRef<HTMLDivElement | null>(null)
           )}
         </div>
       </div>
-       {selectedTask && (
-                <div className="absolute w-40 h-60 shadow-lg bg-gray-50">
-                  <TaskDetails
-                    status={taskStatus(selectedTask)}
-                    task={selectedTask}
-                    onClose={() => setSelectedTask(null)}
-                  />
-                </div>
-              )}
+      {selectedTask && (
+        <div className="absolute w-40 h-60 shadow-lg bg-gray-50">
+          <TaskDetails
+            status={taskStatus(selectedTask)}
+            task={selectedTask}
+            onClose={() => setSelectedTask(null)}
+          />
+        </div>
+      )}
     </div >
   )
 }

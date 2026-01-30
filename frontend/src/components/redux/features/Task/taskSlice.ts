@@ -19,16 +19,25 @@ interface GetTasksParams {
   boardId?: string;
   columnId?: string;
 }
-export const fetchTasksForColumn = createAsyncThunk<Task[], { boardId: string; columnId: string }, { rejectValue: string }>("tasks/fetchTasksForColumn", async ({ boardId, columnId }, { rejectWithValue }) => {
+export const getTasks = createAsyncThunk<Task[], GetTasksParams | undefined, { rejectValue: string }>(
+  "tasks/getTasks",
+  async (params, { rejectWithValue }) => {
     try {
-        const res = await axiosClient.get(`/api/boards/${boardId}/columns/${columnId}`, {
-            withCredentials: true,
-        });
-        return res.data;
-    } catch (error: any) {
-        return rejectWithValue(error.response?.data?.message || error.message);
+      const query = new URLSearchParams();
+
+      if (params?.scope) query.append("scope", params.scope);
+      if (params?.boardId) query.append("boardId", params.boardId);
+      if (params?.columnId) query.append("columnId", params.columnId);
+
+      const res = await axiosClient.get(`/api/tasks?${query.toString()}`, {
+        withCredentials: true,
+      });
+
+      return res.data;
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data?.message || err.message);
     }
-}
+  }
 );
 
 export const addTask = createAsyncThunk<Task, { boardId: string, columnId: string, taskData: Partial<Task> }, { rejectValue: string }>("tasks/addTask", async ({ boardId, columnId, taskData }, { rejectWithValue }) => {
@@ -71,16 +80,6 @@ export const deleteTask = createAsyncThunk("task/deleteColumn", async ({ taskId 
     }
 })
 
-export const updateProgress = createAsyncThunk<Task, { taskId: string, progress: number }, { rejectValue: string }>("task/updateProgress", async ({ taskId, progress }, { rejectWithValue }) => {
-    try {
-        const res = await axiosClient.patch(`api/tasks/${taskId}/progress`, { progress }, { withCredentials: true })
-        return res.data
-    }
-    catch (err: any) {
-        return rejectWithValue(err.response?.data?.message || err.message)
-    }
-})
-
 export const addComment = createAsyncThunk(
     "tasks/addComment",
     async ({ taskId, text }: { taskId: string; text: string }) => {
@@ -88,24 +87,6 @@ export const addComment = createAsyncThunk(
         return response.data; // This should be the updated task from the backend
     }
 );
-
-export const fetchAllTasks = createAsyncThunk<Task[], void, { rejectValue: string }>(
-    "tasks/fetchAllTasks",
-    async (_, { rejectWithValue }) => {
-        try {
-            // Adjust this URL to your actual 'get all tasks' endpoint
-            const res = await axiosClient.get(`/api/tasks`, { withCredentials: true });
-            return res.data;
-        } catch (error: any) {
-            return rejectWithValue(error.response?.data?.message || error.message);
-        }
-    }
-);
-
-export const fetchMyTasks = createAsyncThunk("task/fetchMyTasks", async () => {
-    const response = await axiosClient.get('api/tasks/my-tasks'); // Your new API
-    return response.data;
-});
 
 export const toggleTimer = createAsyncThunk<Task,{ taskId: string },{ rejectValue: string }> (
     "task/toggleTimer",
@@ -118,26 +99,7 @@ export const toggleTimer = createAsyncThunk<Task,{ taskId: string },{ rejectValu
         }
     }
 );
-export const getTasks = createAsyncThunk<Task[], GetTasksParams | undefined, { rejectValue: string }>(
-  "tasks/getTasks",
-  async (params, { rejectWithValue }) => {
-    try {
-      const query = new URLSearchParams();
 
-      if (params?.scope) query.append("scope", params.scope);
-      if (params?.boardId) query.append("boardId", params.boardId);
-      if (params?.columnId) query.append("columnId", params.columnId);
-
-      const res = await axiosClient.get(`/api/tasks?${query.toString()}`, {
-        withCredentials: true,
-      });
-
-      return res.data;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || err.message);
-    }
-  }
-);
 
 
 const taskSlice = createSlice({
@@ -150,26 +112,6 @@ const taskSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            .addCase(fetchTasksForColumn.pending, (state) => { state.loading = "pending"; state.error = null; })
-            .addCase(fetchTasksForColumn.fulfilled, (state, action) => {
-                state.loading = "fulfilled";
-                action.payload.forEach(task => {
-                    const index = state.task.findIndex(t => t._id === task._id);
-                    if (index >= 0) {
-                        state.task[index] = {
-                            ...state.task[index],
-                            ...task,
-                            board: task.board ?? state.task[index].board,
-                            column: task.column ?? state.task[index].column,
-                        };
-                    } else {
-                        state.task.push(task);
-                    }
-
-                });
-            })
-            .addCase(fetchTasksForColumn.rejected, (state, action) => { state.loading = "failed"; state.error = action.payload as string; })
-
             .addCase(addTask.pending, (state) => { state.loading = "pending"; state.error = null; })
             .addCase(addTask.fulfilled, (state, action) => {
                 state.loading = "fulfilled";
@@ -206,7 +148,6 @@ const taskSlice = createSlice({
                     };
                 }
             })
-
             .addCase(updateTask.rejected, (state, action) => { state.loading = "failed"; state.error = action.payload as string; })
             .addCase(deleteTask.pending, (state) => { state.loading = "pending"; })
             .addCase(deleteTask.fulfilled, (state, action) => {
@@ -226,39 +167,6 @@ const taskSlice = createSlice({
                 };
             })
             .addCase(addComment.rejected, (state) => { state.loading = "failed"; })
-
-            .addCase(fetchAllTasks.fulfilled, (state, action) => {
-                state.loading = "fulfilled";
-                const incomingTasks = Array.isArray(action.payload)
-                    ? action.payload
-                    : (action.payload as any).tasks || [];
-
-                incomingTasks.forEach((task: any) => {
-                    const index = state.task.findIndex(t => t._id === task._id);
-                    if (index !== -1) {
-                        state.task[index] = {
-                            ...state.task[index],
-                            ...task,
-                            board: task.board ?? state.task[index].board,
-                            column: task.column ?? state.task[index].column,
-                        };
-                    } else {
-                        state.task.push(task);
-                    }
-                });
-            })
-
-            .addCase(fetchMyTasks.pending, (state) => {
-                state.loading = 'pending';
-            })
-            .addCase(fetchMyTasks.fulfilled, (state, action) => {
-                state.loading = 'fulfilled';
-                state.task = action.payload;
-            })
-            .addCase(fetchMyTasks.rejected, (state, action) => {
-                state.loading = 'failed';
-                state.error = action.error.message as string;
-            })
             .addCase(toggleTimer.pending, (state) => {
                 state.loading = "pending";
             })

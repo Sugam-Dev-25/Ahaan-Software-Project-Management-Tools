@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from "../../../redux/app/hook";
-import { fetchAllTasks } from "../../../redux/features/Task/taskSlice";
+import { getTasks } from "../../../redux/features/Task/taskSlice";
 import { fetchColumn } from "../../../redux/features/Column/columnSlice";
 
 interface Stats {
@@ -77,7 +77,7 @@ export const HomeTab = () => {
     const columnsByBoard = useAppSelector(state => state.column.columns);
 
  useEffect(() => {
-    dispatch(fetchAllTasks());
+    dispatch(getTasks());
     // Only dispatch if the board and its _id exist
     boards.forEach(b => {
         if (b?._id) {

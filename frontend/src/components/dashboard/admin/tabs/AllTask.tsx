@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'; // Added useState
-import { fetchAllTasks, getTasks } from '../../../redux/features/Task/taskSlice';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hook';
 import { TaskDetails } from './TaskDetails'; // Import your TaskDetails component
 import {
@@ -17,9 +16,6 @@ export const AllTask = () => {
     const dispatch = useAppDispatch();
     const { task: tasks, loading } = useAppSelector((state) => state.task);
     const [selectedTask, setSelectedTask] = useState<any>(null);
-
-  
-
     const msToHours = (ms: number = 0) => (ms / 3600000).toFixed(1);
 
     const calculateProgress = (timeManagement: any) => {

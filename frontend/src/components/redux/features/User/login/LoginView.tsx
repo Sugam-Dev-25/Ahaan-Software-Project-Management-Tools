@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hook";
 import { loginUsers } from "./loginSlice";
+import { slugify } from "../../../../hooks/slugify";
  
 interface LoginForm {
   email: string;
@@ -22,11 +23,11 @@ export const LoginView = () => {
   const submitLogin = (data: LoginForm) => {
     dispatch(loginUsers(data));
   };
- 
+ const name=user?.name ? slugify(user.name) : ""
   // ✅ ROLE BASED REDIRECT
   useEffect(() => {
-    if (user?.role) {
-      navigate(`/${user.role}/dashboard`, { replace: true });
+    if (name) {
+      navigate(`/${name}`, { replace: true });
     }
   }, [user, navigate]);
  

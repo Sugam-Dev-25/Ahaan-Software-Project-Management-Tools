@@ -1,3 +1,4 @@
+const Board = require("../models/Board");
 const User = require("../models/User");
 const bcrypt = require("bcrypt")
 
@@ -141,4 +142,20 @@ const createBoard=async(req, res)=>{
         res.status(500).json({message: "Something erron in Internal server"})
     }
 
+}
+
+const getBoardsForUser=async(req, res)=>{
+    try{
+        const boards=await Board.find({
+            members: req.user._id
+        })
+        .select("_id name owner members")
+        .populate("owner", "name email role")
+        .populate("members", "name email role")
+
+        res.status(200).json(boards)
+    }
+    catch(error){
+        res.status(500).json({message: "Internale server error"})
+    }
 }

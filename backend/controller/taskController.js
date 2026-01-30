@@ -193,25 +193,6 @@ const addTaskComment = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-const updateTaskProgress = async (req, res) => {
-  try {
-    const { taskId } = req.params;
-    const { progress } = req.body;
-
-    if (progress < 0 || progress > 100) {
-      return res.status(400).json({ message: "Progress must be between 0 and 100" });
-    }
-    const task = await Task.findById(taskId);
-    if (!task) return res.status(404).json({ message: "Task not found" });
-    task._originalValues = task.toObject(); 
-    task._userContext = req.user._id; 
-    task.progress = progress;
-    await task.save();
-    res.status(200).json(task);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to update task" });
-  }
-};
 
 const toggleTimer = async (req, res) => {
     const { taskId } = req.params;
@@ -293,6 +274,8 @@ const getTasks = async (req, res) => {
         .populate('assignedTo', 'name email')
         .populate('board', 'name')
         .populate('column', 'name')
+        .populate('comments.user', 'name profilePicture') // Added
+        .populate('activityLog.user', 'name')
         .sort({ createdAt: -1 });
 
       return res.status(200).json(tasks);
@@ -306,6 +289,8 @@ const getTasks = async (req, res) => {
       .populate('assignedTo', 'name email')
       .populate('board', 'name')
       .populate('column', 'name')
+      .populate('comments.user', 'name profilePicture') 
+      .populate('activityLog.user', 'name')
       .sort({ createdAt: -1 });
 
     res.status(200).json(tasks);
@@ -317,4 +302,4 @@ const getTasks = async (req, res) => {
 };
 
 
-module.exports = { createTask, moveTask, updateTask, deleteTask, addTaskComment, updateTaskProgress,  toggleTimer, getTasks }
+module.exports = { createTask, moveTask, updateTask, deleteTask, addTaskComment,  toggleTimer, getTasks }

@@ -58,6 +58,17 @@ export const addMember = createAsyncThunk<Board, { boardId: string, memberId: st
         }
     }
 );
+export const fetchBoardById = createAsyncThunk<Board, string, { rejectValue: string }>(
+    "board/fetchBoardById",
+    async (boardId, { rejectWithValue }) => {
+        try {
+            const res = await axiosClient.get(`/api/boards/${boardId}`);
+            return res.data as Board;
+        } catch (err: any) {
+            return rejectWithValue(err.response?.data?.message || err.message);
+        }
+    }
+);
 
 const boardSlice = createSlice({
     name: "baord",
@@ -109,6 +120,16 @@ const boardSlice = createSlice({
                 state.loading = "failed";
                 state.error = action.payload as string;
             })
+            .addCase(fetchBoardById.fulfilled, (state, action: PayloadAction<Board>) => {
+                state.loading = "succeeded";
+                // Update the specific board in the list with its full details
+                const index = state.boards.findIndex(b => b._id === action.payload._id);
+                if (index !== -1) {
+                    state.boards[index] = action.payload;
+                } else {
+                    state.boards.push(action.payload);
+                }
+            });
 
     }
 })

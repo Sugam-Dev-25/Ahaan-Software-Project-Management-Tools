@@ -13,10 +13,10 @@ interface DonutChartProps {
 const DonutChart = ({ stats, size = 160 }: DonutChartProps) => {
   // Map the stats to the format the chart expects
   const data = [
-    { label: 'Todo', value: stats.Todo, color: '#3B82F6' },        // Blue
-    { label: 'In Progress', value: stats.InProgress, color: '#F59E0B' }, // Amber
-    { label: 'Completed', value: stats.Completed, color: '#10B981' },   // Green
-    { label: 'Delay', value: stats.Delay, color: '#EF4444' },       // Red
+    { label: 'Todo', value: stats.Todo, color: '#3B82F6' },        
+    { label: 'In Progress', value: stats.InProgress, color: '#F59E0B' }, 
+    { label: 'Completed', value: stats.Completed, color: '#10B981' },  
+    { label: 'Delay', value: stats.Delay, color: '#EF4444' },
   ];
 
   const total = data.reduce((acc, item) => acc + item.value, 0);

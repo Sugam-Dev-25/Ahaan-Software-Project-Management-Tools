@@ -13,7 +13,7 @@ export interface BoardProviderProps{
   updateTask: (taskId:string, updates:Partial<Task>)=>void
   moveTask: (taskId:string, toColumnId:string, toPosition:number )=>void
   addComment:(taskId:string, text: string )=> void
-  updateProgress: (taskId:string, progress: number)=>void
+  
 }
 export const BoardContext=createContext<BoardProviderProps | null>(null)
 

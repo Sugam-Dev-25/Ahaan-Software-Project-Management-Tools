@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom"
+import { NavLink, useLocation } from "react-router-dom"
 import { useAppDispatch, useAppSelector } from "../../redux/app/hook"
 import { useEffect, useRef, useState } from "react"
 import { fetchBoard } from "../../redux/features/Board/boardSlice"
@@ -9,6 +9,7 @@ export const Sidebar = () => {
     const [showBoard, setShowBoard] = useState<boolean>(false);
     const [createBoard, setCreateBoard] = useState<boolean>(false)
     const dropdownRef = useRef<HTMLDivElement | null>(null)
+    const location=useLocation()
     const base = "block  py-3 px-3"
     const active = "text-blue-600 border-l-4 border-blue-600 bg-blue-50"
 
@@ -19,6 +20,7 @@ export const Sidebar = () => {
     const board = useAppSelector(state => state.board.boards)
 
     const role = user?.role
+    const name = user?.name ? slugify(user.name) : ""
     useEffect(() => {
         dispatch(fetchBoard())
     }, [dispatch])
@@ -39,16 +41,16 @@ export const Sidebar = () => {
     }
     return (
         <div className="w-40 relative px-3 py-6 " >
-            
+
             <NavLink
-                to={`/${role}/dashboard`}
+                to={`/${name}`}
                 end
                 className={({ isActive }) => `${base} ${isActive ? active : inactive} `}
             >
                 Home
             </NavLink>
-            <NavLink to={`/${role}/dashboard/tasks?scope=${role === 'admin' || role === 'super-admin' ? 'all' : 'mine'}`}
- className={({ isActive }) => `${base} ${isActive ? active : inactive} `}>
+            <NavLink to={`/${name}/tasks?scope=${role === 'admin' || role === 'super-admin' ? 'all' : 'mine'}`}
+                className={({ isActive }) => `${base} ${isActive ? active : inactive} `}>
                 {role === 'admin' || role === 'super-admin' ? "All tasks" : "My Tasks"}
             </NavLink>
             <div className="flex justify-between items-center" ref={dropdownRef}>
@@ -67,23 +69,32 @@ export const Sidebar = () => {
                     </div>
                 )}
             </div>
-            {showBoard && (
-                <>
-                    {board.map(b => {
-                        const slug = slugify(b.name)
-                        return (
-                            <NavLink
-                                to={`/${role}/dashboard/${slug}`}
-                                end
-                                className={({ isActive }) => `${"block py-1 px-2 gap-2 text-sm"} ${isActive ? "bg-gray-100 rounded-md " : "hover:rounded-md hover:bg-gray-100"} `}
-                                key={b._id}
-                            >
-                                {b.name}
-                            </NavLink>
-                        )
-                    })}
-                </>
-            )}
+           {showBoard && (
+            <>
+                {board.map(b => {
+                    const slug = slugify(b.name);
+                    // 3. Manually check if the URL search string matches this board
+                    const isBoardActive = location.search === `?name=${slug}`;
+
+                    return (
+                        <NavLink
+                            key={b._id}
+                            to={{
+                                pathname: `/${name}/project`,
+                                search: `?name=${slug}`
+                            }}
+                            className={`${
+                                isBoardActive
+                                    ? "bg-blue-100 text-blue-700 rounded-md font-semibold"
+                                    : "text-gray-500 hover:bg-gray-100 hover:rounded-md"
+                            } block py-1 px-2 text-sm transition-colors`}
+                        >
+                            {b.name}
+                        </NavLink>
+                    )
+                })}
+            </>
+        )}
 
         </div>
     )
