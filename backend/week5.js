@@ -1,46 +1,32 @@
-function WordCount(str){
-    str=str.toLowerCase().split(" ")
-   freq={}
-    for(let i=0; i<str.length; i++){
-        let ch=str[i]
-       freq[ch]=(freq[ch]|0)+1
-    }
-    return  freq
-}
-
-function wordLetterCount(str){
-    let digit=0
-    let letter=""
-    for(let i=0; i<str.length; i++){
-        let ch= str[i]
-        if(ch>="0" && ch<="9"){
-            digit++
-        }
-        if(ch>="A" && ch<="Z"){
-            letter++
-        }
-        if(ch>="a" && ch<="z"){
-            letter++
+function smallestSubarraySum(nums, S) {
+    let windowSum = 0
+    let minLen = Infinity
+    let left = 0
+    for (let right = 0; right < nums.length; right++) {
+        windowSum += nums[right]
+        while (windowSum >= S) {
+            minLen = Math.min(minLen, right - left + 1)
+            windowSum -= nums[left]
+            left++
         }
     }
-    return {digit, letter}
+    return minLen === Infinity ? 0 : minLen
 }
 
-function MaxsumofArray(nums, k){
-    let windowSum=0
-    let maxSum=0
-    for(let i=0; i<k; i++){
-        windowSum +=nums[i]
-    }
-    maxSum=windowSum
-    for(let i=k; i<nums.length; i++){
-        windowSum+=nums[i]
-        windowSum-=nums[i-k]
+function AscendingOrder(arr) {
+    let freq = {}
+    for (let i = 0; i < arr.length; i++) {
+        for (let j = 0; j < (arr.length - 1) - i; j++) {
+            if (arr[j] > arr[j + 1]) {
+                let temp = arr[j]
+                arr[j] = arr[j + 1]
+               arr[j+1]=temp
+            }
 
-        maxSum=Math.max(maxSum, windowSum)
+        }
     }
-    return maxSum
+    return arr
 }
-console.log(MaxsumofArray([2,1,3,5,1,3,2], 3))
-console.log(wordLetterCount("jdkijwiuoe89234hd23jd2"))
-console.log(WordCount("this is is this is a fuck boy fuck"))
+
+console.log(AscendingOrder([2, 3, 4, 3, 1, 4, 5]))
+console.log(smallestSubarraySum([2, 3, 4, 5, 1, 3, 5], 12))

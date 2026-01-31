@@ -1,37 +1,25 @@
-def FindWordCount(str):
-    str=str.lower().split()
-    freq={}
-    for i in str:
-        if i in freq:
-            freq[i]+=1
-        else:
-            freq[i]=1
-    return freq
+def sumOfMinArray(nums, S):
+    variableSum=0
+    minSum=float('inf')
+    left=0
+    for right in range(len(nums)):
+        variableSum+=nums[right]
+        while variableSum>=S:
+            minSum=min(minSum, right-left+1)
+            variableSum-=nums[left]
+            left+=1
+  
+    if minSum==float('inf'):
+        return 0
+    else:
+        return minSum
 
-def finddigitLetter(str):
-    digit=0
-    letter=0
-    for i in str:
-        if "0"<=i<="9":
-            digit+=1
-        if "a"<=i<="z":
-            letter+=1
-    return digit, letter
+print(sumOfMinArray([2,2,3,4,5,6,3], 9))
 
-def MaxsumArray(nums, k):
-    maxWindow=0
-    maxSum=0
-    for i in range(k):
-        maxWindow+=nums[i]
-    maxSum=maxWindow
-    for i in range(k, len(nums)):
-        maxWindow+=nums[i]
-        maxWindow-=nums[i-k]
-
-        maxSum=max(maxSum, maxWindow)
-    return maxSum
-
-print(MaxsumArray([3,2,4,5,5,6,7], 3))
-
-print(finddigitLetter("jkahdkj8234hd8234jd"))
-print(FindWordCount("this is fuck boy who fuck some one this"))
+def AscendingOrder(arr):
+    for i in range(len(arr)):
+        for j in range(len(arr)-1-i):
+            if arr[j]>arr[j+1]:
+                arr[j], arr[j+1]=arr[j+1], arr[j]
+    return arr
+print(AscendingOrder([5,6,7,3,1,3,5,9,8]))

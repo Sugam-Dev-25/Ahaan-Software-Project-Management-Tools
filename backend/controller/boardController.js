@@ -60,8 +60,6 @@ const getBoardById = async (req, res) => {
             .populate('members', 'name email role');
 
         if (!board) return res.status(404).json({ message: 'Board not found' });
-
-        // ✅ Defensive check to prevent undefined _id
         const isMember = Array.isArray(board.members) && board.members.some(member => member?._id?.toString() === req.user?._id?.toString());
 
         if (!isMember) return res.status(403).json({ message: 'Access Denied. You are not a member of Board' });
