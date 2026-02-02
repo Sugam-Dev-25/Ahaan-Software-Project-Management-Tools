@@ -1,32 +1,32 @@
-function smallestSubarraySum(nums, S) {
-    let windowSum = 0
-    let minLen = Infinity
-    let left = 0
-    for (let right = 0; right < nums.length; right++) {
-        windowSum += nums[right]
-        while (windowSum >= S) {
-            minLen = Math.min(minLen, right - left + 1)
-            windowSum -= nums[left]
-            left++
-        }
+function factorialforloop(nums){
+    let result=1
+    for(let i=1; i<=nums; i++){
+        result=result*i
     }
-    return minLen === Infinity ? 0 : minLen
+    return result
 }
+console.log(factorialforloop(5))
 
-function AscendingOrder(arr) {
-    let freq = {}
-    for (let i = 0; i < arr.length; i++) {
-        for (let j = 0; j < (arr.length - 1) - i; j++) {
-            if (arr[j] > arr[j + 1]) {
-                let temp = arr[j]
-                arr[j] = arr[j + 1]
-               arr[j+1]=temp
-            }
-
-        }
+function factorial(n){
+    if(n===0 || n===1){
+        return 1
     }
-    return arr
-}
+    return n*factorial(n-1)
 
-console.log(AscendingOrder([2, 3, 4, 3, 1, 4, 5]))
-console.log(smallestSubarraySum([2, 3, 4, 5, 1, 3, 5], 12))
+}
+console.log(factorial(5))
+
+function isSum(nums, target){
+    let seen={}
+    for(let i=0; i<nums.length; i++){
+        let current=nums[i]
+        let need=target-current
+        if(need in seen){
+            return [seen[need], i]
+        }
+        seen[current]=i
+
+    }
+    return []
+}
+console.log(isSum([2,3,4,5,8,3], 11))

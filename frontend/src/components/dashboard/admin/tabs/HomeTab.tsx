@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from "../../../redux/app/hook";
 import { getTasks } from "../../../redux/features/Task/taskSlice";
 import { fetchColumn } from "../../../redux/features/Column/columnSlice";
+import { AllTable } from '../Home/AllTable';
 
 interface Stats {
     Todo: number;
@@ -131,6 +132,10 @@ const calculateStats = (boardId: string): Stats => {
                 <h2 className="text-3xl font-extrabold text-gray-900">Welcome back, {user?.name} 👋</h2>
                 <p className="text-gray-500 mt-1">Global project health and task distribution.</p>
             </header>
+            <div>
+                <h2 className='text-lg font-bold'>Table</h2>
+                <AllTable />
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
                 {boards.map((board) => {
                     const stats = calculateStats(board._id);

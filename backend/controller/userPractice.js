@@ -1,4 +1,6 @@
 const Board = require("../models/Board");
+const Column = require("../models/Column");
+const Task = require("../models/Task");
 const User = require("../models/User");
 const bcrypt = require("bcrypt")
 
@@ -167,18 +169,85 @@ const getboardById = async (req, res) => {
 const addMemberToBoard = async (req, res) => {
     const { boardId } = req.params
     const { memberId } = req.body
-    try{
-        const board=await Board.findById(boardId)
-        if(!board) return res.status(404).json({message: 'Board not found'})
-        if(board.members.includes(memberId)) return res.status(403).status({message: "Member already exist on Board"})
+    try {
+        const board = await Board.findById(boardId)
+        if (!board) return res.status(404).json({ message: 'Board not found' })
+        if (board.members.includes(memberId)) return res.status(403).status({ message: "Member already exist on Board" })
         board.members.push(memberId)
         await board.save()
 
         await User.findByIdAndUpdate(memberId, {
-            $addToSet: {memberOfBoards: board._id}
+            $addToSet: { memberOfBoards: board._id }
         })
 
-        await board.populate('members','name email role')
+        await board.populate('members', 'name email role')
         res.status(200).json()
+    }
+    catch (error) {
+        console.log("Something went wrong", error)
+        return res.status(500).json({ message: "Internal server error" })
+    }
+}
+
+const createColumn = async (req, res) => {
+    const boardId = req.params
+    const { name } = req.body
+    try {
+        const board = await User.findById(boardId).select('members')
+        if (!board) return res.status(404).json({ message: "board not found" })
+        const isMember = board.members.some(member => member._id.toString() === req.user._id.toString())
+        if (!isMember) return res.status(404).json({ message: "member is not accociate with this board" })
+        const newColumn = new Column({
+            name, board: boardId
+        })
+        await newColumn.save()
+        await Board.findByIdAndUpdate({
+            boardId,
+            $push: {columns: newColumn._id}
+        })
+        res.status(201).json({message: "created column successfully", newColumn})
+
+    }
+    catch (error) {
+        console.log('Something went wrong', error)
+        return res.status(500).json({ message: "Internal server error" })
+    }
+}
+
+const fetchColumn=async(req, res)=>{
+    
+    try{
+        const columns=await Board.find({board: req.params.boardId})
+        res.status(200).json(columns)
+
+    }
+    catch(error){
+        console.log("something wen twrong", error)
+        res.status(500).json({message: "Internal server error for fetching columns"})
+    }
+}
+
+const deleteColumn=async(req, res)=>{
+    const {columnId}=req.params
+    try{
+        const column=await Column.findById(columnId)
+        if(!column) return res.status(404).json({message: "Column is not found"})
+
+        const board=await Board.findById(column.board).select('members')
+        if(!board) return res.status(404).json({ message:"Board not found"})
+        const isMember=board.members.some(member=>member._id.toString()===req.user._id.toString())
+        if(!isMember) return res.status(403).json({message:"Deleteing Column has not access " })
+        
+        await Board.findByIdAndUpdate(column.board, {
+            $pull: {columns: columnId}
+        })
+        await Task.deleteMany({column: columnId})
+
+        await Column.findByIdAndDelete(columnId)
+        res.status(200).json({message:"Deleted column successfully"})
+    }
+    catch(error){
+        console.log("something went wrong", error)
+        return res.status(500).json({message: "Internal server error"})
     }
 }

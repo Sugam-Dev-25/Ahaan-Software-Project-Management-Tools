@@ -286,7 +286,7 @@ const getTasks = async (req, res) => {
     const boardIds = boards.map(b => b._id);
 
     const tasks = await Task.find({ board: { $in: boardIds } })
-      .populate('assignedTo', 'name email')
+      .populate('assignedTo', 'name email role')
       .populate('board', 'name')
       .populate('column', 'name')
       .populate('comments.user', 'name profilePicture') 

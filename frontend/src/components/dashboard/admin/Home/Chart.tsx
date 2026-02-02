@@ -55,16 +55,15 @@ const DonutChart = ({ stats, size = 160 }: DonutChartProps) => {
                 r={radius}
                 fill="transparent"
                 stroke={item.color}
-                strokeWidth={size * 0.12} // Thicker stroke relative to size
+                strokeWidth={size * 0.12}
                 strokeDasharray={`${strokeLength} ${circumference}`}
                 strokeDashoffset={-offset}
-                strokeLinecap={total === item.value ? "butt" : "round"} // Round edges unless it's a full circle
+                strokeLinecap={total === item.value ? "butt" : "round"}
                 style={{ transition: 'all 0.5s ease' }}
               />
             );
           })}
         </svg>
-
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-xl font-bold text-gray-800 leading-none">{total}</span>
           <span className="text-[10px] text-gray-400 uppercase font-medium">Tasks</span>
