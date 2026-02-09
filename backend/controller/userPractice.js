@@ -82,7 +82,6 @@ const SearchUsers = async (req, res) => {
         console.log("server error", error)
         res.status(500).json({ message: "Internal Server error" })
     }
-
 }
 
 const Max_age = 3 * 24 * 60 * 60 * 1000
@@ -248,6 +247,82 @@ const deleteColumn=async(req, res)=>{
     }
     catch(error){
         console.log("something went wrong", error)
+        return res.status(500).json({message: "Internal server error"})
+    }
+}
+
+const searchUsers=async(req, res)=>{
+    const {query, boardId}=req.query
+    if(!query || query.length<2){
+        return res.status(400).json({message: "search field require atleast two character"})
+    }
+    try{
+        let search={
+            $or: [
+                {name:{$regex: query, $options: 'i'}},
+                {email:{$regex: query, $options: 'i'}}
+            ]
+        }
+        if(boardId){
+            const board=await Board.findById(boardId)
+            if(!board){
+                return res.status(404).json({message: "Board not found"})
+            }
+            search._id= {$in: board.members}
+            
+
+        }
+        const users=await User.find(search)
+        .select('_id name email role')
+        .limit(10)
+        .lean()
+        res.status(200).json(users)
+    }
+    catch(error){
+        return res.status(500).json({message:"Internal server error"})
+    }
+}
+
+const createTask=async(req, res)=>{
+    const {boardId, columnId}=req.params
+    const {name, description,assignedTo, startDate, endDate, priority}=req.body
+    try{
+        const board=await Board.findById(boardId).select('members')
+        if(!board){
+            return res.status(404).json({message: "board not found"})
+        }
+        const isMember=board.members.some(member=>member._id.toString() === req.user._id.toString())
+        if(!isMember){
+            return res.staus(403).json({message: "Access Denied: You must be member"})
+        }
+        const newTask=new Task({
+            title,
+            description,
+            assignedTo,
+            priority,
+            startDate,
+            dueDate,
+            board: boardId,
+            column: columnId,
+            activityLog:{
+                user: req.user._id,
+                action: 'Task created'
+            },
+            _userContext: req.user._id
+
+        })
+        await newTask.save()
+        await Column.findByIdAndUpdate(
+            columnId,
+           {$push: {task: newTask._id}},
+           {new: true}
+        )
+        const populatedTask=await Task.findById(newTask._id)
+        .populate('assignedTo', 'name email role')
+        return res.staus(200).json(populatedTask)
+
+    }
+    catch(error){
         return res.status(500).json({message: "Internal server error"})
     }
 }

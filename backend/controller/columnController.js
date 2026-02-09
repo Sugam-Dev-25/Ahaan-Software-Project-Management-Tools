@@ -35,7 +35,6 @@ const  createColumn= async(req, res)=>{
         return res.status(500).json({message: 'Server error: failedto create column '})
     }
 }
-
 const deleteColumn=async(req, res)=>{
     const {columnId}=req.params
     try{

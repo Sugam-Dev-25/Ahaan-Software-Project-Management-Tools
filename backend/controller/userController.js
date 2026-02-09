@@ -76,36 +76,37 @@ const getProfile = (req,res)=>{
     })
 }
 
-const searchUsers = async (req, res) => {
-    const { query, boardId } = req.query; 
-    if (!query || query.length < 2) {
-        return res.status(400).json({ message: 'Search query must be at least 2 characters long.' });
+const searchUsers=async(req, res)=>{
+    const {query, boardId}=req.query
+    if(!query || query.length<2){
+        return res.status(400).json({message: "search field require atleast two character"})
     }
-    try {
-        let searchCriteria = {
+    try{
+        let search={
             $or: [
-                { name: { $regex: query, $options: 'i' } },
-                { email: { $regex: query, $options: 'i' } }
+                {name:{$regex: query, $options: 'i'}},
+                {email:{$regex: query, $options: 'i'}}
             ]
-        };
-        if (boardId) {
-            const board = await Board.findById(boardId);
-            if (!board) {
-                return res.status(404).json({ message: 'Board not found' });
-            }
-            searchCriteria._id = { $in: board.members };
         }
-        const users = await User.find(searchCriteria)
-            .select('_id name email role profilepicture')
-            .limit(10)
-            .lean()
-        res.status(200).json(users);
+        if(boardId){
+            const board=await Board.findById(boardId)
+            if(!board){
+                return res.status(404).json({message: "Board not found"})
+            }
+            search._id= {$in: board.members}
+            
 
-    } catch (error) {
-        console.error('User search error:', error);
-        res.status(500).json({ message: 'Server error: Failed to search for users.' });
+        }
+        const users=await User.find(search)
+        .select('_id name email role')
+        .limit(10)
+        .lean()
+        res.status(200).json(users)
     }
-};
+    catch(error){
+        return res.status(500).json({message:"Internal server error"})
+    }
+}
 
 module.exports={
     loginUser,
