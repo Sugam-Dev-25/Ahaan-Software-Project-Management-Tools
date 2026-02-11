@@ -1,48 +1,51 @@
-def isPrime(n):
-    if n<=1:
-        return False
-    for i in range(2, n):
-        if (n%i)==0:
-            return False
-    return True
-print(isPrime(7))
-print(isPrime(9))
+def isFactorial(n):
+    total=1
+    for i in range(n):
+        total=total*i
+    return total
+print(isFactorial(6))
 
-def mostFreqChar(str):
-    freq={}
-    for i in str:
-        if i in freq:
-            freq[i]+=1
-        else:
-            freq[i]=1
-    return freq
-
-print(mostFreqChar("thisbnahkjdkajahd"))
-
-def reverseArrayFor(arr):
-    for i in range(len(arr)//2):
-        arr[i], arr[len(arr)-1-i]=arr[len(arr)-1-i], arr[i]
+def isAccending(arr):
+    for i in range(len(arr)):
+        for j in range(len(arr)-1):
+            if arr[j]>arr[j+1]:
+                arr[j], arr[j+1]=arr[j+1], arr[j]
     return arr
-print(reverseArrayFor([3,4,5,6,2,1])) 
+print(isAccending([5,6,7,3,2,1]))
 
-def reverseArrayWhile(arr):
-    left=0
-    right=len(arr)-1
-    while left<right:
-        arr[left], arr[right]=arr[right], arr[left]
-        left+=1
-        right-=1
+def isDecending(arr):
+    for i in range(len(arr)):
+        for j in range(len(arr)-1):
+            if arr[j+1]>arr[j]:
+                arr[j+1], arr[j]=arr[j], arr[j+1]
     return arr
+print(isDecending([2,3,4,5,6,7]))
 
-print(reverseArrayWhile([6,5,4,3,2,1]))
-def reverseString(str):
-    return str[::-1]
+def isCount(num):
+    digit=0
+    vowels=0
+    consonent=0
+    letter=0
+    small_letter=0
+    capital_letter=0
+    for i in num:
+        if "0"<=i<="9":
+            digit+=1
+            
+        elif "a"<=i<="z":
+            letter+=1
+            small_letter+=1
+            if i=="a" or i=="e"or i=="i" or i=="o" or i=="u":
+                vowels+=1
+            else:
+                consonent+=1
+        elif "A"<=i<="Z":
+            letter+=1
+            capital_letter+=1
+            if i=="a" or i=="e"or i=="i" or i=="o" or i=="u":
+                vowels+=1
+            else:
+                consonent+=1
+    return letter, digit, vowels, consonent, small_letter, capital_letter
 
-def reverseStringLogic(str):
-    num_str=""
-    for i in range(len(str)-1, -1, -1):
-        num_str+=str[i]
-    return num_str
-
-print(reverseString("hgdkjhjksa"))
-print(reverseStringLogic("kgjsfsjj"))
+print(isCount("jdhaKJDLJLJSeeeLkdjls93482ksdjaetoegdvx324242354534534654"))

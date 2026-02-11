@@ -285,7 +285,7 @@ const searchUsers=async(req, res)=>{
 
 const createTask=async(req, res)=>{
     const {boardId, columnId}=req.params
-    const {name, description,assignedTo, startDate, endDate, priority}=req.body
+    const {title, description,assignedTo, startDate, dueDate, priority}=req.body
     try{
         const board=await Board.findById(boardId).select('members')
         if(!board){
@@ -293,7 +293,7 @@ const createTask=async(req, res)=>{
         }
         const isMember=board.members.some(member=>member._id.toString() === req.user._id.toString())
         if(!isMember){
-            return res.staus(403).json({message: "Access Denied: You must be member"})
+            return res.status(403).json({message: "Access Denied: You must be member"})
         }
         const newTask=new Task({
             title,
@@ -304,10 +304,10 @@ const createTask=async(req, res)=>{
             dueDate,
             board: boardId,
             column: columnId,
-            activityLog:{
+            activityLog:[{
                 user: req.user._id,
                 action: 'Task created'
-            },
+            }],
             _userContext: req.user._id
 
         })
@@ -319,7 +319,7 @@ const createTask=async(req, res)=>{
         )
         const populatedTask=await Task.findById(newTask._id)
         .populate('assignedTo', 'name email role')
-        return res.staus(200).json(populatedTask)
+        return res.status(201).json(populatedTask)
 
     }
     catch(error){

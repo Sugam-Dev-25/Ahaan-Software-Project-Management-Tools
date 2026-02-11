@@ -1,77 +1,72 @@
-function reverseFor(arr){
-    if(typeof arr==="string"){
-        let result=""
-        for(let i=arr.length-1; i>=0; i--){
-            result+=arr[i]
+function isAccendingOrder(arr){
+    for(i=0; i<arr.length; i++){
+       for(j=0; j<arr.length-1; j++){
+        if(arr[j]>arr[j+1]){
+            let temp=arr[j]
+            arr[j]=arr[j+1]
+            arr[j+1]=temp
         }
-        return result
-    }
-    let n=arr.length
-    for(let i=0; i<n/2; i++){
-        let temp=arr[i]
-        arr[i]=arr[n-1-i]
-        arr[n-1-i]=temp
-
+       }
     }
     return arr
 }
+console.log(isAccendingOrder([2,3,5,6,3,2,1]))
 
-function reverseWhile(arr){
-     if(typeof arr==="string"){
-        let result=""
-        for(let i=arr.length-1; i>=0; i--){
-            result+=arr[i]
+function isDecendingOrder(arr){
+    for(let i=0; i<arr.length; i++){
+        for(j=0; j<arr.length-1; j++){
+            if(arr[j]<arr[j+1]){
+                let temp=arr[j]
+                arr[j]=arr[j+1]
+                arr[j+1]=temp
+            }
         }
-        return result
-    }
-    let left=0
-    let right=arr.length-1
-
-    while(left< right){
-        let temp=arr[left]
-        arr[left]=arr[right]
-        arr[right]=temp
-        left++
-        right--
     }
     return arr
 }
+console.log(isDecendingOrder([4,3,5,6,7,2,3,5]))
 
-function reverseForString(str){
-    
-    if(typeof str==="string"){
-        let result=""
-        for(let i=str.length-1; i>=0; i--){
-            result+=str[i]
+function isCount(str){
+    let number=0
+    let vowels=0
+    let consonent=0
+    let small_letter=0
+    let capital_letter=0
+    for(let i=0; i<str.length; i++){
+        let ch=str[i]
+        if(ch>="0" && ch<="9"){
+             number++
         }
-        return result
-    }
-}
-console.log(reverseWhile([1,2,3,4]))
-console.log(reverseWhile("hjhiesd"))
-console.log(reverseForString("jdowjoweiu"))
-console.log(reverseFor([1,2,3,4]))
-console.log(reverseFor("jdowjoweiu"))
-
-function charFrequency(str){
-    let freq={}
-    for(let ch of str){
-        if(ch===" ")continue
-        freq[ch]=(freq[ch]|0)+1
-    }
-    return freq
-}
-console.log(charFrequency("ytjhswdeuas jhgth"))
-
-function isPrime(n){
-    if(n<=1) return false
-
-    for(let i=2; i<n; i++){
-        if(n%i===0){
-            return false
+        
+       
+        else if (ch>="a" && ch<="z" ){
+             small_letter++
+             if("aeiou".includes(ch)){
+                vowels++
+             }
+             else{
+                consonent++
+             }
+        }
+        else if(ch>="A" && ch<="Z"){
+             capital_letter++
+             if("AEIOU".includes(ch)){
+                vowels++
+             }
+             else{
+                consonent++
+             }
         }
     }
-    return true
+    return {number, vowels, consonent, small_letter, capital_letter}
 }
+console.log(isCount("fhsnso84522hifjhADF39jkfsgedfugfdSDAlfs"))
+function isFactorial(num){
+    result=1
+    for(let i=1; i<=num; i++){
+        result=result*i
+    }
+    return result
+}
+console.log(isFactorial(5))
 
-console.log(isPrime(7))
