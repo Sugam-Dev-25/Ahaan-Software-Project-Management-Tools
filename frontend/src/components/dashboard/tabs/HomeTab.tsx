@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from "../../../redux/app/hook";
-import { getTasks } from "../../../redux/features/Task/taskSlice";
-import { fetchColumn } from "../../../redux/features/Column/columnSlice";
+import { useAppDispatch, useAppSelector } from "../../redux/app/hook";
+import { getTasks } from "../../redux/features/Task/taskSlice";
+import { fetchColumn } from "../../redux/features/Column/columnSlice";
 import { AllTable } from '../Home/AllTable';
 
 interface Stats {

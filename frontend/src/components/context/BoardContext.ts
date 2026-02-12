@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import type { Board, Task } from "../../types/allType";
+import type { Board, Task } from "../types/allType";
 export interface BoardProviderProps{
   board: Board | null;
   loading: boolean;

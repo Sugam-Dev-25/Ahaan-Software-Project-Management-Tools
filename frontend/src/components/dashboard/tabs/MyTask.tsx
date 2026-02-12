@@ -1,9 +1,9 @@
 import {  useState } from "react"; // Added useState
-import { useAppSelector } from "../../../redux/app/hook";
+import { useAppSelector } from "../../redux/app/hook";
 
 import { Timer } from "../Home/Timer";
 import { TaskDetails } from "./TaskDetails"; // Import your TaskDetails component
-import type { Task } from "../../../types/allType";
+import type { Task } from "../../types/allType";
 
 export const MyTask = () => {
     

@@ -2,7 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { useCurrentUser } from './components/api/useCurrentUser'
 import { Auth } from './components/redux/features/User/Auth';
 import { useAppSelector } from './components/redux/app/hook';
-import { AdminDashboard } from './components/dashboard/admin/AdminDashboard';
+import { AdminDashboard } from './components/dashboard/AdminDashboard';
 
 function App() {
     const user = useAppSelector(state => state.login.user)
@@ -19,7 +19,7 @@ function App() {
         <Routes>
             <Route path="/" element={<Auth />} />
             <Route
-                path="/:name/*"
+                path="/:role/dashboard/*"
                 element={
                     user?.name ? (
                         <AdminDashboard />
@@ -28,6 +28,7 @@ function App() {
                     )
                 }
             />
+            
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     )

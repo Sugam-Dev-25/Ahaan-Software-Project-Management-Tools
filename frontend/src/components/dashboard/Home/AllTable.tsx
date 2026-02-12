@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAppSelector } from '../../../redux/app/hook';
+import { useAppSelector } from '../../redux/app/hook';
 import { CalendarBlank, Hourglass, WarningCircle, SealCheck, Users, CheckCircle, Clock } from '@phosphor-icons/react';
 
 export const AllTable = () => {

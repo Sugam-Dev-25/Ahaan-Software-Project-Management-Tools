@@ -23,11 +23,11 @@ export const LoginView = () => {
   const submitLogin = (data: LoginForm) => {
     dispatch(loginUsers(data));
   };
- const name=user?.name ? slugify(user.name) : ""
+ const role=user?.role ? slugify(user.role) : ""
   // ✅ ROLE BASED REDIRECT
   useEffect(() => {
-    if (name) {
-      navigate(`/${name}`, { replace: true });
+    if (role) {
+      navigate(`/${role}/dashboard`, { replace: true });
     }
   }, [user, navigate]);
  

@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useAppDispatch, useAppSelector } from "../../app/hook";
 import { addTask } from "./taskSlice";
 import type { Task } from "../../../types/allType";
-import UserSearchInput from "../../../dashboard/common/UserSearchInput";
+import UserSearchInput from "../../../dashboard/UserSearchInput";
 import { X } from "@phosphor-icons/react";
 
 interface Props {

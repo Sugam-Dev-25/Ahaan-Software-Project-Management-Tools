@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../../redux/app/hook";
+import { useAppSelector, useAppDispatch } from "../redux/app/hook";
 import { 
   fetchNotifications, 
   markAllNotificationsAsRead, 
   markAsRead 
-} from "../../redux/features/notifications/notificationSlice";
+} from "../redux/features/notifications/notificationSlice";
 import {
   MagnifyingGlass,
   Bell,

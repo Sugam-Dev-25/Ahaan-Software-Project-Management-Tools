@@ -1,12 +1,12 @@
 import { useContext, useState } from "react"
-import type { Task } from "../../../types/allType"
+import type { Task } from "../../types/allType"
 import {
     Pencil, X, Check, Calendar, User as UserIcon,
     ListChecks, Paperclip, Flag, Clock, Target, ChartBar, WarningCircle
 } from "@phosphor-icons/react"
-import UserSearchInput from "../../common/UserSearchInput"
+import UserSearchInput from "../UserSearchInput"
 import { TaskDetailsHeader } from "../Task/TaskDetailsHeader"
-import { BoardContext } from "../../../context/board/BoardContext"
+import { BoardContext } from "../../context/BoardContext"
 import { ActivityDetails } from "../Task/ActivityDetails"
 
 interface TaskDetailsProps {

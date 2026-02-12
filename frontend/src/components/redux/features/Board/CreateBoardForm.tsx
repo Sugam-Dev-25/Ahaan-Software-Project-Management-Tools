@@ -1,116 +1,152 @@
-// src/redux/features/Board/CreateBoardForm.tsx (REVISED)
-
 import { useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../app/hook"
+import { useAppDispatch, useAppSelector } from "../../app/hook";
 import { useForm } from "react-hook-form";
-import { createBoard } from './boardSlice'
-import { X } from '@phosphor-icons/react';
-// NEW IMPORT
-import UserSearchInput from '../../../dashboard/common/UserSearchInput';
+import { createBoard } from "./boardSlice";
+import { X } from "@phosphor-icons/react";
+import UserSearchInput from "../../../dashboard/UserSearchInput";
 
-// IMPORTANT: We no longer need 'membersInput' in BoardFormInputs as it's now handled by UserSearchInput
 interface BoardFormInputs {
-    name: string,
-    // membersInput is REMOVED/made optional/unused here
+  name: string;
 }
 
-export const CreateBoardForm = () => {
-    const dispatch = useAppDispatch();
-    const { loading, error } = useAppSelector(state => state.board);
-    const isPending = loading === 'pending';
+interface CreateBoardFormProps {
+  onClose: () => void;
+}
 
-    const { register, handleSubmit, formState: { errors }, reset } = useForm<BoardFormInputs>(); // getValues/setValue are no longer needed for member input
-    const [currentMembers, setCurrentMembers] = useState<{ _id: string; name: string }[]>([]);
-    const handleAddMember = (user: { _id: string; name: string }) => {
-        if (!currentMembers.find(member => member._id === user._id)) {
-            setCurrentMembers(prev => [...prev, user]);
-        }
-    };
+export const CreateBoardForm = ({ onClose }: CreateBoardFormProps) => {
+  const dispatch = useAppDispatch();
+  const { loading, error } = useAppSelector((state) => state.board);
+  const isPending = loading === "pending";
 
-    // Remove member handler
-    const handleRemoveMember = (idToRemove: string) => {
-        setCurrentMembers(prev => prev.filter(member => member._id !== idToRemove));
-    };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<BoardFormInputs>();
 
-    // When submitting, send only the IDs
-    const onSubmit = (data: BoardFormInputs) => {
-        if (currentMembers.length === 0) {
-            alert("Please add at least one member.");
-            return;
-        }
-        const boardData = {
-            name: data.name,
-            members: currentMembers.map(member => member._id), // only IDs
-        };
-        dispatch(createBoard(boardData)).then((result) => {
-            if (createBoard.fulfilled.match(result)) {
-                reset();
-                setCurrentMembers([]);
-                alert(`Board "${result.payload.name}" created successfully`);
-            }
-        });
-    };
+  const [members, setMembers] = useState<{ _id: string; name: string }[]>([]);
 
-    return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+  const handleAddMember = (user: { _id: string; name: string }) => {
+    if (!members.find((m) => m._id === user._id)) {
+      setMembers((prev) => [...prev, user]);
+    }
+  };
 
-            {/* 1. BOARD NAME INPUT (Unchanged) */}
-            <div className="flex flex-col">
-                
-                <input
-                    id="name"
-                    className="border border-gray-400 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#feb238] transition text-black-400"
-                    {...register("name", { required: "Board name is required" })}
-                    placeholder="Enter your Details here.."
-                    type="text"
-                />
-                {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
-            </div>
+  const handleRemoveMember = (id: string) => {
+    setMembers((prev) => prev.filter((m) => m._id !== id));
+  };
 
-            {/* 2. MEMBER INPUT (REPLACED) */}
-            <div className="flex flex-col">
-                <UserSearchInput
-                    onUserSelect={handleAddMember} // updated
-                    excludeUserIds={currentMembers.map(m => m._id)} // only pass IDs
-                />
-            </div>
+  const onSubmit = (data: BoardFormInputs) => {
+    if (members.length === 0) return;
 
-            {/* 3. DISPLAY CURRENT MEMBERS (Now showing placeholder for names) */}
-            {currentMembers.length > 0 && (
-                <div className="p-3 bg-gray-100 border border-gray-300 rounded-md">
-                    <p className="text-sm font-semibold text-gray-700 mb-2">Members to Add ({currentMembers.length}):</p>
-                    <div className="flex flex-wrap gap-2">
-                        {/* NOTE: If you store the full user object (name, email) instead of just the ID, 
-                           you can display the actual name here for better UX. 
-                           For now, we display the truncated ID. */}
-                        {currentMembers.map(member => (
-                            <span
-                                key={member._id}
-                                className="inline-flex items-center text-xs font-medium bg-gray-300 text-gray-800 rounded-full pl-3 pr-1 py-1 cursor-pointer hover:bg-red-500 hover:text-white transition"
-                                onClick={() => handleRemoveMember(member._id)}
-                            >
-                                {member.name}
-                                <X size={12} weight="bold" className="ml-1" />
-                            </span>
-                        ))}
+    dispatch(
+      createBoard({
+        name: data.name,
+        members: members.map((m) => m._id),
+      })
+    ).then((res) => {
+      if (createBoard.fulfilled.match(res)) {
+        reset();
+        setMembers([]);
+        onClose();
+      }
+    });
+  };
 
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* ================= HEADER ================= */}
+      <div className="relative text-center">
+        <h2 className="text-2xl font-bold text-black">Create Board</h2>
+        <p className="text-sm text-gray-500 mt-1">
+          Organize work and invite team members
+        </p>
 
-                    </div>
-                </div>
-            )}
+        {/* Close Button */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="
+            absolute top-0 right-0
+            h-8 w-8
+            bg-black rounded-full
+            flex items-center justify-center
+            hover:bg-gray-800 transition
+          "
+        >
+          <X size={16} className="text-white" />
+        </button>
+      </div>
 
+      {/* ================= BOARD NAME ================= */}
+      <div>
+        <input
+          {...register("name", { required: "Board name is required" })}
+          placeholder="Enter project name"
+          className="
+            w-full h-12 px-5 rounded-full
+            border border-gray-300
+            focus:ring-2 focus:ring-black
+            outline-none
+          "
+        />
+        {errors.name && (
+          <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
+        )}
+      </div>
 
-            {/* 4. FEEDBACK & SUBMIT (Unchanged) */}
-            {error && <p className="text-red-500 text-sm bg-red-50 p-2 rounded">{error}</p>}
-            {loading === "succeeded" ?"" : ( <p className="text-green-600 text-sm bg-green-50 p-2 rounded">Project created successfully!</p>)}
+      {/* ================= MEMBERS ================= */}
+      <UserSearchInput
+        onUserSelect={handleAddMember}
+        excludeUserIds={members.map((m) => m._id)}
+      />
 
-            <button
-                type="submit"
-                disabled={isPending || currentMembers.length === 0}
-                className="bg-[#feb238] text-white w-full py-3 rounded-md font-semibold hover:bg-[#d69830] transition disabled:opacity-50"
+      {/* ================= SELECTED MEMBERS ================= */}
+      {members.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {members.map((m) => (
+            <span
+              key={m._id}
+              onClick={() => handleRemoveMember(m._id)}
+              className="
+                flex items-center gap-2
+                px-4 py-1 text-xs
+                bg-gray-200 rounded-full
+                cursor-pointer
+                hover:bg-black hover:text-white
+                transition
+              "
             >
-                {isPending ? "Creating Board..." : "Create Project Board"}
-            </button>
-        </form>
-    )
-}
+              {m.name}
+              <X size={12} />
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* ================= ERROR ================= */}
+      {error && (
+        <p className="text-red-600 text-sm bg-red-50 p-2 rounded">{error}</p>
+      )}
+
+      {/* ================= SUBMIT ================= */}
+      <button
+        type="submit"
+        disabled={isPending || members.length === 0}
+        className="
+    w-full h-12 rounded-full
+    bg-black text-white font-semibold
+    hover:bg-gray-900 transition
+    disabled:opacity-100
+    disabled:bg-black
+    disabled:text-white
+    cursor-pointer
+    disabled:cursor-not-allowed
+  "
+      >
+        {isPending ? "Creating..." : "Create Board"}
+      </button>
+    </form>
+  );
+};

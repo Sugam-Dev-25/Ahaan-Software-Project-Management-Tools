@@ -1,12 +1,12 @@
 import { type ReactNode, useEffect, useMemo } from "react"
 import { BoardContext } from "./BoardContext"
-import { useAppDispatch, useAppSelector } from "../../redux/app/hook"
+import { useAppDispatch, useAppSelector } from "../redux/app/hook"
 import {  useSearchParams } from "react-router-dom"
-import { slugify } from "../../hooks/slugify"
-import { addMember, fetchBoard } from "../../redux/features/Board/boardSlice"
-import type { Board, Task } from "../../types/allType"
-import { addColumn, deleteColumn, fetchColumn } from "../../redux/features/Column/columnSlice"
-import { addComment, getTasks, clearTasks, deleteTask,  moveTask,  updateTask } from "../../redux/features/Task/taskSlice"
+import { slugify } from "../hooks/slugify"
+import { addMember, fetchBoard } from "../redux/features/Board/boardSlice"
+import type { Board, Task } from "../types/allType"
+import { addColumn, deleteColumn, fetchColumn } from "../redux/features/Column/columnSlice"
+import { addComment, getTasks, clearTasks, deleteTask,  moveTask,  updateTask } from "../redux/features/Task/taskSlice"
 
 interface BoardProviderProps {
   board: Board | null

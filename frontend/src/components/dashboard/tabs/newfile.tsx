@@ -1,11 +1,11 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import type { Task, Column } from "../../../types/allType";
-import TaskView from "../../../redux/features/Task/taskView";
+import type { Task, Column } from "../../types/allType";
+import TaskView from "../../redux/features/Task/taskView";
 import { ArrowRight, CalendarBlank, Chat, Check, Flag, Plus, X } from "@phosphor-icons/react";
 import { TaskDetails } from "./TaskDetails";
 
-import { useAppSelector } from "../../../redux/app/hook";
-import { BoardContext } from "../../../context/board/BoardContext";
+import { useAppSelector } from "../../redux/app/hook";
+import { BoardContext } from "../../context/BoardContext";
 
 export const DashBoardBody = () => {
   const [showColumnInput, setShowColumnInput] = useState(false)
@@ -13,6 +13,7 @@ export const DashBoardBody = () => {
   const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [openMenuColumn, setOpenMenuColumn] = useState<string | null>(null)
+  
   const columnMenuRef = useRef<HTMLDivElement | null>(null)
   const taskPopupRef = useRef<HTMLDivElement | null>(null)
   const columnInputRef = useRef<HTMLDivElement | null>(null)

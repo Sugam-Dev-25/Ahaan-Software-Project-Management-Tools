@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useAppDispatch } from "../../../redux/app/hook";
-import { toggleTimer } from "../../../redux/features/Task/taskSlice";
+import { useAppDispatch } from "../../redux/app/hook";
+import { toggleTimer } from "../../redux/features/Task/taskSlice";
 import { Play, Pause, WarningCircle } from "@phosphor-icons/react";
 
 interface TimerProps {

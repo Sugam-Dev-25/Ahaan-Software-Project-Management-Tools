@@ -2,8 +2,8 @@ import { useContext, useEffect, useRef, useState } from 'react'
 import {
     X, ListChecks, UsersIcon, Folder, Plus, ArrowSquareOut, Star, CornersOut, DotsThree,
 } from "@phosphor-icons/react"
-import { BoardContext } from '../../../context/board/BoardContext'
-import type { Task } from '../../../types/allType'
+import { BoardContext } from '../../context/BoardContext'
+import type { Task } from '../../types/allType'
 
 interface TaskDetailsHeaderProps {
     onClose: () => void

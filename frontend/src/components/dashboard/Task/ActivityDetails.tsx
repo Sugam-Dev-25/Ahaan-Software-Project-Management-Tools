@@ -1,8 +1,8 @@
 import { At, Paperclip, PaperPlaneRight, CaretDown, CaretUp } from "@phosphor-icons/react";
 import { useContext, useState } from "react";
-import { BoardContext } from "../../../context/board/BoardContext";
-import type { Task } from "../../../types/allType";
-import { useAppSelector } from "../../../redux/app/hook";
+import { BoardContext } from "../../context/BoardContext";
+import type { Task } from "../../types/allType";
+import { useAppSelector } from "../../redux/app/hook";
 
 interface ActivityDetailsProps {
     editedTask: Partial<Task>;

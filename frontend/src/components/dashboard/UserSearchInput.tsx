@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axiosClient from '../../api/axiosClient';
+import axiosClient from '../api/axiosClient';
 
 interface SearchUser {
     _id: string;

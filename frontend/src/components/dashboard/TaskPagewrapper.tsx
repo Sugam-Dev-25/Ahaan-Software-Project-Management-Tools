@@ -1,9 +1,9 @@
 
 import { useSearchParams } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../../redux/app/hook';
-import { getTasks } from '../../redux/features/Task/taskSlice';
+import { useAppDispatch, useAppSelector } from '../redux/app/hook';
+import { getTasks } from '../redux/features/Task/taskSlice';
 import { useEffect } from 'react';
-import { GlobalSpinner } from '../../context/board/GlobalSpinner';
+import { GlobalSpinner } from '../context/GlobalSpinner';
 import { MyTask } from './tabs/MyTask';
 import { AllTask } from './tabs/AllTask';
 
