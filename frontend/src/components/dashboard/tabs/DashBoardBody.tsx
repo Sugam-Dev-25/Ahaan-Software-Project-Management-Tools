@@ -75,7 +75,7 @@ export const DashBoardBody = () => {
   };
 
   return (
-    <div className="relative h-full">
+    <div className="relative h-full px-6 pt-6">
       <div ref={scrollRef} className="flex gap-4 overflow-x-auto no-scrollbar pb-6 mt-2 items-start">
         {currentColumns.map((c, colIndex) => {
           const color = BOARD_COLORS[colIndex % BOARD_COLORS.length];
@@ -206,13 +206,13 @@ export const DashBoardBody = () => {
         })}
 
         {/* ADD COLUMN SECTION */}
-        <div className="min-w-[280px]">
+        <div className="min-w-[220px] flex items-start">
           {!showColumnInput ? (
             <button
               onClick={() => setShowColumnInput(true)}
-              className="w-12 h-12 rounded-2xl bg-gray-900 text-white flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
+              className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center"
             >
-              <Plus size={24} weight="bold" />
+              <Plus size={18} weight="bold" />
             </button>
           ) : (
             <div ref={columnInputRef} className="bg-white p-4 rounded-xl shadow-xl border border-gray-100 flex flex-col gap-3">

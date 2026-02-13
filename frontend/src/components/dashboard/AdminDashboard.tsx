@@ -1,7 +1,7 @@
 
 import { Sidebar } from './Sidebar'
-import { Routes, Route, Navigate, useLocation} from 'react-router-dom'
-import {HomeTab} from './tabs/HomeTab'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { HomeTab } from './tabs/HomeTab'
 import { GlobalSpinner } from '../context/GlobalSpinner'
 
 import { useAppSelector } from '../redux/app/hook'
@@ -9,22 +9,22 @@ import { Topbar } from './TopBar'
 import { TasksPageWrapper } from './TaskPagewrapper'
 import { BoardQueryWrapper } from '../context/BoardQueryWrapper'
 import { useState } from 'react'
-
-
+import Teams from './Teams'
+import ChatsPage from '../ChatsPage/ChatsPage'
 
 export const AdminDashboard = () => {
-   const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   const user = useAppSelector(state => state.login.user);
   const role = user?.role;
 
- const location = useLocation();
+  const location = useLocation();
   const isChatPage = location.pathname.endsWith("/chats");
-  if (!role) return <GlobalSpinner />; 
+  if (!role) return <GlobalSpinner />;
 
   return (
     <div className='min-h-screen'>
-    
+
       {!isChatPage && (
         <Sidebar
           collapsed={collapsed}
@@ -32,21 +32,21 @@ export const AdminDashboard = () => {
         />
       )}
 
-      <div className={`transition-all duration-300 ${
-          !isChatPage
-            ? collapsed
-              ? "ml-16"
-              : "ml-64"
-            : ""
+      <div className={`transition-all duration-300 ${!isChatPage
+        ? collapsed
+          ? "ml-16"
+          : "ml-64"
+        : ""
         }`}>
-        
-         <Topbar/>
+
+        <Topbar />
         <Routes>
           {/* Explicitly define the root for the dashboard */}
-          <Route index element={role ? <HomeTab /> : <GlobalSpinner />} /> 
+          <Route index element={role ? <HomeTab /> : <GlobalSpinner />} />
           <Route path=":boardSlug" element={<BoardQueryWrapper />} />
-            <Route path="tasks" element={<TasksPageWrapper />} />
-         
+          <Route path="tasks" element={<TasksPageWrapper />} />
+          <Route path="teams" element={<Teams />} />
+          <Route path="chats" element={<ChatsPage />} />
           <Route path="*" element={<Navigate to={`/`} replace />} />
         </Routes>
       </div>

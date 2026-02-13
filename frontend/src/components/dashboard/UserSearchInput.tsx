@@ -68,7 +68,10 @@ const UserSearchInput: React.FC<UserSearchInputProps> = ({ onUserSelect, exclude
                 placeholder="Search by Name or Email"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="border border-gray-400 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500 transition w-full text-black"
+                className="w-full h-12 px-5 rounded-full
+            border border-gray-300
+            focus:ring-2 focus:ring-black
+            outline-none"
                 disabled={isLoading && searchTerm === ''}
             />
 
@@ -97,7 +100,6 @@ const UserSearchInput: React.FC<UserSearchInputProps> = ({ onUserSelect, exclude
             )}
 
             {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
-
             {searchTerm.length >= 2 && !isLoading && searchResults.length === 0 && !error && (
                 <p className="p-3 text-sm text-gray-500 bg-white border border-gray-300 rounded-md mt-1 shadow-lg absolute z-10 w-full">
                     No board members found matching "{searchTerm}".

@@ -1,13 +1,12 @@
-import { NavLink, useLocation, useNavigate } from "react-router-dom"
+import { NavLink, useNavigate } from "react-router-dom"
 import { useAppDispatch, useAppSelector } from "../redux/app/hook"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { fetchBoard } from "../redux/features/Board/boardSlice"
 import { slugify } from '../hooks/slugify'
 import {
     House,
     Kanban,
     Users,
-    ClipboardText,
     SignOut,
     Plus,
     CaretLeft,
@@ -19,15 +18,14 @@ import { logoutUser } from "../redux/features/User/login/loginSlice";
 import { CreateBoardForm } from "../redux/features/Board/CreateBoardForm"
 import AddUserModal from "../redux/features/User/AddUserModal"
 interface SidebarProps {
-  collapsed: boolean;
-  setCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
+    collapsed: boolean;
+    setCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
 }
 export const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
     const [showBoard, setShowBoard] = useState<boolean>(false);
     const [createBoard, setCreateBoard] = useState<boolean>(false)
     const [showAddUser, setShowAddUser] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement | null>(null)
-    const location = useLocation()
+
     const navigate = useNavigate()
     const baseRow =
         "flex items-center h-11 px-4 text-sm rounded-md transition-all";
@@ -38,23 +36,13 @@ export const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
     const user = useAppSelector(state => state.login.user)
     const board = useAppSelector(state => state.board.boards)
 
-    const role = user?.role || "user"; 
-const dashboardBase = `/${role}/dashboard`;
+    const role = user?.role || "user";
+    const dashboardBase = `/${role}/dashboard`;
     useEffect(() => {
         dispatch(fetchBoard())
     }, [dispatch])
 
 
-    useEffect(() => {
-        const handaleClickOutside = (e: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-
-                setCreateBoard(false)
-            }
-        }
-        document.addEventListener("mousedown", handaleClickOutside)
-        return () => document.removeEventListener("mousedown", handaleClickOutside)
-    }, [])
 
     const handleLogout = async () => {
         await dispatch(logoutUser()).unwrap();
@@ -65,8 +53,8 @@ const dashboardBase = `/${role}/dashboard`;
 
     }
 
-    const onClose=()=>{
-setCreateBoard(false)
+    const onClose = () => {
+        setCreateBoard(false)
     }
     return (
         < >
@@ -81,7 +69,7 @@ setCreateBoard(false)
                         className={`text-black font-bold text-xl ${collapsed ? "mx-auto tracking-widest" : ""
                             }`}
                     >
-                        {collapsed ? "AHAAN" : "Ahaan Software"}
+                        {collapsed ? "ASC" : "Ahaan Software"}
                     </div>
                 </div>
                 <nav className="flex-1 px-2 py-3 space-y-1 overflow-y-auto">
@@ -111,7 +99,7 @@ setCreateBoard(false)
                                     : "My Tasks")}
                         </div>
                     </NavLink>
-                    <div className={`${baseRow} ${inactive}`} ref={dropdownRef}>
+                    <div className={`${baseRow} ${inactive}`} >
                         <button
                             onClick={() => setShowBoard((p) => !p)}
                             className="flex items-center gap-3 flex-1 text-left"
@@ -181,12 +169,12 @@ setCreateBoard(false)
                             {!collapsed && "Teams"}
                         </div>
                     </NavLink>
-                     <button
-            onClick={() => setCollapsed((p) => !p)}
-            className="flex items-center h-11 w-full justify-center"
-          >
-            {collapsed ? <CaretRight /> : <CaretLeft />}
-          </button>
+                    <button
+                        onClick={() => setCollapsed((p) => !p)}
+                        className="flex items-center h-11 w-full justify-center"
+                    >
+                        {collapsed ? <CaretRight /> : <CaretLeft />}
+                    </button>
                 </nav>
                 <div className="p-3">
                     <button
@@ -199,16 +187,24 @@ setCreateBoard(false)
                 </div>
             </aside>
             {createBoard && !collapsed && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40" />
-          <div className="relative w-[520px] bg-white rounded-2xl p-8">
-            <CreateBoardForm onClose={onClose } />
-          </div>
-        </div>
-      )}
+                <div
+                    className="fixed inset-0 z-[60] flex items-center justify-center"
+                    onClick={() => setCreateBoard(false)}
+                >
+                    <div className="absolute inset-0 bg-black/40" />
+
+                    <div
+                        className="relative w-[520px] bg-white rounded-2xl p-8"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <CreateBoardForm onClose={onClose} />
+                    </div>
+                </div>
+            )}
+
             {showAddUser && (
-        <AddUserModal onClose={() => setShowAddUser(false)} />
-      )}
+                <AddUserModal onClose={() => setShowAddUser(false)} />
+            )}
         </>
     )
 }

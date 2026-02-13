@@ -38,7 +38,7 @@ export const DashBoardHeader = () => {
     if (!board) return null
 
     return (
-        <div>
+        <div className="px-6 pt-6">
             {/* ================= HEADER ================= */}
             <div className="w-full bg-white rounded-xl  flex items-center justify-between">
                 {/* LEFT */}

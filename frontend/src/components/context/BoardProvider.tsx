@@ -1,7 +1,7 @@
 import { type ReactNode, useEffect, useMemo } from "react"
 import { BoardContext } from "./BoardContext"
 import { useAppDispatch, useAppSelector } from "../redux/app/hook"
-import {  useSearchParams } from "react-router-dom"
+import {  useParams, useSearchParams } from "react-router-dom"
 import { slugify } from "../hooks/slugify"
 import { addMember, fetchBoard } from "../redux/features/Board/boardSlice"
 import type { Board, Task } from "../types/allType"
@@ -35,7 +35,7 @@ const [searchParams]=useSearchParams()
   const isTaskIsLoading = useAppSelector(state => state.task.loading === "pending")
   const globalLoading = isBoardIsLoading || isTaskIsLoading
 
-  const  boardSlug  = searchParams.get("name")
+  const { boardSlug } = useParams<{ boardSlug: string }>()
 const currentBoard = useMemo(() => {
     if (boardSlug) {
       // Find the board matching the slug in the URL query

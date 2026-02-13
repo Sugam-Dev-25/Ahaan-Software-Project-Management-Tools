@@ -108,10 +108,27 @@ const searchUsers=async(req, res)=>{
     }
 }
 
+const getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find()
+            .select('_id name email role phone profilepicture createdAt')
+            .sort({ createdAt: -1 }); // newest first
+
+        res.status(200).json({
+            total: users.length,
+            users
+        });
+    } catch (error) {
+        console.error('Get all users error:', error);
+        res.status(500).json({ message: 'Failed to fetch users' });
+    }
+};
+
 module.exports={
     loginUser,
     logoutUser,
     registerUser,
     getProfile,
-    searchUsers
+    searchUsers,
+    getAllUsers
 }
