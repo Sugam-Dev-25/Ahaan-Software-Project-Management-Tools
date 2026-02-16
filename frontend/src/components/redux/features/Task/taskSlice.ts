@@ -1,43 +1,45 @@
 import { createAsyncThunk, createSlice, isRejectedWithValue, type PayloadAction } from "@reduxjs/toolkit";
-import type { Task } from "../../../types/allType";
+import type { Task, } from "../../../types/allType";
 import axiosClient from "../../../api/axiosClient";
 import { deleteColumn } from "../Column/columnSlice";
 
 interface taskState {
     task: Task[];
+    selectedTask: Task | null;
     loading: "idle" | "pending" | "fulfilled" | "failed",
     error: string | null
 }
 
 const initialState: taskState = {
     task: [],
+    selectedTask: null,
     loading: 'idle',
     error: null
 }
 interface GetTasksParams {
-  scope?: "mine" | "all";
-  boardId?: string;
-  columnId?: string;
+    scope?: "mine" | "all";
+    boardId?: string;
+    columnId?: string;
 }
 export const getTasks = createAsyncThunk<Task[], GetTasksParams | undefined, { rejectValue: string }>(
-  "tasks/getTasks",
-  async (params, { rejectWithValue }) => {
-    try {
-      const query = new URLSearchParams();
+    "tasks/getTasks",
+    async (params, { rejectWithValue }) => {
+        try {
+            const query = new URLSearchParams();
 
-      if (params?.scope) query.append("scope", params.scope);
-      if (params?.boardId) query.append("boardId", params.boardId);
-      if (params?.columnId) query.append("columnId", params.columnId);
+            if (params?.scope) query.append("scope", params.scope);
+            if (params?.boardId) query.append("boardId", params.boardId);
+            if (params?.columnId) query.append("columnId", params.columnId);
 
-      const res = await axiosClient.get(`/api/tasks?${query.toString()}`, {
-        withCredentials: true,
-      });
+            const res = await axiosClient.get(`/api/tasks?${query.toString()}`, {
+                withCredentials: true,
+            });
 
-      return res.data;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || err.message);
+            return res.data;
+        } catch (err: any) {
+            return rejectWithValue(err.response?.data?.message || err.message);
+        }
     }
-  }
 );
 
 export const addTask = createAsyncThunk<Task, { boardId: string, columnId: string, taskData: Partial<Task> }, { rejectValue: string }>("tasks/addTask", async ({ boardId, columnId, taskData }, { rejectWithValue }) => {
@@ -88,7 +90,7 @@ export const addComment = createAsyncThunk(
     }
 );
 
-export const toggleTimer = createAsyncThunk<Task,{ taskId: string },{ rejectValue: string }> (
+export const toggleTimer = createAsyncThunk<Task, { taskId: string }, { rejectValue: string }>(
     "task/toggleTimer",
     async ({ taskId }, { rejectWithValue }) => {
         try {
@@ -99,6 +101,28 @@ export const toggleTimer = createAsyncThunk<Task,{ taskId: string },{ rejectValu
         }
     }
 );
+
+export const uploadFiles = createAsyncThunk<Task, { taskId: string; formData: FormData }, { rejectValue: string }>("task/uploadfiles",
+    async ({ taskId, formData }, { rejectWithValue }) => {
+        try {
+            const res = await axiosClient.post(`api/tasks/${taskId}/upload`, formData, { headers: { 'Content-Type': 'multipart/formData' }, withCredentials: true })
+            return res.data
+        }
+        catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || error.message)
+        }
+    }
+)
+
+export const deleteFiles = createAsyncThunk("task/deleteFiles", async ({ taskId, fileId }: { taskId: string, fileId: string }, { rejectWithValue }) => {
+    try {
+        const res = await axiosClient.delete(`/api/tasks/${taskId}/upload/${fileId}`, { withCredentials: true })
+        return res.data
+    }
+    catch (error: any) {
+        return rejectWithValue(error.response?.data?.message || error.message)
+    }
+})
 
 
 
@@ -118,7 +142,7 @@ const taskSlice = createSlice({
                 state.task.push(action.payload);
             })
             .addCase(addTask.rejected, (state, action) => { state.loading = "failed"; state.error = action.payload as string; })
-            
+
             .addCase(moveTask.pending, (state, action) => {
                 state.loading = "pending";
                 const { taskId, newColumnId, newPosition } = action.meta.arg;
@@ -202,17 +226,39 @@ const taskSlice = createSlice({
                 });
             })
             .addCase(getTasks.pending, (state) => {
-        state.loading = "pending";
-        state.error = null;
-      })
-      .addCase(getTasks.fulfilled, (state, action: PayloadAction<Task[]>) => {
-        state.loading = "fulfilled";
-        state.task = action.payload;
-      })
-      .addCase(getTasks.rejected, (state, action) => {
-        state.loading = "failed";
-        state.error = action.payload as string;
-      });
+                state.loading = "pending";
+                state.error = null;
+            })
+            .addCase(getTasks.fulfilled, (state, action: PayloadAction<Task[]>) => {
+                state.loading = "fulfilled";
+                state.task = action.payload;
+            })
+            .addCase(getTasks.rejected, (state, action) => {
+                state.loading = "failed";
+                state.error = action.payload as string;
+            })
+            .addCase(uploadFiles.pending, (state) => {
+                state.loading = "pending";
+            })
+            // inside extraReducers for uploadFiles.fulfilled
+            .addCase(uploadFiles.fulfilled, (state, action) => {
+                // 1. Update the task in the main list
+                const index = state.task.findIndex(t => t._id === action.payload._id);
+                if (index !== -1) {
+                    state.task[index] = action.payload;
+                }
+
+                // 2. Update selectedTask (This keeps the modal open with new data)
+                state.selectedTask = action.payload;
+                state.loading = "failed";
+            })
+            .addCase(uploadFiles.rejected, (state, action) => {
+                state.loading = "failed";
+                state.error = action.payload as string;
+            })
+            .addCase(deleteFiles.fulfilled, (state, action) => {
+                state.selectedTask = action.payload
+            })
     }
 })
 export default taskSlice.reducer

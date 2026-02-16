@@ -2,12 +2,13 @@ import { useContext, useState } from "react"
 import type { Task } from "../../types/allType"
 import {
     Pencil, X, Check, Calendar, User as UserIcon,
-    ListChecks, Paperclip, Flag, Clock, Target, ChartBar, WarningCircle
+    ListChecks, Flag, Clock, Target, ChartBar, WarningCircle
 } from "@phosphor-icons/react"
 import UserSearchInput from "../UserSearchInput"
 import { TaskDetailsHeader } from "../Task/TaskDetailsHeader"
 import { BoardContext } from "../../context/BoardContext"
 import { ActivityDetails } from "../Task/ActivityDetails"
+import { AttachmentSection } from "../Task/AttachMentSection"
 
 interface TaskDetailsProps {
     task: Task,
@@ -63,8 +64,9 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
     const [isdropdown, setIsdropdown] = useState(false);
 
     const boardDetails = useContext(BoardContext)
-    
-   const handleChange = (field: keyof Task, value: any) => {
+ 
+
+    const handleChange = (field: keyof Task, value: any) => {
         setEditedTask(prev => ({ ...prev, [field]: value }));
     };
 
@@ -87,10 +89,10 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
         } else {
             console.error("BoardContext not found. Cannot save changes.");
         }
-        
+
         setActiveField(null);
     };
-    
+
 
     const handleFieldCancel = () => {
         setEditedTask({ ...task });
@@ -102,6 +104,8 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
         const d = date instanceof Date ? date : new Date(date);
         return isNaN(d.getTime()) ? 'Not set' : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     };
+
+
 
     const msToHours = (ms: number = 0) => (ms / 3600000).toFixed(1);
 
@@ -357,8 +361,8 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
                                     {/* The Actual Progress Bar */}
                                     <div
                                         className={`h-full transition-all duration-700 ease-out ${overtimeMs > 0
-                                                ? 'bg-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.4)]'
-                                                : 'bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.3)]'
+                                            ? 'bg-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.4)]'
+                                            : 'bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.3)]'
                                             }`}
                                         style={{ width: `${progressPercent}%` }}
                                     />
@@ -425,20 +429,12 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
                             )}
                         </section>
 
-                        {/* Attachments Section */}
-                        <div className="flex items-start gap-4">
-                            <div className="mt-1 text-gray-400"><Paperclip size={20} weight="bold" /></div>
-                            <div className="flex-grow">
-                                <p className="text-sm font-bold text-gray-700 mb-3 tracking-tight">Attachments</p>
-                                <div className="border-2 border-dashed border-gray-100 rounded-2xl p-8 flex flex-col items-center justify-center bg-gray-50/50 group hover:border-blue-200 hover:bg-blue-50/30 transition-all cursor-pointer">
-                                    <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm mb-2 group-hover:scale-110 transition-transform">
-                                        <Paperclip size={20} className="text-blue-500" />
-                                    </div>
-                                    <p className="text-xs text-gray-400 font-medium">Drop files or <span className="text-blue-500 font-bold underline">browse</span></p>
-                                </div>
-                                <p className="text-[10px] font-bold text-gray-400 mt-2 uppercase tracking-widest">{editedTask.attachments?.length || 0} Files attached</p>
-                            </div>
-                        </div>
+                          <section className="mt-8">
+                                    <AttachmentSection
+                                        taskId={task._id}
+                                        attachments={editedTask.attachments || []}
+                                    />
+                                </section>
 
                     </div>
                     <div className="bg-gray-50/30 h-full overflow-hidden">

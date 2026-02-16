@@ -1,6 +1,10 @@
 const Task = require('../models/Task')
 const Column = require('../models/Column')
 const Board = require('../models/Board')
+const mongoose = require('mongoose');
+const fs = require('fs');
+const path = require('path');
+
 const createTask = async (req, res) => {
   const { boardId, columnId } = req.params;
   const { title, description, priority, assignedTo, dueDate, startDate } = req.body;
@@ -131,10 +135,10 @@ const updateTask = async (req, res) => {
     task._userContext = req.user._id;
     task._originalValues = JSON.parse(JSON.stringify(task));
     Object.keys(updates).forEach((key) => {
-        task[key] = updates[key];
+      task[key] = updates[key];
     });
 
-    await task.save(); 
+    await task.save();
 
     const populatedTask = await Task.findById(taskId)
       .populate('assignedTo', 'name email')
@@ -181,7 +185,7 @@ const addTaskComment = async (req, res) => {
     });
 
     // This ONE save triggers the TaskSchema.post('save') notification logic
-    await task.save(); 
+    await task.save();
 
     const updatedTask = await Task.findById(taskId)
       .populate('comments.user', 'name email')
@@ -195,55 +199,55 @@ const addTaskComment = async (req, res) => {
 };
 
 const toggleTimer = async (req, res) => {
-    const { taskId } = req.params;
-    const task = await Task.findById(taskId);
-    if (!task) return res.status(404).json({ message: "Task not found" });
+  const { taskId } = req.params;
+  const task = await Task.findById(taskId);
+  if (!task) return res.status(404).json({ message: "Task not found" });
 
-    const now = new Date();
+  const now = new Date();
 
-    if (task.timeManagement.isRunning) {
-        const startTime = new Date(task.timeManagement.activeStartTime);
-        const workDone = now.getTime() - startTime.getTime();
-        const deadline = task.dueDate ? new Date(task.dueDate).getTime() : null;
-        const goalMs = (task.timeManagement.estimatedTime || 0) * 3600000;
-        
-        let sessionDelay = 0;
+  if (task.timeManagement.isRunning) {
+    const startTime = new Date(task.timeManagement.activeStartTime);
+    const workDone = now.getTime() - startTime.getTime();
+    const deadline = task.dueDate ? new Date(task.dueDate).getTime() : null;
+    const goalMs = (task.timeManagement.estimatedTime || 0) * 3600000;
 
-        // --- CALCULATION A: Check Due Date Delay ---
-        if (deadline && now.getTime() > deadline) {
-            sessionDelay = startTime.getTime() > deadline 
-                ? workDone 
-                : now.getTime() - deadline;
-        }
+    let sessionDelay = 0;
 
-        // --- CALCULATION B: Check Estimated Goal Overtime ---
-        // If the total time (including this session) exceeds the goal
-        const totalAfterSession = task.timeManagement.totalLoggedTime + workDone;
-        if (goalMs > 0 && totalAfterSession > goalMs) {
-            const overtimeInThisSession = totalAfterSession - Math.max(task.timeManagement.totalLoggedTime, goalMs);
-            // Use Math.max to ensure we only add delay that isn't already counted by the deadline
-            sessionDelay = Math.max(sessionDelay, overtimeInThisSession);
-        }
-
-        // Update Task Fields
-        task.timeManagement.delay = (task.timeManagement.delay || 0) + sessionDelay;
-        task.timeManagement.totalLoggedTime += workDone;
-        
-        // Log daily progress
-        const todayStr = now.toISOString().split('T')[0];
-        const dayEntry = task.timeManagement.dailyLogs.find(log => log.date === todayStr);
-        if (dayEntry) dayEntry.duration += workDone;
-        else task.timeManagement.dailyLogs.push({ date: todayStr, duration: workDone });
-
-        task.timeManagement.isRunning = false;
-        task.timeManagement.activeStartTime = null;
-    } else {
-        task.timeManagement.isRunning = true;
-        task.timeManagement.activeStartTime = now;
+    // --- CALCULATION A: Check Due Date Delay ---
+    if (deadline && now.getTime() > deadline) {
+      sessionDelay = startTime.getTime() > deadline
+        ? workDone
+        : now.getTime() - deadline;
     }
 
-    await task.save();
-    res.status(200).json(task);
+    // --- CALCULATION B: Check Estimated Goal Overtime ---
+    // If the total time (including this session) exceeds the goal
+    const totalAfterSession = task.timeManagement.totalLoggedTime + workDone;
+    if (goalMs > 0 && totalAfterSession > goalMs) {
+      const overtimeInThisSession = totalAfterSession - Math.max(task.timeManagement.totalLoggedTime, goalMs);
+      // Use Math.max to ensure we only add delay that isn't already counted by the deadline
+      sessionDelay = Math.max(sessionDelay, overtimeInThisSession);
+    }
+
+    // Update Task Fields
+    task.timeManagement.delay = (task.timeManagement.delay || 0) + sessionDelay;
+    task.timeManagement.totalLoggedTime += workDone;
+
+    // Log daily progress
+    const todayStr = now.toISOString().split('T')[0];
+    const dayEntry = task.timeManagement.dailyLogs.find(log => log.date === todayStr);
+    if (dayEntry) dayEntry.duration += workDone;
+    else task.timeManagement.dailyLogs.push({ date: todayStr, duration: workDone });
+
+    task.timeManagement.isRunning = false;
+    task.timeManagement.activeStartTime = null;
+  } else {
+    task.timeManagement.isRunning = true;
+    task.timeManagement.activeStartTime = now;
+  }
+
+  await task.save();
+  res.status(200).json(task);
 };
 const getTasks = async (req, res) => {
   try {
@@ -268,7 +272,7 @@ const getTasks = async (req, res) => {
 
       return res.status(200).json(tasks);
     }
-// Individual assign task
+    // Individual assign task
     if (scope === 'mine') {
       const tasks = await Task.find({ assignedTo: req.user._id })
         .populate('assignedTo', 'name email')
@@ -289,7 +293,7 @@ const getTasks = async (req, res) => {
       .populate('assignedTo', 'name email role')
       .populate('board', 'name')
       .populate('column', 'name')
-      .populate('comments.user', 'name profilePicture') 
+      .populate('comments.user', 'name profilePicture')
       .populate('activityLog.user', 'name')
       .sort({ createdAt: -1 });
 
@@ -300,6 +304,96 @@ const getTasks = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch tasks' });
   }
 };
+const uploadtaskFile = async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    
+    // 1. Find the task
+    const task = await Task.findById(taskId);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
 
+    // 2. Map new files
+    const newAttachments = req.files.map(file => ({
+      _id: new mongoose.Types.ObjectId(),
+      fileName: file.originalname,
+      fileUrl: `http://localhost:5000/uploads/${file.filename}`,
+      uploadedBy: req.user._id
+    }));
 
-module.exports = { createTask, moveTask, updateTask, deleteTask, addTaskComment,  toggleTimer, getTasks }
+    // 3. Update task
+    task.attachments.push(...newAttachments);
+
+    task.activityLog.push({
+      user: req.user._id,
+      action: `uploaded ${newAttachments.length} file(s)`,
+      createdAt: new Date()
+    });
+
+    await task.save();
+
+    // 4. Re-fetch and POPULATE (Use capital Task, not lowercase task)
+    const updatedTask = await Task.findById(taskId)
+      .populate('attachments.uploadedBy', 'name email')
+      .populate('activityLog.user', 'name')
+      .populate('assignedTo', 'name email'); // Populate others so UI doesn't break
+
+    // 5. Send back the FULL task (fixed typo: status)
+    // Most Redux setups expect the whole task to replace the old one in the state
+    res.status(200).json(updatedTask); 
+    
+  } catch (error) {
+    console.error("Upload Error:", error);
+    res.status(500).json({ message: "File upload failed", error: error.message });
+  }
+}
+
+const deleteTaskFile = async (req, res) => {
+  try {
+    const { taskId, fileId } = req.params;
+
+    // 1. Find the task first
+    const task = await Task.findById(taskId);
+    if (!task) return res.status(404).json({ message: "Task not found" });
+
+    // 2. Find the specific attachment to get its URL/Path
+    const attachment = task.attachments.id(fileId);
+    
+    if (attachment) {
+      // Get filename from URL: "http://localhost:5000/uploads/123-file.png" -> "123-file.png"
+      const fileName = attachment.fileUrl.split('/').pop();
+      const filePath = path.join(__dirname, '../uploads', fileName);
+
+      // Delete physical file from 'uploads' folder
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+
+    // 3. Update the Database using the ID object
+    const updatedTask = await Task.findByIdAndUpdate(
+      taskId,
+      { 
+        $pull: { attachments: { _id: new mongoose.Types.ObjectId(fileId) } }, // Ensure ObjectId type
+        $push: { 
+          activityLog: { 
+            user: req.user._id, 
+            action: `Deleted attachment: ${attachment?.fileName || 'Unknown'}` 
+          } 
+        }
+      },
+      { new: true }
+    )
+    .populate('attachments.uploadedBy', 'name email')
+    .populate('activityLog.user', 'name')
+    .populate('assignedTo', 'name email');
+
+    res.status(200).json(updatedTask);
+  } catch (error) {
+    console.error("Delete Error:", error);
+    res.status(500).json({ message: "Delete failed", error: error.message });
+  }
+};
+
+module.exports = { uploadtaskFile, deleteTaskFile, createTask, moveTask, updateTask, deleteTask, addTaskComment, toggleTimer, getTasks }
