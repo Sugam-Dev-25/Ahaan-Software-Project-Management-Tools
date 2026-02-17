@@ -82,11 +82,18 @@ export const deleteTask = createAsyncThunk("task/deleteColumn", async ({ taskId 
     }
 })
 
-export const addComment = createAsyncThunk(
+export const addComment = createAsyncThunk<Task, { taskId: string; formData: FormData }, { rejectValue: string }>(
     "tasks/addComment",
-    async ({ taskId, text }: { taskId: string; text: string }) => {
-        const response = await axiosClient.post(`/api/tasks/${taskId}/comments`, { text });
-        return response.data; // This should be the updated task from the backend
+    async ({ taskId, formData }, { rejectWithValue }) => {
+        try {
+            const response = await axiosClient.post(`/api/tasks/${taskId}/comments`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+                withCredentials: true,
+            });
+            return response.data;
+        } catch (err: any) {
+            return rejectWithValue(err.response?.data?.message || err.message);
+        }
     }
 );
 
@@ -179,18 +186,28 @@ const taskSlice = createSlice({
                 state.task = state.task.filter(t => t._id !== (action.payload as any).taskId);
             })
             .addCase(deleteTask.rejected, (state) => { state.loading = "failed"; })
-            .addCase(addComment.pending, (state) => { state.loading = "pending"; })
+            .addCase(addComment.pending, (state) => { 
+                state.loading = "pending"; 
+            })
             .addCase(addComment.fulfilled, (state, action) => {
                 state.loading = "fulfilled";
+                
+                // Update the task in the main array
                 const index = state.task.findIndex(t => t._id === action.payload._id);
-                if (index !== -1) state.task[index] = {
-                    ...state.task[index],
-                    ...action.payload,
-                    board: action.payload.board ?? state.task[index].board,
-                    column: action.payload.column ?? state.task[index].column
-                };
+                if (index !== -1) {
+                    state.task[index] = {
+                        ...state.task[index],
+                        ...action.payload,
+                    };
+                }
+
+                // IMPORTANT: Update selectedTask so the comment appears in the modal instantly
+                state.selectedTask = action.payload;
             })
-            .addCase(addComment.rejected, (state) => { state.loading = "failed"; })
+            .addCase(addComment.rejected, (state, action) => { 
+                state.loading = "failed"; 
+                state.error = action.payload as string;
+            })
             .addCase(toggleTimer.pending, (state) => {
                 state.loading = "pending";
             })

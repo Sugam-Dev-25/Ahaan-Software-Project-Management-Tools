@@ -168,32 +168,59 @@ const deleteTask = async (req, res) => {
 };
 const addTaskComment = async (req, res) => {
   try {
+    if (!req.body) {
+      return res.status(400).json({ message: "No data received. Ensure you are using multipart/form-data." });
+    }
     const { taskId } = req.params;
     const { text } = req.body;
     const userId = req.user._id;
 
-    if (!text) return res.status(400).json({ message: "Comment text is required" });
+    // Check if we actually have something to save
+    if (!text && (!req.files || req.files.length === 0)) {
+      return res.status(400).json({ message: "Comment cannot be empty" });
+    }
 
     const task = await Task.findById(taskId);
     if (!task) return res.status(404).json({ message: "Task not found" });
+
+    // Map files to match your Schema exactly
+    const commentAttachments = req.files ? req.files.map(file => ({
+      fileName: file.originalname,
+      fileUrl: `http://localhost:5000/uploads/${file.filename}`,
+      fileType: file.mimetype, // Matches the new schema field
+      uploadedBy: userId
+    })) : [];
+
     task._userContext = userId;
-    task.comments.push({ user: userId, text: text, createdAt: new Date() });
-    task.activityLog.push({
-      user: userId,
-      action: `added a comment: "${text.substring(0, 20)}${text.length > 20 ? '...' : ''}"`,
-      createdAt: new Date()
+
+    // Push the comment
+    task.comments.push({ 
+      user: userId, 
+      text: text || "", 
+      attachments: commentAttachments
     });
 
-    // This ONE save triggers the TaskSchema.post('save') notification logic
-    await task.save();
+    // Update Activity Log
+    const logAction = commentAttachments.length > 0 
+      ? `added a comment with ${commentAttachments.length} file(s)` 
+      : `added a comment: "${text?.substring(0, 20)}..."`;
 
+    task.activityLog.push({
+      user: userId,
+      action: logAction
+    });
+
+    await task.save(); 
+
+    // Re-fetch populated task
     const updatedTask = await Task.findById(taskId)
-      .populate('comments.user', 'name email')
-      .populate('activityLog.user', 'name')
-      .populate('assignedTo', 'name email');
+      .populate('comments.user', 'name email profilePicture')
+      .populate('comments.attachments.uploadedBy', 'name')
+      .populate('activityLog.user', 'name');
 
     res.status(201).json(updatedTask);
   } catch (error) {
+    console.error("Critical Save Error:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -279,6 +306,7 @@ const getTasks = async (req, res) => {
         .populate('board', 'name')
         .populate('column', 'name')
         .populate('comments.user', 'name profilePicture') // Added
+        .populate('attachments.uploadedBy', 'name email')
         .populate('activityLog.user', 'name')
         .sort({ createdAt: -1 });
 
@@ -294,6 +322,7 @@ const getTasks = async (req, res) => {
       .populate('board', 'name')
       .populate('column', 'name')
       .populate('comments.user', 'name profilePicture')
+      .populate('attachments.uploadedBy', 'name email')
       .populate('activityLog.user', 'name')
       .sort({ createdAt: -1 });
 

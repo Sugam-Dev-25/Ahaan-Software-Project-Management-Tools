@@ -37,6 +37,7 @@ export type Comment = {
     _id: string;
     user: User; 
     text: string;
+    attachments: Attachment[]
     createdAt: string;
 };
 

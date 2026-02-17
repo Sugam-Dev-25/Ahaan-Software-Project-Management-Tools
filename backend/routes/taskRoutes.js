@@ -21,7 +21,7 @@ const upload=multer({storage})
 router.patch('/:taskId/move', protect, moveTask);
 router.patch("/:taskId", protect, updateTask)
 router.delete("/:taskId", protect, deleteTask)
-router.post('/:taskId/comments', protect, addTaskComment)
+router.post('/:taskId/comments', upload.array('files'), protect, addTaskComment)
 router.post('/:taskId/timer',protect, toggleTimer)
 router.post('/:taskId/upload',protect, upload.array('files'), uploadtaskFile)
 router.get('/', protect, getTasks);

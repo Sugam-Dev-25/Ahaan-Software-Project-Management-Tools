@@ -1,5 +1,5 @@
-import { At, Paperclip, PaperPlaneRight, CaretDown, CaretUp } from "@phosphor-icons/react";
-import { useContext, useState } from "react";
+import { At, Paperclip, PaperPlaneRight, CaretDown, CaretUp, XCircle, File } from "@phosphor-icons/react";
+import { useContext, useState, useRef } from "react";
 import { BoardContext } from "../../context/BoardContext";
 import type { Task } from "../../types/allType";
 import { useAppSelector } from "../../redux/app/hook";
@@ -21,29 +21,48 @@ const getRelativeTime = (date: string | Date) => {
 
 export const ActivityDetails = ({ editedTask }: ActivityDetailsProps) => {
     const [commentText, setCommentText] = useState("");
-    // Independent "Show All" states
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [showAllActivity, setShowAllActivity] = useState(false);
     const [showAllComments, setShowAllComments] = useState(false);
     
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const boardDetails = useContext(BoardContext);
-    const addComment = boardDetails?.addComment;
+    const addComment = boardDetails?.addComment; // Ensure this now accepts (taskId, formData)
 
-    const user=useAppSelector(state=>state.login.user)
+    const user = useAppSelector(state => state.login.user);
 
-    const handleSendComment = async () => {
-        if (!commentText.trim() || !editedTask._id) return;
-        await addComment?.(editedTask._id, commentText);
-        setCommentText("");
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            setSelectedFiles(prev => [...prev, ...Array.from(e.target.files!)]);
+        }
     };
 
-    // Data Preparation
+    const removeFile = (index: number) => {
+        setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const handleSendComment = async () => {
+        if ((!commentText.trim() && selectedFiles.length === 0) || !editedTask._id) return;
+
+        const formData = new FormData();
+        formData.append("text", commentText);
+        selectedFiles.forEach(file => {
+            formData.append("files", file); // Must match backend upload.array('files')
+        });
+
+        // @ts-ignore - Update your Context Type to expect FormData for addComment
+        await addComment?.(editedTask._id, formData);
+        
+        setCommentText("");
+        setSelectedFiles([]);
+    };
+
     const activities = [...(editedTask.activityLog || [])].sort((a, b) => 
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     
     const comments = [...(editedTask.comments || [])].sort((a, b) => 
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-    // Logic for slicing
     const displayedActivities = showAllActivity ? activities : activities.slice(0, 3);
     const displayedComments = showAllComments ? comments : comments.slice(0, 3);
 
@@ -54,34 +73,23 @@ export const ActivityDetails = ({ editedTask }: ActivityDetailsProps) => {
             </h3>
 
             <div className="flex-grow flex flex-col overflow-hidden">
-                
                 {/* --- ACTIVITY SECTION --- */}
-                <div className="flex flex-col border-b border-gray-100 max-h-[50%] p-4 overflow-hidden">
+                <div className="flex flex-col border-b border-gray-100 max-h-[40%] p-4 overflow-hidden">
                     <div className="flex justify-between items-center mb-3 shrink-0">
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">Recent Activity</span>
                         {activities.length > 3 && (
-                            <button 
-                                onClick={() => setShowAllActivity(!showAllActivity)}
-                                className="text-[10px] text-blue-500 font-bold flex items-center gap-0.5"
-                            >
+                            <button onClick={() => setShowAllActivity(!showAllActivity)} className="text-[10px] text-blue-500 font-bold flex items-center gap-0.5">
                                 {showAllActivity ? 'Hide' : `Show All (${activities.length})`}
                                 {showAllActivity ? <CaretUp /> : <CaretDown />}
                             </button>
                         )}
                     </div>
-                    
-                    <div className="overflow-y-auto space-y-4 pr-1 scrollbar-thin scrollbar-thumb-gray-200">
+                    <div className="overflow-y-auto space-y-4 pr-1">
                         {displayedActivities.map((item, i) => (
                             <div key={i} className="flex flex-col gap-1">
                                 <div className="flex items-start gap-2 text-xs text-gray-500">
                                     <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0" />
-                                  <p>
-                            <span className="font-bold text-gray-700">
-                                {/* Use 'user?._id' to match your Redux variable */}
-                                {item.user?._id === user?._id ? "You" : item.user?.name}
-                            </span> 
-                            {" "}{item.action}
-                        </p>
+                                    <p><span className="font-bold text-gray-700">{item.user?._id === user?._id ? "You" : item.user?.name}</span> {item.action}</p>
                                 </div>
                                 <span className="text-[10px] text-gray-400 ml-3">{getRelativeTime(item.createdAt)}</span>
                             </div>
@@ -94,22 +102,36 @@ export const ActivityDetails = ({ editedTask }: ActivityDetailsProps) => {
                     <div className="flex justify-between items-center mb-3 shrink-0">
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">Comments</span>
                         {comments.length > 3 && (
-                            <button 
-                                onClick={() => setShowAllComments(!showAllComments)}
-                                className="text-[10px] text-blue-500 font-bold flex items-center gap-0.5"
-                            >
+                            <button onClick={() => setShowAllComments(!showAllComments)} className="text-[10px] text-blue-500 font-bold flex items-center gap-0.5">
                                 {showAllComments ? 'Hide' : `Show All (${comments.length})`}
                                 {showAllComments ? <CaretUp /> : <CaretDown />}
                             </button>
                         )}
                     </div>
                     
-                    <div className="overflow-y-auto space-y-4 pr-1 scrollbar-thin scrollbar-thumb-gray-200">
+                    <div className="overflow-y-auto space-y-4 pr-1">
                         {displayedComments.map((item, i) => (
                             <div key={i} className="flex flex-col gap-1">
                                 <div className="bg-white rounded-lg p-3 border border-gray-200 shadow-sm">
                                     <p className="text-xs font-bold text-gray-800 mb-1">{item.user?.name}</p>
-                                    <p className="text-sm text-gray-600 leading-tight">{item.text}</p>
+                                    <p className="text-sm text-gray-600 leading-tight mb-2">{item.text}</p>
+                                    
+                                    {/* Render Attachments in Comments */}
+                                    {item.attachments && item.attachments.length > 0 && (
+                                        <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-gray-50">
+                                            {item.attachments.map((file: any, idx: number) => (
+                                                <div key={idx} className="group relative">
+                                                    {file.fileType?.startsWith('image/') ? (
+                                                        <img src={file.fileUrl} className="h-20 w-20 object-cover rounded-md border cursor-pointer hover:opacity-80" onClick={() => window.open(file.fileUrl, '_blank')} />
+                                                    ) : (
+                                                        <a href={file.fileUrl} target="_blank" className="flex items-center gap-1 text-[10px] bg-gray-100 p-1 rounded hover:bg-gray-200">
+                                                            <File size={12} /> {file.fileName.substring(0, 10)}...
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                                 <span className="text-[10px] text-gray-400 ml-1">{getRelativeTime(item.createdAt)}</span>
                             </div>
@@ -118,8 +140,25 @@ export const ActivityDetails = ({ editedTask }: ActivityDetailsProps) => {
                 </div>
             </div>
 
-            {/* --- INPUT FIXED AT BOTTOM --- */}
+            {/* --- INPUT WITH FILE PREVIEW --- */}
             <div className="p-4 bg-white border-t border-gray-100 shrink-0">
+                {selectedFiles.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-2 p-2 bg-gray-50 rounded-md border border-dashed border-gray-200">
+                        {selectedFiles.map((file, idx) => (
+                            <div key={idx} className="relative group">
+                                {file.type.startsWith('image/') ? (
+                                    <img src={URL.createObjectURL(file)} className="h-12 w-12 object-cover rounded border" />
+                                ) : (
+                                    <div className="h-12 w-12 flex items-center justify-center bg-white border rounded"><File size={20} /></div>
+                                )}
+                                <button onClick={() => removeFile(idx)} className="absolute -top-2 -right-2 text-red-500 bg-white rounded-full group-hover:scale-110">
+                                    <XCircle size={18} weight="fill" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
                 <div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm focus-within:border-blue-400 transition-all">
                     <textarea
                         className="w-full p-3 text-sm outline-none resize-none block"
@@ -130,13 +169,16 @@ export const ActivityDetails = ({ editedTask }: ActivityDetailsProps) => {
                     />
                     <div className="flex items-center justify-between px-3 py-2 bg-gray-50/50 border-t border-gray-100">
                         <div className="flex gap-2 text-gray-400">
-                            <button className="hover:text-gray-600"><Paperclip size={18} /></button>
+                            <input type="file" multiple hidden ref={fileInputRef} onChange={handleFileChange} />
+                            <button onClick={() => fileInputRef.current?.click()} className="hover:text-blue-500 transition-colors">
+                                <Paperclip size={18} />
+                            </button>
                             <button className="hover:text-gray-600"><At size={18} /></button>
                         </div>
                         <button 
                             onClick={handleSendComment}
-                            disabled={!commentText.trim()}
-                            className={commentText.trim() ? 'text-blue-500 hover:scale-110' : 'text-gray-300'}
+                            disabled={!commentText.trim() && selectedFiles.length === 0}
+                            className={commentText.trim() || selectedFiles.length > 0 ? 'text-blue-500 hover:scale-110' : 'text-gray-300'}
                         >
                             <PaperPlaneRight size={20} weight="fill" />
                         </button>

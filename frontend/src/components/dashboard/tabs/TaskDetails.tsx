@@ -64,7 +64,7 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
     const [isdropdown, setIsdropdown] = useState(false);
 
     const boardDetails = useContext(BoardContext)
- 
+
 
     const handleChange = (field: keyof Task, value: any) => {
         setEditedTask(prev => ({ ...prev, [field]: value }));
@@ -428,14 +428,12 @@ export const TaskDetails = ({ task, status, onClose }: TaskDetailsProps) => {
                                 </p>
                             )}
                         </section>
-
-                          <section className="mt-8">
-                                    <AttachmentSection
-                                        taskId={task._id}
-                                        attachments={editedTask.attachments || []}
-                                    />
-                                </section>
-
+                        <section className="mt-8">
+                            <AttachmentSection
+                                taskId={task._id}
+                                attachments={editedTask.attachments || []}
+                            />
+                        </section>
                     </div>
                     <div className="bg-gray-50/30 h-full overflow-hidden">
                         <ActivityDetails editedTask={editedTask} />

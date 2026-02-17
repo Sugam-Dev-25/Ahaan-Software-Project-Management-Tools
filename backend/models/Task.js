@@ -9,7 +9,16 @@ const commentSchema = new Schema({
     text: {
         type: String,
 
-    }
+    },
+    attachments: [{
+        fileName: String,
+        fileUrl: String,
+        fileType: String,
+        uploadedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        }
+    }],
 }, { timestamps: true });
 
 const activitySchema = new Schema({
@@ -128,6 +137,7 @@ TaskSchema.pre('save', async function (next) {
     }
     next();
 });
+
 TaskSchema.post('save', async function (doc) {
     if (!doc._userContext) return;
 
