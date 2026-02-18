@@ -31,7 +31,7 @@ export const registerUser = createAsyncThunk<
   async (userData, { rejectWithValue }) => {
     try {
       // Backend now sends a cookie for auto-login
-      const res = await axiosClient.post("http://localhost:5000/api/users/register", userData);
+      const res = await axiosClient.post("http://localhost:5000/api/users/register", userData,  { withCredentials: true });
       return res.data.user;
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Registration failed');
