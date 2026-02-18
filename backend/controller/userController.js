@@ -3,13 +3,16 @@ const bcrypt = require('bcrypt')
 const jwt= require('jsonwebtoken')
 
 const MAX_AGE_MS=3*24*60*60*1000
+const isProduction = process.env.NODE_ENV === "production";
 
-const cookieOptions={
+const cookieOptions = {
     httpOnly: true,
     maxAge: MAX_AGE_MS,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'Strict'
-}
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax"
+};
+
+
 
 const registerUser= async (req, res)=>{
     const {name, email, password, role, phone}=req.body;
