@@ -33,23 +33,21 @@ const getRoleStyle = (role: string) => {
 };
 
 const Teams = () => {
-  const dispatch = useAppDispatch();
   const { data, isLoading, error } = useUsers();
-  const [accessChat] = useAccessChatMutation();
   const onlineUsers = useOnlineUsers();
 
   /* ================= DEBUG LOGS ================= */
   useEffect(() => {
-    console.log("🟡 isLoading:", isLoading);
-    console.log("🟢 error:", error);
-    console.log("🔵 RAW data from useUsers:", data);
+    // console.log("🟡 isLoading:", isLoading);
+    // console.log("🟢 error:", error);
+    // console.log("🔵 RAW data from useUsers:", data);
 
-    if (data) {
-      console.log("📦 data.users:", data.users);
-      console.log("📊 data.total:", data.total);
-    }
+    // if (data) {
+    //   console.log("📦 data.users:", data.users);
+    //   console.log("📊 data.total:", data.total);
+    // }
 
-    console.log("🟣 onlineUsers:", onlineUsers);
+    // console.log("🟣 onlineUsers:", onlineUsers);
   }, [data, isLoading, error, onlineUsers]);
 
   // const handleOpenChat = async (user: any) => {
@@ -72,7 +70,7 @@ const Teams = () => {
   // };
 
   if (isLoading) {
-    console.log("⏳ Loading state active");
+    // console.log("⏳ Loading state active");
     return <div className="p-6 text-gray-500">Loading team members…</div>;
   }
 
@@ -119,7 +117,7 @@ const Teams = () => {
             {data.users.map((user, index) => {
               const isOnline = onlineUsers.includes(user._id);
 
-              console.log("👤 Rendering user:", user._id, user.name);
+              // console.log("👤 Rendering user:", user._id, user.name);
 
               return (
                 <tr
