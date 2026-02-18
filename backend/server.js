@@ -18,7 +18,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // your frontend port
+    origin:process.env.CORS_URL, // your frontend port
     credentials: true,
   })
 );
@@ -36,7 +36,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: process.env.CORS_URL,
     methods: ["GET", "POST"],
     credentials: true,
   },
