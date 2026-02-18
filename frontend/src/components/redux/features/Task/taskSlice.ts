@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice, isRejectedWithValue, type PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { Task, } from "../../../types/allType";
 import axiosClient from "../../../api/axiosClient";
 import { deleteColumn } from "../Column/columnSlice";
@@ -267,7 +267,7 @@ const taskSlice = createSlice({
 
                 // 2. Update selectedTask (This keeps the modal open with new data)
                 state.selectedTask = action.payload;
-                state.loading = "failed";
+                state.loading = "fulfilled";
             })
             .addCase(uploadFiles.rejected, (state, action) => {
                 state.loading = "failed";

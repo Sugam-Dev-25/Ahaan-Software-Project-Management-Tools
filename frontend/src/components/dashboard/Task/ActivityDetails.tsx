@@ -173,7 +173,7 @@ export const ActivityDetails = ({ editedTask }: ActivityDetailsProps) => {
                             <button onClick={() => fileInputRef.current?.click()} className="hover:text-blue-500 transition-colors">
                                 <Paperclip size={18} />
                             </button>
-                            <button className="hover:text-gray-600"><At size={18} /></button>
+                            
                         </div>
                         <button 
                             onClick={handleSendComment}
