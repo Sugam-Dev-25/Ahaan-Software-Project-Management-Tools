@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef, useState } from 'react'
 import {
-    X, ListChecks, UsersIcon, Folder, Plus, ArrowSquareOut, Star, CornersOut, DotsThree,
+    X, ListChecks, UsersIcon, Folder, ArrowSquareOut, Star, CornersOut, DotsThree,
 } from "@phosphor-icons/react"
 import { BoardContext } from '../../context/BoardContext'
 import type { Task } from '../../types/allType'

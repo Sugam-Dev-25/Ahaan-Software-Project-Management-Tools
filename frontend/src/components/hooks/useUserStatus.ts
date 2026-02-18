@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import type { UserStatus } from "../../utils/userStatus";
+import type { UserStatus } from "../utils/userStatus";
+
 
 export function useUserStatus(userId?: string) {
   const [status, setStatus] = useState<UserStatus>(null);

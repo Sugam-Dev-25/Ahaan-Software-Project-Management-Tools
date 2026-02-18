@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import type { Task, Column } from "../../types/allType";
 import TaskView from "../../redux/features/Task/taskView";
-import { ArrowRight, CalendarBlank, ChatCircle, Check, Clock, Flag, Paperclip, Play, Plus, X } from "@phosphor-icons/react";
+import {  CalendarBlank, ChatCircle, Clock, Flag, Paperclip, Plus, X } from "@phosphor-icons/react";
 import { TaskDetails } from "./TaskDetails";
 import { useAppSelector } from "../../redux/app/hook";
 import { BoardContext } from "../../context/BoardContext";

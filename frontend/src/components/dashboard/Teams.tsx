@@ -1,8 +1,8 @@
-import { ChatCenteredDots } from "@phosphor-icons/react";
+
 import { useUsers } from "../hooks/useUsers";
 import { useOnlineUsers } from "../hooks/useOnlineUsers";
 import { useAccessChatMutation } from "../redux/features/chat/chatApi";
-import { openChat, setConversation } from "../redux/features/chat/chatSlice";
+// import { openChat, setConversation } from "../redux/features/chat/chatSlice";
 import { useAppDispatch } from "../redux/app/hook";
 import { useEffect } from "react";
 
@@ -52,24 +52,24 @@ const Teams = () => {
     console.log("🟣 onlineUsers:", onlineUsers);
   }, [data, isLoading, error, onlineUsers]);
 
-  const handleOpenChat = async (user: any) => {
-    console.log("💬 Open chat with:", user);
+  // const handleOpenChat = async (user: any) => {
+  //   console.log("💬 Open chat with:", user);
 
-    dispatch(openChat(user));
-    dispatch(setConversation(null));
+  //   dispatch(openChat(user));
+  //   dispatch(setConversation(null));
 
-    try {
-      const conversation = await accessChat({
-        userId: user._id,
-      }).unwrap();
+  //   try {
+  //     const conversation = await accessChat({
+  //       userId: user._id,
+  //     }).unwrap();
 
-      console.log("✅ conversation response:", conversation);
+  //     console.log("✅ conversation response:", conversation);
 
-      dispatch(setConversation(conversation._id));
-    } catch (err) {
-      console.error("❌ accessChat error:", err);
-    }
-  };
+  //     dispatch(setConversation(conversation._id));
+  //   } catch (err) {
+  //     console.error("❌ accessChat error:", err);
+  //   }
+  // };
 
   if (isLoading) {
     console.log("⏳ Loading state active");

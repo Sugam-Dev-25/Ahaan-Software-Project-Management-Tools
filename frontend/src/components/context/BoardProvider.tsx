@@ -2,10 +2,10 @@ import { type ReactNode, useEffect, useMemo } from "react";
 // Import the shared Context and the Interface
 import { BoardContext, type BoardProviderProps } from "./BoardContext"; 
 import { useAppDispatch, useAppSelector } from "../redux/app/hook";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams} from "react-router-dom";
 import { slugify } from "../hooks/slugify";
 import { addMember, fetchBoard } from "../redux/features/Board/boardSlice";
-import type { Board, Task } from "../types/allType";
+import type {  Task } from "../types/allType";
 import { addColumn, deleteColumn, fetchColumn } from "../redux/features/Column/columnSlice";
 import { 
   addComment, 
@@ -22,7 +22,7 @@ export const BoardProvider = ({ children }: { children: ReactNode }) => {
   const boards = useAppSelector((state) => state.board.boards);
   const tasks = useAppSelector((state) => state.task.task);
   const columns = useAppSelector((state) => state.column.columns);
-  const [searchParams] = useSearchParams();
+
 
   const isBoardIsLoading = useAppSelector((state) => state.board.loading === "pending");
   const isTaskIsLoading = useAppSelector((state) => state.task.loading === "pending");

@@ -25,7 +25,7 @@ const ChatDrawer = () => {
   const onlineUsers = useOnlineUsers();
 
   const [inCall, setInCall] = useState(false);
-  const [muted, setMuted] = useState(false);
+  // const [muted, setMuted] = useState(false);
   const [incoming, setIncoming] = useState<any>(null);
 
   const pcRef = useRef<RTCPeerConnection | null>(null);
@@ -142,7 +142,7 @@ const ChatDrawer = () => {
     ringRef.current?.pause();
     setIncoming(null);
     setInCall(false);
-    setMuted(false);
+    // setMuted(false);
   };
 
   const rejectCall = () => {
@@ -159,7 +159,7 @@ const ChatDrawer = () => {
     if (!streamRef.current) return;
     const track = streamRef.current.getAudioTracks()[0];
     track.enabled = !track.enabled;
-    setMuted(!track.enabled);
+    // setMuted(!track.enabled);
   };
 
   if (!isOpen || !selectedUser) return null;

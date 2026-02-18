@@ -18,7 +18,7 @@ interface Props {
 
 export default function ChatHeader({ user }: Props) {
   const [inCall, setInCall] = useState(false);
-  const [muted, setMuted] = useState(false);
+  // const [muted, setMuted] = useState(false);
   const [incoming, setIncoming] = useState<any>(null);
 
   const pcRef = useRef<RTCPeerConnection | null>(null);
@@ -131,7 +131,7 @@ export default function ChatHeader({ user }: Props) {
     if (!streamRef.current) return;
     const track = streamRef.current.getAudioTracks()[0];
     track.enabled = !track.enabled;
-    setMuted(!track.enabled);
+    // setMuted(!track.enabled);
   };
 
   const cleanup = () => {
@@ -142,7 +142,7 @@ export default function ChatHeader({ user }: Props) {
     ringRef.current?.pause();
     setIncoming(null);
     setInCall(false);
-    setMuted(false);
+    // setMuted(false);
   };
 
   const avatarColor = getAvatarColor(user.name);
