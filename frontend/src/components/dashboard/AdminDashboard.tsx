@@ -39,7 +39,7 @@ export const AdminDashboard = () => {
         : ""
         }`}>
 
-        <Topbar />
+        {!isChatPage && <Topbar />}
         <Routes>
           {/* Explicitly define the root for the dashboard */}
           <Route index element={role ? <HomeTab /> : <GlobalSpinner />} />

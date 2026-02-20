@@ -114,7 +114,7 @@ export default function ChatsSidebar() {
       <div className="p-4 flex justify-between items-center shadow-lg">
         <div className="flex items-center gap-2">
           <ChatsCircle size={22} weight="fill" />
-          <h2 className="font-bold">GiG Conversation</h2>
+          <h2 className="font-bold">ASC Conversation</h2>
         </div>
 
         <button

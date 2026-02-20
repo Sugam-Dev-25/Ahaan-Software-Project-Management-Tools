@@ -48,7 +48,7 @@ export const DashBoardHeader = () => {
                     </div>
 
                     <div>
-                        <h2 className="text-lg font-semibold text-gray-900 -my-2">{board.name}</h2>
+                        <h2 className="text-lg font-bold text-gray-900 -my-2">{board.name}</h2>
                         <span className="text-xs font-medium text-gray-500 ">
                             Project members & collaboration
                         </span>

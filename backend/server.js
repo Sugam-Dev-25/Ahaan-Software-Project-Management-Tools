@@ -16,9 +16,24 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static("uploads"));
 app.use(cookieParser());
 
+/* ================= CORS CONFIG ================= */
+
+// Allowed Origins (Local + Production)
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  process.env.CLIENT_URL, // Vercel URL এখানে থাকবে
+];
+
 app.use(
   cors({
-    origin:process.env.CORS_URL, // your frontend port
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
@@ -36,14 +51,14 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: process.env.CORS_URL,
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true,
   },
 });
 
 io.on("connection", (socket) => {
-  
+  console.log("🟢 User connected:", socket.id);
 
   socket.on("disconnect", () => {
     console.log("❌ User disconnected:", socket.id);
