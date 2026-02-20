@@ -17,12 +17,10 @@ app.use("/uploads", express.static("uploads"));
 app.use(cookieParser());
 
 /* ================= CORS CONFIG ================= */
-
-// Allowed Origins (Local + Production)
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
-  process.env.CLIENT_URL, // Vercel URL এখানে থাকবে
+  process.env.CLIENT_URL,
 ];
 
 app.use(
@@ -57,13 +55,9 @@ const io = new Server(server, {
   },
 });
 
-io.on("connection", (socket) => {
-  console.log("🟢 User connected:", socket.id);
-
-  socket.on("disconnect", () => {
-    console.log("❌ User disconnected:", socket.id);
-  });
-});
+/* 🔥 IMPORTANT — USE EXTERNAL SOCKET HANDLER */
+const socketHandler = require("./socket");
+socketHandler(io);
 
 /* ================= ROUTES ================= */
 app.use("/api/users", require("./routes/userRoutes"));

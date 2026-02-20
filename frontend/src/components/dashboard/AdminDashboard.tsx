@@ -1,4 +1,3 @@
-
 import { Sidebar } from './Sidebar'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { HomeTab } from './tabs/HomeTab'
@@ -8,9 +7,10 @@ import { useAppSelector } from '../redux/app/hook'
 import { Topbar } from './TopBar'
 import { TasksPageWrapper } from './TaskPagewrapper'
 import { BoardQueryWrapper } from '../context/BoardQueryWrapper'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Teams from './Teams'
 import ChatsPage from '../ChatsPage/ChatsPage'
+import { socket } from '../services/socket'   // ✅ added
 
 export const AdminDashboard = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -20,6 +20,13 @@ export const AdminDashboard = () => {
 
   const location = useLocation();
   const isChatPage = location.pathname.endsWith("/chats");
+
+  // ✅ SOCKET SETUP (ONLINE FIX)
+  useEffect(() => {
+    if (!user?._id) return;
+    socket.emit("setup", user._id);
+  }, [user?._id]);
+
   if (!role) return <GlobalSpinner />;
 
   return (
@@ -40,6 +47,7 @@ export const AdminDashboard = () => {
         }`}>
 
         {!isChatPage && <Topbar />}
+
         <Routes>
           {/* Explicitly define the root for the dashboard */}
           <Route index element={role ? <HomeTab /> : <GlobalSpinner />} />
@@ -49,6 +57,7 @@ export const AdminDashboard = () => {
           <Route path="chats" element={<ChatsPage />} />
           <Route path="*" element={<Navigate to={`/`} replace />} />
         </Routes>
+
       </div>
     </div>
   );

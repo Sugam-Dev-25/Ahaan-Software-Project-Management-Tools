@@ -1,51 +1,66 @@
+const mongoose = require("mongoose");
+const User = require("./models/User");
+
 module.exports = function socketHandler(io) {
   const onlineUsers = new Map(); // userId -> socketId
 
-  // 🟢 NEW: user status store (userId -> status)
-  const userStatusMap = new Map();
-
-  io.on("connection", (socket) => {
+  io.on("connection", async (socket) => {
     console.log("🟢 Connected:", socket.id);
+
+    /* ================= SEND ALL STATUS ON CONNECT ================= */
+    try {
+      const usersWithStatus = await User.find({
+        status: { $ne: null },
+      }).select("_id status");
+
+      socket.emit(
+        "all-status",
+        usersWithStatus.map((user) => ({
+          userId: user._id.toString(),
+          status: user.status,
+        }))
+      );
+    } catch (err) {
+      console.error("❌ Error sending all statuses:", err);
+    }
 
     /* ================= USER SETUP ================= */
     socket.on("setup", (userId) => {
-      socket.userId = userId;
-      onlineUsers.set(userId, socket.id);
+      try {
+        socket.userId = userId;
+        onlineUsers.set(userId, socket.id);
 
-      // online users update
-      io.emit("online-users", Array.from(onlineUsers.keys()));
-
-      // 🟢 SEND ALL CURRENT STATUSES TO THIS USER
-      socket.emit(
-        "all-status",
-        Array.from(userStatusMap.entries()).map(
-          ([uid, status]) => ({ userId: uid, status })
-        )
-      );
+        io.emit("online-users", Array.from(onlineUsers.keys()));
+      } catch (err) {
+        console.error("❌ Setup error:", err);
+      }
     });
 
-    /* ================= USER STATUS ================= */
-
-    // SET / UPDATE STATUS
-    socket.on("set-status", ({ userId, status }) => {
+    /* ================= USER STATUS (DB PERSISTENT) ================= */
+    socket.on("set-status", async ({ userId, status }) => {
       console.log("📌 Status update:", userId, status);
 
-      if (status) {
-        userStatusMap.set(userId, status);
-      } else {
-        userStatusMap.delete(userId);
-      }
+      try {
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+          console.log("❌ Invalid userId");
+          return;
+        }
 
-      // 🔥 broadcast to everyone
-      io.emit("status-updated", {
-        userId,
-        status,
-      });
+        await User.updateOne(
+          { _id: new mongoose.Types.ObjectId(userId) },
+          { $set: { status: status || null } }
+        );
+
+        console.log("✅ Status saved to DB");
+
+        io.emit("status-updated", { userId, status });
+      } catch (err) {
+        console.error("❌ Status update error:", err);
+      }
     });
 
     /* ================= AUDIO CALL ================= */
 
-    // CALLER → CALLEE
     socket.on("call-user", ({ to, offer }) => {
       const targetSocket = onlineUsers.get(to);
       if (!targetSocket) return;
@@ -57,17 +72,14 @@ module.exports = function socketHandler(io) {
       });
     });
 
-    // CALLEE → CALLER
     socket.on("answer-call", ({ toSocketId, answer }) => {
       io.to(toSocketId).emit("call-accepted", { answer });
     });
 
-    // ICE
     socket.on("ice-candidate", ({ toSocketId, candidate }) => {
       io.to(toSocketId).emit("ice-candidate", candidate);
     });
 
-    // END
     socket.on("end-call", ({ toUserId }) => {
       const targetSocket = onlineUsers.get(toUserId);
       if (targetSocket) {
@@ -79,13 +91,7 @@ module.exports = function socketHandler(io) {
     socket.on("disconnect", () => {
       if (socket.userId) {
         onlineUsers.delete(socket.userId);
-
-        // online users update
         io.emit("online-users", Array.from(onlineUsers.keys()));
-
-        // (optional) status clear on disconnect
-        // userStatusMap.delete(socket.userId);
-        // io.emit("status-updated", { userId: socket.userId, status: null });
       }
 
       console.log("🔴 Disconnected:", socket.id);
