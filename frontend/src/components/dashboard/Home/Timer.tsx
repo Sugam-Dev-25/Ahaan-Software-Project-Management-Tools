@@ -13,7 +13,7 @@ interface TimerProps {
         totalLoggedTime: number;
         delay: number;
     };
-}
+} 
 
 export const Timer = ({ taskId, timeData, dueDate, estimatedTime = 0 }: TimerProps) => {
     const dispatch = useAppDispatch();
