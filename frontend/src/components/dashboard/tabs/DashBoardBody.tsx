@@ -81,7 +81,7 @@ export const DashBoardBody = () => {
         ref={scrollRef}
         className="flex gap-4 overflow-x-auto no-scrollbar pb-6 mt-2 items-start"
       >
-        {currentColumns.map((c, colIndex) => {
+        {currentColumns.map((c) => {
           const color = getColumnColor(c.name);
 
           // Robust filtering logic from your "working" file
