@@ -13,16 +13,7 @@ import {
 import { TaskDetails } from "./TaskDetails";
 import { useAppSelector } from "../../redux/app/hook";
 import { BoardContext } from "../../context/BoardContext";
-
-const BOARD_COLORS = [
-  { header: "bg-blue-600", bg: "bg-blue-50" },
-  { header: "bg-green-600", bg: "bg-green-50" },
-  { header: "bg-yellow-500", bg: "bg-yellow-50" },
-  { header: "bg-purple-600", bg: "bg-purple-50" },
-  { header: "bg-pink-600", bg: "bg-pink-50" },
-  { header: "bg-indigo-600", bg: "bg-indigo-50" },
-];
-
+import { getColumnColor } from "../../utils/columnColors";
 const getAvatarColor = (name: string) => {
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
@@ -91,7 +82,7 @@ export const DashBoardBody = () => {
         className="flex gap-4 overflow-x-auto no-scrollbar pb-6 mt-2 items-start"
       >
         {currentColumns.map((c, colIndex) => {
-          const color = BOARD_COLORS[colIndex % BOARD_COLORS.length];
+          const color = getColumnColor(c.name);
 
           // Robust filtering logic from your "working" file
           const tasksInColumn = task
