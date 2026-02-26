@@ -16,7 +16,7 @@ export const MyTask = () => {
     return (
         <div className="p-6 max-w-8xl mx-auto">
             <header className="mb-8">
-                <h1 className="text-3xl font-black text-gray-800 tracking-tight">
+                <h1 className="text-3xl font-black text-gray-800 font-bold">
                     My Tasks
                 </h1>
                 <p className="text-gray-500">

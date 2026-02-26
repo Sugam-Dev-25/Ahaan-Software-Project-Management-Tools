@@ -175,7 +175,7 @@ export const HomeTab = () => {
             >
               <div className="flex justify-between items-start mb-6">
                 <div className="flex-1 pr-4">
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">
+                  <h3 className="text-xl font-bold text-gray-800 mb-2 capitalize">
                     {board.name}
                   </h3>
 
