@@ -129,9 +129,9 @@ export const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
                                         key={b._id}
                                         to={`${dashboardBase}/${slugify(b.name)}`}
                                         className={({ isActive }) =>
-                                            `block h-9 px-3 text-xs rounded-md flex items-center ${isActive
-                                                ? "bg-black text-white"
-                                                : "hover:bg-black hover:text-white"
+                                            `block h-9 px-3 text-xs rounded-md capitalize flex items-center ${isActive
+                                                ? "bg-black capitalize text-white"
+                                                : "hover:bg-black capitalize hover:text-white capitalize"
                                             }`
                                         }
                                     >

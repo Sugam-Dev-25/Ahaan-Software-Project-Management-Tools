@@ -172,13 +172,13 @@ export const DashBoardBody = () => {
                     className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-lg border border-gray-100 hover:border-gray-200 transition-all cursor-pointer group"
                   >
                     {/* TITLE */}
-                    <h3 className="font-semibold text-sm text-gray-800 group-hover:text-gray-900 transition">
+                    <h3 className="font-semibold text-sm text-gray-800 group-hover:text-gray-900 transition capitalize">
                       {t.title}
                     </h3>
 
                     {/* DESCRIPTION */}
                     {t.description && (
-                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                      <p className="text-xs text-gray-500 mt-1 line-clamp-2 capitalize">
                         {t.description}
                       </p>
                     )}

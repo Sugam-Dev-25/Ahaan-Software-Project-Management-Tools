@@ -36,3 +36,13 @@ button{
   -ms-overflow-style: none; /* IE */
   scrollbar-width: none; /* Firefox */
 }
+
+/* Hide scrollbar but keep scroll */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
