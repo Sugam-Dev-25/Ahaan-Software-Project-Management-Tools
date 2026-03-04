@@ -9,20 +9,35 @@ module.exports = function socketHandler(io) {
 
     /* ================= SEND ALL STATUS ON CONNECT ================= */
     try {
-      const usersWithStatus = await User.find({
-        status: { $ne: null },
-      }).select("_id status");
+      const users = await User.find().select("_id status");
 
       socket.emit(
         "all-status",
-        usersWithStatus.map((user) => ({
+        users.map((user) => ({
           userId: user._id.toString(),
-          status: user.status,
+          status: user.status || null,
         }))
       );
     } catch (err) {
       console.error("❌ Error sending all statuses:", err);
     }
+
+    /* ================= GET ALL STATUS (FOR REFRESH) ================= */
+    socket.on("get-all-status", async () => {
+      try {
+        const users = await User.find().select("_id status");
+
+        socket.emit(
+          "all-status",
+          users.map((user) => ({
+            userId: user._id.toString(),
+            status: user.status || null,
+          }))
+        );
+      } catch (err) {
+        console.error("❌ Error sending all statuses:", err);
+      }
+    });
 
     /* ================= USER SETUP ================= */
     socket.on("setup", (userId) => {
@@ -53,7 +68,10 @@ module.exports = function socketHandler(io) {
 
         console.log("✅ Status saved to DB");
 
-        io.emit("status-updated", { userId, status });
+        io.emit("status-updated", {
+          userId,
+          status,
+        });
       } catch (err) {
         console.error("❌ Status update error:", err);
       }
@@ -88,9 +106,10 @@ module.exports = function socketHandler(io) {
     });
 
     /* ================= DISCONNECT ================= */
-    socket.on("disconnect", () => {
+    socket.on("disconnect", async () => {
       if (socket.userId) {
         onlineUsers.delete(socket.userId);
+
         io.emit("online-users", Array.from(onlineUsers.keys()));
       }
 
