@@ -24,9 +24,7 @@ export default function ChatsSidebar() {
   const currentUser = useCurrentUser();
   const onlineUsers = useOnlineUsers();
 
-  const activeChat = useSelector(
-    (state: RootState) => state.chat.activeChat
-  );
+  const activeChat = useSelector((state: RootState) => state.chat.activeChat);
 
   const { data: requests } = useGetIncomingRequestsQuery();
   const { data: chats } = useGetMyChatsQuery();
@@ -38,40 +36,46 @@ export default function ChatsSidebar() {
   /* ================= STATUS STATE ================= */
   const [showStatus, setShowStatus] = useState(false);
   const [myStatus, setMyStatus] = useState<UserStatus>(null);
-  const [userStatuses, setUserStatuses] = useState<
-    Record<string, UserStatus>
-  >({});
+  const [userStatuses, setUserStatuses] = useState<Record<string, UserStatus>>(
+    {},
+  );
 
   /* ================= SOCKET STATUS SYNC ================= */
-  useEffect(() => {
-    socket.on("all-status", (list: any[]) => {
-      const map: Record<string, UserStatus> = {};
-      list.forEach(({ userId, status }) => {
-        map[userId] = status;
-      });
-      setUserStatuses(map);
+useEffect(() => {
 
-      if (currentUser?._id && map[currentUser._id]) {
-        setMyStatus(map[currentUser._id]);
-      }
+  socket.emit("get-all-status"); // 🔥 add this
+
+  socket.on("all-status", (list: any[]) => {
+    const map: Record<string, UserStatus> = {};
+
+    list.forEach(({ userId, status }) => {
+      map[userId] = status;
     });
 
-    socket.on("status-updated", ({ userId, status }) => {
-      setUserStatuses((prev) => ({
-        ...prev,
-        [userId]: status,
-      }));
+    setUserStatuses(map);
 
-      if (userId === currentUser?._id) {
-        setMyStatus(status);
-      }
-    });
+    if (currentUser?._id && map[currentUser._id]) {
+      setMyStatus(map[currentUser._id]);
+    }
+  });
 
-    return () => {
-      socket.off("all-status");
-      socket.off("status-updated");
-    };
-  }, [currentUser?._id]);
+  socket.on("status-updated", ({ userId, status }) => {
+    setUserStatuses((prev) => ({
+      ...prev,
+      [userId]: status,
+    }));
+
+    if (userId === currentUser?._id) {
+      setMyStatus(status);
+    }
+  });
+
+  return () => {
+    socket.off("all-status");
+    socket.off("status-updated");
+  };
+
+}, [currentUser?._id]);
 
   const updateStatus = (status: UserStatus) => {
     if (!currentUser?._id) return;
@@ -97,9 +101,7 @@ export default function ChatsSidebar() {
 
     const map = new Map<string, any>();
     chats.forEach((chat) => {
-      const other = chat.members.find(
-        (m: any) => m._id !== currentUser._id
-      );
+      const other = chat.members.find((m: any) => m._id !== currentUser._id);
       if (other && !map.has(other._id)) {
         map.set(other._id, chat);
       }
@@ -151,9 +153,7 @@ export default function ChatsSidebar() {
                 </div>
 
                 <button
-                  onClick={() =>
-                    acceptRequest({ requestId: r._id })
-                  }
+                  onClick={() => acceptRequest({ requestId: r._id })}
                   className="bg-white text-black text-xs px-3 py-1 rounded-full"
                 >
                   Accept
@@ -168,16 +168,14 @@ export default function ChatsSidebar() {
       <div className="flex-1 overflow-y-auto">
         {uniqueChats.map((chat) => {
           const other = chat.members.find(
-            (m: any) => m._id !== currentUser._id
+            (m: any) => m._id !== currentUser._id,
           );
           if (!other) return null;
 
           const avatarColor = getAvatarColor(other.name);
           const isOnline = onlineUsers.includes(other._id);
           const unreadCount =
-            chat.unreadCount ??
-            chat.unreadCountMap?.[currentUser._id] ??
-            0;
+            chat.unreadCount ?? chat.unreadCountMap?.[currentUser._id] ?? 0;
 
           const userStatus = userStatuses[other._id];
 
@@ -209,22 +207,39 @@ export default function ChatsSidebar() {
               {/* NAME + EMAIL + STATUS */}
               <div className="flex items-center flex-1 justify-between min-w-0">
                 <div className="leading-tight min-w-0">
-                  <p className="text-sm font-semibold truncate">
-                    {other.name}
-                  </p>
+                  <p className="text-sm font-semibold truncate">{other.name}</p>
                   <p className="text-xs text-gray-400 truncate">
                     {other.email}
                   </p>
                 </div>
 
-                {userStatus && (
-                  <div
-                    className="ml-3 flex-shrink-0 text-[20px] drop-shadow select-none"
-                    title={STATUS_META[userStatus].label}
-                  >
-                    {STATUS_META[userStatus].emoji}
-                  </div>
-                )}
+{userStatus &&
+  (() => {
+    const Icon = STATUS_META[userStatus].icon;
+    const gradientId = `icon-gradient-${chat._id}`;
+
+    return (
+      <div
+        className="ml-3 flex-shrink-0"
+        title={STATUS_META[userStatus].label}
+      >
+        <svg width="18" height="18">
+          <defs>
+            <linearGradient id={gradientId} x1="0%" y1="12%" x2="100%" y2="36%">
+              <stop offset="50%" stopColor="#e69200" />
+              <stop offset="100%" stopColor="#f9d056" />
+            </linearGradient>
+          </defs>
+
+          <Icon
+            size={18}
+            weight="fill"
+            style={{ fill: `url(#${gradientId})` }}
+          />
+        </svg>
+      </div>
+    );
+  })()}
               </div>
             </div>
           );
@@ -245,22 +260,39 @@ export default function ChatsSidebar() {
 
         <div className="flex-1 flex items-center justify-between min-w-0">
           <div className="leading-tight min-w-0">
-            <p className="text-sm font-semibold truncate">
-              {currentUser.name}
-            </p>
+            <p className="text-sm font-semibold truncate">{currentUser.name}</p>
             <p className="text-xs text-gray-400 truncate">
               {currentUser.email}
             </p>
           </div>
 
-          {myStatus && (
-            <div
-              className="ml-3 text-[20px] drop-shadow select-none"
-              title={STATUS_META[myStatus].label}
-            >
-              {STATUS_META[myStatus].emoji}
-            </div>
-          )}
+{myStatus &&
+  (() => {
+    const Icon = STATUS_META[myStatus].icon;
+    const gradientId = `icon-gradient-self`;
+
+    return (
+      <div
+        className="ml-3"
+        title={STATUS_META[myStatus].label}
+      >
+        <svg width="18" height="18">
+          <defs>
+            <linearGradient id={gradientId} x1="0%" y1="12%" x2="100%" y2="36%">
+              <stop offset="50%" stopColor="#e69200" />
+              <stop offset="100%" stopColor="#f9d056" />
+            </linearGradient>
+          </defs>
+
+          <Icon
+            size={18}
+            weight="fill"
+            style={{ fill: `url(#${gradientId})` }}
+          />
+        </svg>
+      </div>
+    );
+  })()}
         </div>
       </div>
 
@@ -275,9 +307,7 @@ export default function ChatsSidebar() {
         />
       )}
 
-      {showSearch && (
-        <SearchUserModal onClose={() => setShowSearch(false)} />
-      )}
+      {showSearch && <SearchUserModal onClose={() => setShowSearch(false)} />}
     </aside>
   );
 }

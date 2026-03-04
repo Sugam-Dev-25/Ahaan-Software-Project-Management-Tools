@@ -31,49 +31,59 @@ export const LoginView = () => {
     }
   }, [user, navigate]);
  
-  return (
-    <div className="w-full">
-      {/* HEADING */}
-      <div className="text-center mb-12">
-        <h2 className="text-3xl font-bold text-black">
-          Sign in to Your Account
-        </h2>
-        <p className="text-gray-500 mt-2">
-          Please sign in to access your dashboard
-        </p>
-      </div>
- 
-      {/* FORM */}
-      <form onSubmit={handleSubmit(submitLogin)} className="space-y-6">
-        <input
-          type="email"
-          placeholder="Email address"
-          {...register("email", { required: true })}
-          className="w-full px-6 py-4 rounded-full border bg-blue-50"
-        />
- 
-        <input
-          type="password"
-          placeholder="Password"
-          {...register("password", { required: true })}
-          className="w-full px-6 py-4 rounded-full border bg-blue-50"
-        />
- 
-        {error && (
-          <p className="text-red-500 text-sm text-center">
-            {error}
-          </p>
-        )}
- 
-        <button
-          type="submit"
-          disabled={loading === "pending"}
-          className="w-full py-4 rounded-full bg-black text-white font-semibold"
-        >
-          {loading === "pending" ? "Signing in..." : "Sign In"}
-        </button>
-      </form>
+ return (
+  <div className="w-full">
+
+    {/* LOGO */}
+    <div className="flex justify-center mb-6">
+      <img
+        src="/Ahaan_PMS_Small.png"
+        alt="Ahaan Software"
+        className="h-35"
+      />
     </div>
-  );
+
+    {/* HEADING */}
+    <div className="text-center mb-12">
+      <h2 className="text-3xl font-extrabold text-black capitalize">
+        Welcome to Ahaan Software
+      </h2>
+      <p className="text-gray-600 mt-2">
+        Please sign in to access your dashboard
+      </p>
+    </div>
+
+    {/* FORM */}
+    <form onSubmit={handleSubmit(submitLogin)} className="space-y-6">
+      <input
+        type="email"
+        placeholder="Email address"
+        {...register("email", { required: true })}
+        className="w-full px-6 py-4 rounded-full border bg-blue-50"
+      />
+
+      <input
+        type="password"
+        placeholder="Password"
+        {...register("password", { required: true })}
+        className="w-full px-6 py-4 rounded-full border bg-blue-50"
+      />
+
+      {error && (
+        <p className="text-red-500 text-sm text-center">
+          {error}
+        </p>
+      )}
+
+      <button
+        type="submit"
+        disabled={loading === "pending"}
+        className="w-full py-4 rounded-full bg-black text-white font-semibold"
+      >
+        {loading === "pending" ? "Signing in..." : "Sign In"}
+      </button>
+    </form>
+  </div>
+);
 };
  
