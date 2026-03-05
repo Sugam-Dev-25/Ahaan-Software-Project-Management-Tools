@@ -14,4 +14,8 @@ router.get('/profile', protect, userController.getProfile)
 
 router.get('/search', protect, userController.searchUsers);
 router.get("/all", protect, userController.getAllUsers);
+
+
+router.put("/edit/:id", protect, hasAdminPrivileges, userController.updateUser);
+router.delete("/delete/:id", protect, hasAdminPrivileges, userController.deleteUser);
 module.exports= router

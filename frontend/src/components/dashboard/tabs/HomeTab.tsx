@@ -145,7 +145,7 @@ export const HomeTab = () => {
   return (
     <div className="min-h-screen w-full p-6 lg:p-10">
       <header className="mb-10">
-        <h2 className="text-4xl font-bold text-gray-900">
+        <h2 className="text-3xl font-bold text-gray-900">
           Welcome, {user?.name}
         </h2>
 
