@@ -114,9 +114,9 @@ const Teams = () => {
 
       <div className="mb-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black text-black">
+          <h2 className="text-3xl font-black text-black font-bold">
             Team Members
-          </h1>
+          </h2>
 
           <p className="text-gray-500 text-sm mt-2">
             Manage and view all members of your team

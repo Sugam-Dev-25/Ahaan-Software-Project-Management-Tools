@@ -67,6 +67,7 @@ app.use("/api/tasks", require("./routes/taskRoutes"));
 app.use("/api/notifications", require("./routes/notificationRoute"));
 app.use("/api/chat", require("./routes/chatRoute"));
 app.use("/api/chat-request", require("./routes/chatRequestRoute"));
+app.use("/api/meetings", require("./routes/meetingRoutes"));
 
 /* ================= DEFAULT ROUTE ================= */
 app.get("/", (req, res) => {

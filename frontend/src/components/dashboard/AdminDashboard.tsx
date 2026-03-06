@@ -10,7 +10,10 @@ import { BoardQueryWrapper } from '../context/BoardQueryWrapper'
 import { useState, useEffect } from 'react'
 import Teams from './Teams'
 import ChatsPage from '../ChatsPage/ChatsPage'
-import { socket } from '../services/socket'   // ✅ added
+
+import { socket } from '../services/socket'   
+import MeetingRoom from '../Meeting/MeetingRoom'
+import MeetingSchedule from '../Meeting/MeetingSchedule'
 
 export const AdminDashboard = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -55,6 +58,8 @@ export const AdminDashboard = () => {
           <Route path="tasks" element={<TasksPageWrapper />} />
           <Route path="teams" element={<Teams />} />
           <Route path="chats" element={<ChatsPage />} />
+          <Route path="meetings" element={<MeetingSchedule />} />
+          <Route path="meeting/:roomId" element={<MeetingRoom />} />
           <Route path="*" element={<Navigate to={`/`} replace />} />
         </Routes>
 

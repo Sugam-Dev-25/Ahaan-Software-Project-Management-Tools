@@ -13,6 +13,7 @@ import {
   CaretRight,
   UserCirclePlus,
   ListChecks,
+  VideoCamera,
 } from "@phosphor-icons/react";
 import { logoutUser } from "../redux/features/User/login/loginSlice";
 import { CreateBoardForm } from "../redux/features/Board/CreateBoardForm";
@@ -177,6 +178,24 @@ export const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
               {!collapsed && "Teams"}
             </div>
           </NavLink>
+
+          <NavLink
+  to={`${dashboardBase}/meetings`}
+  className={({ isActive }) =>
+    `${baseRow} ${isActive ? active : inactive}`
+  }
+>
+  <div
+    className={`flex items-center gap-3 ${
+      collapsed ? "justify-center w-full" : ""
+    }`}
+  >
+    <VideoCamera size={18} />
+    {!collapsed && "Meetings"}
+  </div>
+</NavLink>
+
+         
           <button
             onClick={() => setCollapsed((p) => !p)}
             className="flex items-center h-11 w-full justify-center"
@@ -184,15 +203,15 @@ export const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
             {collapsed ? <CaretRight /> : <CaretLeft />}
           </button>
         </nav>
-        <div className="p-3">
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 text-black hover:text-red-600 transition"
-          >
-            <SignOut />
-            {!collapsed && "Logout"}
-          </button>
-        </div>
+<div className="p-3">
+  <button
+    onClick={handleLogout}
+    className="flex items-center gap-3 bg-red-500 text-white px-2 py-2 rounded-md hover:bg-red-700 transition w-full justify-center"
+  >
+    <SignOut />
+    {!collapsed && "Logout"}
+  </button>
+</div>
       </aside>
       {createBoard && !collapsed && (
         <div
