@@ -7,7 +7,7 @@ export type User = {
   status?: UserStatus;
   phone?: string;
   updatedAt?: string;
-    createdAt?: string;
+  createdAt?: string;
 };
 
 export type Column = {
