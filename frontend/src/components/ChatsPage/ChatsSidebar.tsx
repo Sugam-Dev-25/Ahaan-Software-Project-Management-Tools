@@ -41,41 +41,39 @@ export default function ChatsSidebar() {
   );
 
   /* ================= SOCKET STATUS SYNC ================= */
-useEffect(() => {
+  useEffect(() => {
+    socket.emit("get-all-status"); // 🔥 add this
 
-  socket.emit("get-all-status"); // 🔥 add this
+    socket.on("all-status", (list: any[]) => {
+      const map: Record<string, UserStatus> = {};
 
-  socket.on("all-status", (list: any[]) => {
-    const map: Record<string, UserStatus> = {};
+      list.forEach(({ userId, status }) => {
+        map[userId] = status;
+      });
 
-    list.forEach(({ userId, status }) => {
-      map[userId] = status;
+      setUserStatuses(map);
+
+      if (currentUser?._id && map[currentUser._id]) {
+        setMyStatus(map[currentUser._id]);
+      }
     });
 
-    setUserStatuses(map);
+    socket.on("status-updated", ({ userId, status }) => {
+      setUserStatuses((prev) => ({
+        ...prev,
+        [userId]: status,
+      }));
 
-    if (currentUser?._id && map[currentUser._id]) {
-      setMyStatus(map[currentUser._id]);
-    }
-  });
+      if (userId === currentUser?._id) {
+        setMyStatus(status);
+      }
+    });
 
-  socket.on("status-updated", ({ userId, status }) => {
-    setUserStatuses((prev) => ({
-      ...prev,
-      [userId]: status,
-    }));
-
-    if (userId === currentUser?._id) {
-      setMyStatus(status);
-    }
-  });
-
-  return () => {
-    socket.off("all-status");
-    socket.off("status-updated");
-  };
-
-}, [currentUser?._id]);
+    return () => {
+      socket.off("all-status");
+      socket.off("status-updated");
+    };
+  }, [currentUser?._id]);
 
   const updateStatus = (status: UserStatus) => {
     if (!currentUser?._id) return;
@@ -213,33 +211,39 @@ useEffect(() => {
                   </p>
                 </div>
 
-{userStatus &&
-  (() => {
-    const Icon = STATUS_META[userStatus].icon;
-    const gradientId = `icon-gradient-${chat._id}`;
+                {userStatus &&
+                  (() => {
+                    const Icon = STATUS_META[userStatus].icon;
+                    const gradientId = `icon-gradient-${chat._id}`;
 
-    return (
-      <div
-        className="ml-3 flex-shrink-0"
-        title={STATUS_META[userStatus].label}
-      >
-        <svg width="18" height="18">
-          <defs>
-            <linearGradient id={gradientId} x1="0%" y1="12%" x2="100%" y2="36%">
-              <stop offset="50%" stopColor="#e69200" />
-              <stop offset="100%" stopColor="#f9d056" />
-            </linearGradient>
-          </defs>
+                    return (
+                      <div
+                        className="ml-3 flex-shrink-0"
+                        title={STATUS_META[userStatus].label}
+                      >
+                        <svg width="18" height="18">
+                          <defs>
+                            <linearGradient
+                              id={gradientId}
+                              x1="0%"
+                              y1="12%"
+                              x2="100%"
+                              y2="36%"
+                            >
+                              <stop offset="50%" stopColor="#e69200" />
+                              <stop offset="100%" stopColor="#f9d056" />
+                            </linearGradient>
+                          </defs>
 
-          <Icon
-            size={18}
-            weight="fill"
-            style={{ fill: `url(#${gradientId})` }}
-          />
-        </svg>
-      </div>
-    );
-  })()}
+                          <Icon
+                            size={18}
+                            weight="fill"
+                            style={{ fill: `url(#${gradientId})` }}
+                          />
+                        </svg>
+                      </div>
+                    );
+                  })()}
               </div>
             </div>
           );
@@ -266,33 +270,36 @@ useEffect(() => {
             </p>
           </div>
 
-{myStatus &&
-  (() => {
-    const Icon = STATUS_META[myStatus].icon;
-    const gradientId = `icon-gradient-self`;
+          {myStatus &&
+            (() => {
+              const Icon = STATUS_META[myStatus].icon;
+              const gradientId = `icon-gradient-self`;
 
-    return (
-      <div
-        className="ml-3"
-        title={STATUS_META[myStatus].label}
-      >
-        <svg width="18" height="18">
-          <defs>
-            <linearGradient id={gradientId} x1="0%" y1="12%" x2="100%" y2="36%">
-              <stop offset="50%" stopColor="#e69200" />
-              <stop offset="100%" stopColor="#f9d056" />
-            </linearGradient>
-          </defs>
+              return (
+                <div className="ml-3" title={STATUS_META[myStatus].label}>
+                  <svg width="18" height="18">
+                    <defs>
+                      <linearGradient
+                        id={gradientId}
+                        x1="0%"
+                        y1="12%"
+                        x2="100%"
+                        y2="36%"
+                      >
+                        <stop offset="50%" stopColor="#e69200" />
+                        <stop offset="100%" stopColor="#f9d056" />
+                      </linearGradient>
+                    </defs>
 
-          <Icon
-            size={18}
-            weight="fill"
-            style={{ fill: `url(#${gradientId})` }}
-          />
-        </svg>
-      </div>
-    );
-  })()}
+                    <Icon
+                      size={18}
+                      weight="fill"
+                      style={{ fill: `url(#${gradientId})` }}
+                    />
+                  </svg>
+                </div>
+              );
+            })()}
         </div>
       </div>
 

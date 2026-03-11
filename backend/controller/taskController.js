@@ -4,7 +4,7 @@ const Board = require("../models/Board");
 const mongoose = require("mongoose");
 const fs = require("fs");
 const path = require("path");
-const sendTaskAssignedEmail = require("../utils/sendEmail");
+const {sendTaskAssignedEmail} = require("../utils/sendEmail");
 
 const createTask = async (req, res) => {
   const { boardId, columnId } = req.params;
@@ -49,7 +49,7 @@ const createTask = async (req, res) => {
         .select("name email");
 
       if (populatedUser?.email) {
-        await sendTaskAssignedEmail(populatedUser, newTask);
+        await sendTaskAssignedEmail(populatedUser.email, newTask);
       }
     }
     await Column.findByIdAndUpdate(
